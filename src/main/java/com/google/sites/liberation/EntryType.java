@@ -30,21 +30,21 @@ public enum EntryType {
    * Returns the <code>EntryType</code> for the given entry
    */
   public static EntryType getType(BaseEditableContentEntry<?> e) {
-    if(e instanceof AnnouncementEntry)
+    if (e instanceof AnnouncementEntry)
       return EntryType.ANNOUNCEMENT;
-    if(e instanceof AnnouncementsPageEntry)
+    if (e instanceof AnnouncementsPageEntry)
       return EntryType.ANNOUNCEMENTS_PAGE;
-    if(e instanceof AttachmentEntry)
+    if (e instanceof AttachmentEntry)
       return EntryType.ATTACHMENT;
-    if(e instanceof CommentEntry)
+    if (e instanceof CommentEntry)
       return EntryType.COMMENT;
-    if(e instanceof FileCabinetPageEntry)
+    if (e instanceof FileCabinetPageEntry)
       return EntryType.FILE_CABINET_PAGE;
-    if(e instanceof ListItemEntry)
+    if (e instanceof ListItemEntry)
       return EntryType.LIST_ITEM;
-    if(e instanceof ListPageEntry)
+    if (e instanceof ListPageEntry)
       return EntryType.LIST_PAGE;
-    if(e instanceof WebPageEntry)
+    if (e instanceof WebPageEntry)
       return EntryType.WEB_PAGE;
     return EntryType.OTHER;
   }
