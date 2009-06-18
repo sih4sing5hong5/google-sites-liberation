@@ -43,7 +43,7 @@ public enum EntryType {
   OTHER;
   
   /**
-   * Returns the <code>EntryType</code> for the given entry
+   * Returns the {@code EntryType} for the given entry
    */
   public static EntryType getType(BaseEditableContentEntry<?> e) {
     if (e instanceof AnnouncementEntry)

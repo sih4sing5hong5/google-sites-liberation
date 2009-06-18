@@ -18,29 +18,35 @@ package com.google.sites.liberation;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Maps;
 import com.google.gdata.data.sites.BaseEditableContentEntry;
 import com.google.gdata.data.sites.SitesLink;
 import com.google.gdata.data.Link;
-import java.util.HashMap;
+import java.util.Map;
 
-public class InMemoryEntryStore implements EntryStore {
+final class InMemoryEntryStore implements EntryStore {
   
   // Stores the entries by id
-  private HashMap<String, BaseEditableContentEntry<?>> entries;
+  private final Map<String, BaseEditableContentEntry<?>> entries;
   // Stores the ids of the entries by EntryType
-  private HashMultimap<EntryType, String> ids;
+  private final Multimap<EntryType, String> ids;
   // Stores the children of entries by parent id and then EntryType
-  private HashMap<String, HashMultimap<EntryType, String>> children;
+  private final Map<String, Multimap<EntryType, String>> children;
   
   /**
    * Constructs a new, empty InMemoryEntryStore
    */
-  public InMemoryEntryStore() {
-    entries = new HashMap<String, BaseEditableContentEntry<?>>();
+  InMemoryEntryStore() {
+    entries = Maps.newHashMap();
     ids = HashMultimap.create();
-    children = new HashMap<String, HashMultimap<EntryType, String>>();
+    children = Maps.newHashMap();
   }
   
+  /**
+   * Returns the id's of the entries of the given {@code type} whose parent 
+   * has the given {@code id}
+   */
   @Override
   public ImmutableSet<String> getChildrenIds(String parentId, EntryType type) {
     if (children.get(parentId)==null || children.get(parentId).get(type)==null)
@@ -48,11 +54,18 @@ public class InMemoryEntryStore implements EntryStore {
     return ImmutableSet.copyOf(children.get(parentId).get(type));
   }
 
+  /**
+   * Returns the entry with the given {@code id}. Returns {@code null} if
+   * there is no entry with the given {@code id}. 
+   */
   @Override
   public BaseEditableContentEntry<?> getEntry(String id) {
     return entries.get(id);
   }
-
+  
+  /**
+   * Returns the id's of all entries of the given {@code type}
+   */
   @Override
   public ImmutableSet<String> getEntryIds(EntryType type) {
     if (ids.get(type) == null)
@@ -60,6 +73,9 @@ public class InMemoryEntryStore implements EntryStore {
     return ImmutableSet.copyOf(ids.get(type));
   }
 
+  /**
+   * Stores the given content entry for later retrieval
+   */
   @Override
   public void storeEntry(BaseEditableContentEntry<?> e) {
     String id = e.getId();
@@ -75,6 +91,11 @@ public class InMemoryEntryStore implements EntryStore {
       }
       children.get(parentId).put(type, id);
     }
+  }
+  
+  @Override
+  public String toString() {
+    return "{InMemoryEntryStore " + super.toString() + "}";
   }
 
 }
