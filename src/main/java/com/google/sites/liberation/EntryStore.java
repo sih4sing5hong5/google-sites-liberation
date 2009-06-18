@@ -28,17 +28,6 @@ import com.google.common.collect.ImmutableSet;
  *
  */
 public interface EntryStore {
-
-  /**
-   * Stores the given content entry for later retrieval
-   */
-  public void storeEntry(BaseEditableContentEntry<?> e);
-  
-  /**
-   * Returns the entry with the given {@code id}. Returns {@code null} if
-   * there is no entry with the given {@code id}. 
-   */
-  public BaseEditableContentEntry<?> getEntry(String id);
   
   /**
    * Returns the id's of the entries of the given {@code type} whose parent 
@@ -47,8 +36,19 @@ public interface EntryStore {
   public ImmutableSet<String> getChildrenIds(String parentId, EntryType type);
   
   /**
+   * Returns the entry with the given {@code id}. Returns {@code null} if
+   * there is no entry with the given {@code id}. 
+   */
+  public BaseEditableContentEntry<?> getEntry(String id);
+  
+  /**
    * Returns the id's of all entries of the given {@code type}
    */
   public ImmutableSet<String> getEntryIds(EntryType type);
+  
+  /**
+   * Stores the given content entry for later retrieval
+   */
+  public void storeEntry(BaseEditableContentEntry<?> e);
   
 }

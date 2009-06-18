@@ -93,9 +93,32 @@ final class InMemoryEntryStore implements EntryStore {
     }
   }
   
+  /**
+   * Returns a string representation of this object
+   */
   @Override
   public String toString() {
     return "{InMemoryEntryStore " + super.toString() + "}";
+  }
+  
+  /**
+   * Indicates whether some other object is "equal to" this one
+   */
+  @Override
+  public boolean equals(Object other) {
+    if (other instanceof InMemoryEntryStore) {
+      InMemoryEntryStore store = (InMemoryEntryStore)other;
+      return entries.equals(store.entries);
+    }
+    return false;
+  }
+  
+  /**
+   * Returns a hash code value for this object
+   */
+  @Override
+  public int hashCode() {
+    return entries.hashCode();
   }
 
 }
