@@ -16,61 +16,90 @@
 
 package com.google.sites.liberation;
 
+import java.util.Set;
 import junit.framework.TestCase;
 import com.google.common.collect.ImmutableSet;
 import com.google.gdata.data.BaseEntry;
 import com.google.gdata.data.sites.AnnouncementEntry;
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
-import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.CommentEntry;
-import com.google.gdata.data.sites.FileCabinetPageEntry;
-import com.google.gdata.data.sites.ListItemEntry;
-import com.google.gdata.data.sites.ListPageEntry;
 import com.google.gdata.data.sites.SitesLink;
 import com.google.gdata.data.sites.WebPageEntry;
 
 public class InMemoryEntryStoreTest extends TestCase {
 
   private EntryStore store;
-  
-  private void addEntries() {
-    AnnouncementEntry announcement1 = new AnnouncementEntry();
-    announcement1.setId("announcement1");
-    AnnouncementEntry announcement2 = new AnnouncementEntry();
-    announcement2.setId("announcement2");
-    AnnouncementsPageEntry announcementsPage = new AnnouncementsPageEntry();
-    announcementsPage.setId("announcementsPage");
-    AttachmentEntry attachment = new AttachmentEntry();
-    attachment.setId("attachment");
-    CommentEntry comment = new CommentEntry();
-    comment.setId("comment");
-    FileCabinetPageEntry fileCabinetPage = new FileCabinetPageEntry();
-    fileCabinetPage.setId("fileCabinetPage");
-    ListItemEntry listItem = new ListItemEntry();
-    listItem.setId("listItem");
-    ListPageEntry listPage = new ListPageEntry();
-    listPage.setId("listPage");
-    WebPageEntry webPage = new WebPageEntry();
-    webPage.setId("webPage");
-    addParentLink(announcement1, announcementsPage);
-    addParentLink(announcement2, announcementsPage);
-    addParentLink(announcementsPage, fileCabinetPage);
-    addParentLink(attachment, fileCabinetPage);
-    addParentLink(comment, fileCabinetPage);
-    addParentLink(listItem, listPage);
-    addParentLink(listPage, webPage);
-  }
+  private AnnouncementEntry announce1;
+  private AnnouncementEntry announce2;
+  private AnnouncementsPageEntry announcePage;
+  private CommentEntry comment;
+  private WebPageEntry webPage;
   
   private void addParentLink(BaseEntry<?> child, BaseEntry<?> parent) {
     child.addLink(SitesLink.Rel.PARENT, SitesLink.Type.APPLICATION_XHTML_XML,
         parent.getId());
   }
   
-  public void testGetChildrenIds() {
-    store = new InMemoryEntryStore();
-    assertEquals(store.getChildrenIds("http://foo.bar", EntryType.ANNOUNCEMENT),
-        ImmutableSet.of());
-    
+  @Override
+  public void setUp() {
+	store = new InMemoryEntryStore();
+    announce1 = new AnnouncementEntry();
+    announce1.setId("announce1");
+    announce2 = new AnnouncementEntry();
+    announce2.setId("announce2");
+    announcePage = new AnnouncementsPageEntry();
+    announcePage.setId("announcePage");
+    comment = new CommentEntry();
+    comment.setId("comment");
+    webPage = new WebPageEntry();
+    webPage.setId("webPage");
+    addParentLink(announce1, announcePage);
+    addParentLink(announce2, announcePage);
+    addParentLink(webPage, announcePage);
+    addParentLink(comment, webPage);
+    store.addEntry(announce1);
+    store.addEntry(announce2);
+    store.addEntry(announcePage);
+    store.addEntry(comment);
+    store.addEntry(webPage);
   }
   
+  public void testGetChildrenIds() {
+	assertEquals(store.getChildrenIds("foo", EntryType.ANNOUNCEMENT),
+	    ImmutableSet.of());
+	assertEquals(store.getChildrenIds("announcePage", EntryType.COMMENT),
+	    ImmutableSet.of());
+	Set<?> announcements = store.getChildrenIds("announcePage", EntryType.ANNOUNCEMENT);
+	assertEquals(announcements.size(), 2);
+	assertTrue(announcements.contains("announce1"));
+	assertTrue(announcements.contains("announce2"));
+	assertEquals(store.getChildrenIds("announcePage", EntryType.WEB_PAGE),
+	    ImmutableSet.of("webPage"));
+	assertEquals(store.getChildrenIds("webPage", EntryType.COMMENT),
+		ImmutableSet.of("comment"));
+  }
+  
+  public void testGetEntry() {
+	assertEquals(store.getEntry("announce1"), announce1);
+	assertEquals(store.getEntry("announce2"), announce2);
+	assertEquals(store.getEntry("announcePage"), announcePage);
+	assertEquals(store.getEntry("comment"), comment);
+	assertEquals(store.getEntry("webPage"), webPage);
+	assertNull(store.getEntry("foo"));
+  }
+  
+  public void testGetEntryIds() {
+	Set<?> announcements = store.getEntryIds(EntryType.ANNOUNCEMENT);
+	assertEquals(announcements.size(), 2);
+	assertTrue(announcements.contains("announce1"));
+	assertTrue(announcements.contains("announce2"));
+	assertEquals(store.getEntryIds(EntryType.ANNOUNCEMENTS_PAGE),
+		ImmutableSet.of("announcePage"));
+	assertEquals(store.getEntryIds(EntryType.COMMENT),
+			ImmutableSet.of("comment"));
+	assertEquals(store.getEntryIds(EntryType.WEB_PAGE),
+			ImmutableSet.of("webPage"));
+	assertEquals(store.getEntryIds(EntryType.ATTACHMENT),
+			ImmutableSet.of());
+  }
 }

@@ -44,40 +44,9 @@ final class InMemoryEntryStore implements EntryStore {
   }
   
   /**
-   * Returns the id's of the entries of the given {@code type} whose parent 
-   * has the given {@code id}
-   */
-  @Override
-  public ImmutableSet<String> getChildrenIds(String parentId, EntryType type) {
-    if (children.get(parentId)==null || children.get(parentId).get(type)==null)
-      return ImmutableSet.of();
-    return ImmutableSet.copyOf(children.get(parentId).get(type));
-  }
-
-  /**
-   * Returns the entry with the given {@code id}. Returns {@code null} if
-   * there is no entry with the given {@code id}. 
-   */
-  @Override
-  public BaseEditableContentEntry<?> getEntry(String id) {
-    return entries.get(id);
-  }
-  
-  /**
-   * Returns the id's of all entries of the given {@code type}
-   */
-  @Override
-  public ImmutableSet<String> getEntryIds(EntryType type) {
-    if (ids.get(type) == null)
-      return ImmutableSet.of();
-    return ImmutableSet.copyOf(ids.get(type));
-  }
-
-  /**
    * Stores the given content entry for later retrieval
    */
-  @Override
-  public void storeEntry(BaseEditableContentEntry<?> e) {
+  public void addEntry(BaseEditableContentEntry<?> e) {
     String id = e.getId();
     entries.put(id, e);
     EntryType type = EntryType.getType(e);
@@ -91,6 +60,33 @@ final class InMemoryEntryStore implements EntryStore {
       }
       children.get(parentId).put(type, id);
     }
+  }
+  
+  /**
+   * Returns the id's of the entries of the given {@code type} whose parent 
+   * has the given {@code id}
+   */
+  public ImmutableSet<String> getChildrenIds(String parentId, EntryType type) {
+    if (children.get(parentId)==null || children.get(parentId).get(type)==null)
+      return ImmutableSet.of();
+    return ImmutableSet.copyOf(children.get(parentId).get(type));
+  }
+
+  /**
+   * Returns the entry with the given {@code id}. Returns {@code null} if
+   * there is no entry with the given {@code id}. 
+   */
+  public BaseEditableContentEntry<?> getEntry(String id) {
+    return entries.get(id);
+  }
+  
+  /**
+   * Returns the id's of all entries of the given {@code type}
+   */
+  public ImmutableSet<String> getEntryIds(EntryType type) {
+    if (ids.get(type) == null)
+      return ImmutableSet.of();
+    return ImmutableSet.copyOf(ids.get(type));
   }
   
   /**

@@ -49,6 +49,6 @@ public interface EntryStore {
   /**
    * Stores the given content entry for later retrieval
    */
-  public void storeEntry(BaseEditableContentEntry<?> e);
+  public void addEntry(BaseEditableContentEntry<?> e);
   
 }
