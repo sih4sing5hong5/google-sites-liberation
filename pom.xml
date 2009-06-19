@@ -43,5 +43,17 @@
       <artifactId>junit</artifactId>
       <version>4.6</version>
     </dependency>
+    <dependency>
+    	<groupId>com.google.sites</groupId>
+    	<artifactId>gdata-base</artifactId>
+    	<version>1.0</version>
+    	<optional>false</optional>
+    </dependency>
+    <dependency>
+    	<groupId>com.google.sites</groupId>
+    	<artifactId>gdata-client</artifactId>
+    	<version>1.0</version>
+    	<optional>false</optional>
+    </dependency>
   </dependencies>
 </project>
