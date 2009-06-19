@@ -17,7 +17,6 @@
 package com.google.sites.liberation;
 
 import com.google.gdata.data.sites.BaseEditableContentEntry;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * This interface defines a data structure that can be used to store the
@@ -30,13 +29,12 @@ import com.google.common.collect.ImmutableSet;
 public interface EntryStore {
   
   /**
-   * Returns the id's of the entries of the given {@code type} whose parent 
-   * has the given {@code id}
+   * Returns the entries whose parent has the given {@code id}
    */
-  public ImmutableSet<String> getChildrenIds(String parentId, EntryType type);
+  public Iterable<BaseEditableContentEntry<?>> getChildren(String parentId);
   
   /**
-   * Returns the entry with the given {@code id}. Returns {@code null} if
+   * Returns the entry with the given {@code id's}. Returns {@code null} if
    * there is no entry with the given {@code id}. 
    */
   public BaseEditableContentEntry<?> getEntry(String id);
@@ -44,11 +42,10 @@ public interface EntryStore {
   /**
    * Returns the id's of all entries of the given {@code type}
    */
-  public ImmutableSet<String> getEntryIds(EntryType type);
+  public Iterable<String> getEntryIds(EntryType type);
   
   /**
-   * Stores the given content entry for later retrieval
+   * Stores the given content entries for later retrieval
    */
-  public void addEntry(BaseEditableContentEntry<?> e);
-  
+  public void addEntries(Iterable<BaseEditableContentEntry<?>> entries);
 }
