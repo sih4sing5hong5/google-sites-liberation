@@ -13,10 +13,10 @@ import com.google.common.collect.Iterables;
 
 public class PageExporter {
 
-	BaseEntry<?> entry;
-	Iterable<BaseEntry<?>> entries;
+	BaseEntry entry;
+	Iterable<BaseEntry> entries;
 	
-	public PageExporter(BaseEntry<?> entry, Iterable<BaseEntry<?>> entries) {
+	public PageExporter(BaseEntry entry, Iterable<BaseEntry> entries) {
 	  Preconditions.checkNotNull(entry, "entry");
 	  Preconditions.checkNotNull(entries, "entries");
 	  this.entry = entry;
@@ -31,9 +31,9 @@ public class PageExporter {
 	private String getParentXhtml() {
 	  String parentLink = entry.getLink(SitesLink.Rel.PARENT, 
 			SitesLink.Type.APPLICATION_XHTML_XML).getHref();
-	  BaseEntry<?> parent = null;
-	  for(Iterator<BaseEntry<?>> itr = entries.iterator(); itr.hasNext() && parent==null;) {
-	    BaseEntry<?> e = itr.next();
+	  BaseEntry parent = null;
+	  for(Iterator<BaseEntry> itr = entries.iterator(); itr.hasNext() && parent==null;) {
+	    BaseEntry e = itr.next();
 	    if(e.getId().equals(parentLink))
 	      parent = e;
 	  }
@@ -48,13 +48,13 @@ public class PageExporter {
 	}
 	
 	private String getSubPagesXhtml() {
-	  Collection<BaseEntry<?>> subPages = new HashSet<BaseEntry<?>>();
-	  for(BaseEntry<?> e : entries) {
+	  Collection<BaseEntry> subPages = new HashSet<BaseEntry>();
+	  for(BaseEntry e : entries) {
 		if(EntryType.isPage(EntryType.getType(e)))
 		  subPages.add(e);
 	  }
 	  String xhtml = "";
-	  Iterator<BaseEntry<?>> itr = subPages.iterator();
+	  Iterator<BaseEntry> itr = subPages.iterator();
 	  if(itr.hasNext()) {
 		xhtml = "<div>Subpages: " + itr.next().getTitle().getPlainText();
 		while(itr.hasNext()) {

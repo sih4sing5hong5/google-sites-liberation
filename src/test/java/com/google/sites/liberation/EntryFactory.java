@@ -37,7 +37,6 @@ public class EntryFactory {
 	public static Iterable<BaseEntry<?>> getTestSite() {
 	  Iterable<BaseEntry<?>> entries = new HashSet<BaseEntry<?>>();
 	  BaseEntry<?> entry = newEntry(EntryType.WEB_PAGE, "Home", "1", "This is home", null);
-	  entries.add(entry);
 	  
 	  return entries;
 	}
