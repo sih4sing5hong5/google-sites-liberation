@@ -16,7 +16,7 @@
 
 package com.google.sites.liberation;
 
-import com.google.gdata.data.sites.BaseEditableContentEntry;
+import com.google.gdata.data.BaseEntry;
 import com.google.gdata.data.sites.AnnouncementEntry;
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
 import com.google.gdata.data.sites.AttachmentEntry;
@@ -45,23 +45,38 @@ public enum EntryType {
   /**
    * Returns the <code>EntryType</code> for the given entry
    */
-  public static EntryType getType(BaseEditableContentEntry<?> e) {
-    if (e instanceof AnnouncementEntry)
+  public static EntryType getType(BaseEntry<?> entry) {
+    if (entry instanceof AnnouncementEntry)
       return EntryType.ANNOUNCEMENT;
-    if (e instanceof AnnouncementsPageEntry)
+    if (entry instanceof AnnouncementsPageEntry)
       return EntryType.ANNOUNCEMENTS_PAGE;
-    if (e instanceof AttachmentEntry)
+    if (entry instanceof AttachmentEntry)
       return EntryType.ATTACHMENT;
-    if (e instanceof CommentEntry)
+    if (entry instanceof CommentEntry)
       return EntryType.COMMENT;
-    if (e instanceof FileCabinetPageEntry)
+    if (entry instanceof FileCabinetPageEntry)
       return EntryType.FILE_CABINET_PAGE;
-    if (e instanceof ListItemEntry)
+    if (entry instanceof ListItemEntry)
       return EntryType.LIST_ITEM;
-    if (e instanceof ListPageEntry)
+    if (entry instanceof ListPageEntry)
       return EntryType.LIST_PAGE;
-    if (e instanceof WebPageEntry)
+    if (entry instanceof WebPageEntry)
       return EntryType.WEB_PAGE;
     return EntryType.OTHER;
+  }
+  
+  /**
+   * Returns whether or not this EntryType represents a page in a site
+   */
+  public static boolean isPage(EntryType type) {
+	switch(type) {
+	  case ANNOUNCEMENT:
+	  case ANNOUNCEMENTS_PAGE:
+	  case FILE_CABINET_PAGE:
+	  case LIST_PAGE:
+	  case WEB_PAGE:
+		  return true;
+      default: return false;
+	}
   }
 }

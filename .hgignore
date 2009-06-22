@@ -5,3 +5,4 @@ syntax: glob
 .classpath
 target/*
 .settings/*
+.DS_Store
