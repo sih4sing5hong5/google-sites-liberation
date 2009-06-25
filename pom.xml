@@ -47,13 +47,16 @@
     	<groupId>com.google.sites</groupId>
     	<artifactId>gdata-base</artifactId>
     	<version>1.0</version>
-    	<optional>false</optional>
     </dependency>
     <dependency>
     	<groupId>com.google.sites</groupId>
     	<artifactId>gdata-client</artifactId>
     	<version>1.0</version>
-    	<optional>false</optional>
+    </dependency>
+    <dependency>
+    	<groupId>joda.org</groupId>
+    	<artifactId>joda-time</artifactId>
+    	<version>1.6</version>
     </dependency>
   </dependencies>
 </project>

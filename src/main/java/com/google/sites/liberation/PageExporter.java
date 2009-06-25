@@ -1,26 +1,40 @@
 package com.google.sites.liberation;
 
-import java.util.Collection;
+import java.util.Set;
 import java.util.HashSet;
-import java.util.Iterator;
 
 import com.google.gdata.data.BaseEntry;
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.CommentEntry;
 import com.google.gdata.data.sites.SitesLink;
+import com.google.gdata.data.Link;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 
 public class PageExporter {
 
-	BaseEntry entry;
-	Iterable<BaseEntry> entries;
+	BaseEntry<?> entry;
+	BaseEntry<?> parent;
+	Set<BaseEntry<?>> children;
 	
-	public PageExporter(BaseEntry entry, Iterable<BaseEntry> entries) {
+	public PageExporter(BaseEntry<?> entry, Iterable<BaseEntry<?>> entries) {
 	  Preconditions.checkNotNull(entry, "entry");
 	  Preconditions.checkNotNull(entries, "entries");
+	  Link parentLink = entry.getLink(SitesLink.Rel.PARENT, 
+          SitesLink.Type.APPLICATION_XHTML_XML);
 	  this.entry = entry;
-	  this.entries = entries;
+	  parent = null;
+	  children = new HashSet<BaseEntry<?>>();
+	  for(BaseEntry<?> e : entries) {
+	    if(parentLink != null && parentLink.getHref().equals(e.getId()))
+	      parent = e;
+	    else {
+	      Link eParentLink = e.getLink(SitesLink.Rel.PARENT, 
+	          SitesLink.Type.APPLICATION_XHTML_XML);
+	      if(eParentLink != null && eParentLink.getHref().equals(entry.getId()))
+	        children.add(e);
+	    }
+	  }
 	}
 	
 	public String getXhtml() {
@@ -29,65 +43,51 @@ public class PageExporter {
 	}
 	
 	private String getParentXhtml() {
-	  String parentLink = entry.getLink(SitesLink.Rel.PARENT, 
-			SitesLink.Type.APPLICATION_XHTML_XML).getHref();
-	  BaseEntry parent = null;
-	  for(Iterator<BaseEntry> itr = entries.iterator(); itr.hasNext() && parent==null;) {
-	    BaseEntry e = itr.next();
-	    if(e.getId().equals(parentLink))
-	      parent = e;
-	  }
-	  String xhtml = "";
-	  if(parent != null)
+  	  String xhtml = "";
+	  if(parent != null && parent.getTitle() != null)
 		xhtml = "<div>"+parent.getTitle().getPlainText()+"</div>";
 	  return xhtml;
 	}
 	
 	private String getMainXhtml() {
-	  return entry.getTextContent().getContent().getPlainText();
+	  String xhtml = "<h3>" + entry.getTitle().getPlainText() + "</h3>";
+	  xhtml += entry.getTextContent().getContent().getPlainText();
+	  return xhtml;
 	}
 	
 	private String getSubPagesXhtml() {
-	  Collection<BaseEntry> subPages = new HashSet<BaseEntry>();
-	  for(BaseEntry e : entries) {
+	  Set<BaseEntry<?>> subPages = new HashSet<BaseEntry<?>>();
+	  for(BaseEntry<?> e : children) {
 		if(EntryType.isPage(EntryType.getType(e)))
 		  subPages.add(e);
 	  }
 	  String xhtml = "";
-	  Iterator<BaseEntry> itr = subPages.iterator();
-	  if(itr.hasNext()) {
-		xhtml = "<div>Subpages: " + itr.next().getTitle().getPlainText();
-		while(itr.hasNext()) {
-		  xhtml += ", " + itr.next().getTitle().getPlainText();
-		}
-		xhtml += "</div>";
+	  if(!subPages.isEmpty()) {
+	    xhtml = "<div>Subpages: ";
+	    for(BaseEntry<?> e : subPages) {
+		  xhtml += e.getTitle().getPlainText() + ", ";
+	    }
+	    xhtml = xhtml.substring(0, xhtml.length()-2);
+        xhtml += "</div>";
 	  }
 	  return xhtml;
 	}
 	
 	private String getCommentsXhtml() {
-	  Iterable<CommentEntry> comments = Iterables.filter(entries, CommentEntry.class);
-	  String xhtml = "";
-	  Iterator<CommentEntry> itr = comments.iterator();
-	  if(itr.hasNext()) {
-		xhtml = "<div>Comments:</div>";
-		while(itr.hasNext()) {
-		  xhtml += "<div>" + itr.next().getTextContent().getContent().getPlainText() + "</div>";
-		}
+	  Iterable<CommentEntry> comments = Iterables.filter(children, CommentEntry.class);
+	  String xhtml = comments.iterator().hasNext() ? "<div>Comments:</div>" : "";
+	  for(CommentEntry e : comments) {
+		xhtml += "<div>" + e.getTextContent().getContent().getPlainText() + "</div>";
 	  }
 	  return xhtml;
 	}
 	
 	private String getAttachmentsXhtml() {
-	  Iterable<AttachmentEntry> attachments = Iterables.filter(entries, AttachmentEntry.class);
-      String xhtml = "";
-	  Iterator<AttachmentEntry> itr = attachments.iterator();
-	  if(itr.hasNext()) {
-		xhtml = "<div>Attachments:</div>";
-		while(itr.hasNext()) {
-		  xhtml += "<div>" + itr.next().getTextContent().getContent().getPlainText() + "</div>";
-		}
-	  }
-	  return xhtml;
+	  Iterable<AttachmentEntry> attachments = Iterables.filter(children, AttachmentEntry.class);
+      String xhtml = attachments.iterator().hasNext() ? "<div>Attachments:</div>" : "";
+      for(AttachmentEntry e : attachments) {
+        xhtml += "<div>" + e.getTextContent().getContent().getPlainText() + "</div>";
+      }
+      return xhtml;
 	}
 }
