@@ -66,7 +66,7 @@ public enum EntryType {
       return EntryType.WEB_PAGE;
     return EntryType.OTHER;
   }
-  
+
   /**
    * Returns whether or not this EntryType represents a page in a site
    */
