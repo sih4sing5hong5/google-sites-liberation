@@ -65,11 +65,11 @@ public final class ContinuousContentFeed implements Iterable<BaseEntry<?>> {
    * maxResults, then only that many entries will be present.
    */
   public ContinuousContentFeed(ContentQuery query) {
-    service = new SitesService("google-sites-export");
     this.query = query;
+    service = new SitesService("google-sites-export");
     maxResults = query.getMaxResults();
   }
-
+  
   /**
    * Returns a new iterator of {@code BaseEntry}s for this feed. The iterator
    * returned will iterate through all of the entries corresponding to this 
@@ -91,25 +91,16 @@ public final class ContinuousContentFeed implements Iterable<BaseEntry<?>> {
 
     @SuppressWarnings("unchecked")
     private Iterator<BaseEntry> currentItr;
-    @SuppressWarnings("unchecked")
-    private Iterator<BaseEntry> nextItr;
     private int index;
 
     /**
      * Constructs a new iterator for this {@code ContinuousContentFeed}.
      */
     private FeedIterator() {
-      ContentFeed contentFeed = null;
-      try {
-        contentFeed = service.getFeed(query, ContentFeed.class);
-      } catch(IOException e) {
-        e.printStackTrace();
-      } catch(ServiceException e) {
-        e.printStackTrace();
-      }
-      currentItr = contentFeed.getEntries().iterator();
-      nextItr = null;
-      index = 1;
+      currentItr = null;
+      index = query.getStartIndex();
+      if(index == Query.UNDEFINED)
+        index = 1;
     }
 
     /**
@@ -118,23 +109,21 @@ public final class ContinuousContentFeed implements Iterable<BaseEntry<?>> {
     public boolean hasNext() {
       if(maxResults != Query.UNDEFINED && maxResults < index)
         return false;
-      if(currentItr.hasNext())
-        return true;
-      if(nextItr == null) {
-        int originalIndex = query.getStartIndex();
+      if(currentItr == null || !currentItr.hasNext()) {
+        int origIndex = query.getStartIndex();
         query.setStartIndex(index);
         ContentFeed contentFeed = null;
         try {
           contentFeed = service.getFeed(query, ContentFeed.class);
         } catch(IOException e) {
-          e.printStackTrace();
+          throw new RuntimeException(e);
         } catch(ServiceException e) {
-          e.printStackTrace();
+          throw new RuntimeException(e);
         }
-        query.setStartIndex(originalIndex);
-        nextItr = contentFeed.getEntries().iterator();
+        query.setStartIndex(origIndex);
+        currentItr = contentFeed.getEntries().iterator();
       }
-      return nextItr.hasNext();
+      return currentItr.hasNext();
     }
 
     /**
@@ -145,10 +134,6 @@ public final class ContinuousContentFeed implements Iterable<BaseEntry<?>> {
     public BaseEntry<?> next() {
       if(!hasNext())
         throw new NoSuchElementException();
-      if(!currentItr.hasNext()) {
-        currentItr = nextItr;
-        nextItr = null;
-      }
       index++;
       BaseEntry<?> next = currentItr.next();
       try {

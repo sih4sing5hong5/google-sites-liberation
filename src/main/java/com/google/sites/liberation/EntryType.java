@@ -20,7 +20,9 @@ import com.google.gdata.data.BaseEntry;
 import com.google.gdata.data.sites.AnnouncementEntry;
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
 import com.google.gdata.data.sites.AttachmentEntry;
+import com.google.gdata.data.sites.AttachmentRevisionEntry;
 import com.google.gdata.data.sites.CommentEntry;
+import com.google.gdata.data.sites.CommentRevisionEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.gdata.data.sites.ListItemEntry;
 import com.google.gdata.data.sites.ListPageEntry;
@@ -50,9 +52,9 @@ public enum EntryType {
       return EntryType.ANNOUNCEMENT;
     if (entry instanceof AnnouncementsPageEntry)
       return EntryType.ANNOUNCEMENTS_PAGE;
-    if (entry instanceof AttachmentEntry)
+    if (entry instanceof AttachmentEntry || entry instanceof AttachmentRevisionEntry)
       return EntryType.ATTACHMENT;
-    if (entry instanceof CommentEntry)
+    if (entry instanceof CommentEntry || entry instanceof CommentRevisionEntry)
       return EntryType.COMMENT;
     if (entry instanceof FileCabinetPageEntry)
       return EntryType.FILE_CABINET_PAGE;
