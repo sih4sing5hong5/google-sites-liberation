@@ -22,6 +22,7 @@ import com.google.gdata.data.sites.ContentFeed;
 import com.google.gdata.client.Query;
 import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.util.ServiceException;
+import com.google.gdata.util.common.base.Preconditions;
 import com.google.gdata.client.sites.ContentQuery;
 
 import java.net.URL;
@@ -65,6 +66,7 @@ public final class ContinuousContentFeed implements Iterable<BaseEntry<?>> {
    * maxResults, then only that many entries will be present.
    */
   public ContinuousContentFeed(ContentQuery query) {
+    Preconditions.checkNotNull(query);
     this.query = query;
     service = new SitesService("google-sites-export");
     maxResults = query.getMaxResults();

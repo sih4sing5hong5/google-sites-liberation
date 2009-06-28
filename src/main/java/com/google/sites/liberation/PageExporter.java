@@ -18,6 +18,8 @@ package com.google.sites.liberation;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
 
 import com.google.gdata.data.BaseEntry;
 import com.google.gdata.data.ILink;
@@ -30,27 +32,59 @@ import com.google.gdata.client.sites.ContentQuery;
 import com.google.gdata.client.sites.SitesService;
 import com.google.common.base.Preconditions;
 
+/**
+ * This class can be used to export a single page in a Site as
+ * a String of XHTML. 
+ * 
+ * @author bsimon@google.com (Benjamin Simon)
+ */
 public final class PageExporter {
 
   BaseEntry<?> entry;
   URL feedUrl;
 	
+  /**
+   * Constructs a new PageExporter for the given entry and feedUrl
+   * to which the entry belongs. The entry must be of a type that 
+   * represents a page in a Site.
+   */
   public PageExporter(BaseEntry<?> entry, URL feedUrl) {
     Preconditions.checkNotNull(entry, "entry");
     Preconditions.checkNotNull(feedUrl, "feedUrl");
+    Preconditions.checkArgument(EntryType.isPage(entry));
     this.entry = entry;
     this.feedUrl = feedUrl;
   }
 	
+  /**
+   * Exports this page as a String of XHTML.
+   */
   public String getXhtml() {
-    return getParentXhtml()+getMainXhtml()+getSubPagesXhtml()+
-        getCommentsXhtml()+getAttachmentsXhtml();
+    XmlElement html = new XmlElement("html");
+    XmlElement body = new XmlElement("body");
+    XmlElement parent = getParentXhtml();
+    if(parent != null)
+      body.add(parent);
+    body.add(getMainXhtml());
+    XmlElement subPages = getSubPagesXhtml();
+    if(subPages != null)
+      body.add(subPages);
+    body.add(getAttachmentsXhtml());
+    body.add(getCommentsXhtml());
+    html.add(body);
+    return html.toString();
   }
 	
-  private String getParentXhtml() {
+  /**
+   * Returns the {@code XmlElement} containing the xhtml representing the link
+   * to this page's parent page if it exists. Returns {@code null} if this is
+   * a top-level page.
+   */
+  private XmlElement getParentXhtml() {
+    XmlElement div = new XmlElement("div");
     Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
     if(parentLink == null)
-      return "";
+      return null;
     BaseEntry<?> parent = null;
     try {
       URL parentUrl = new URL(parentLink.getHref());
@@ -61,74 +95,120 @@ public final class PageExporter {
     } catch (ServiceException e) {
       e.printStackTrace();
     }
-    return "<div><a href=\"../index.html\">"+parent.getTitle().getPlainText()+"</a></div>\n";
+    HyperLink link = new HyperLink("../index.html", parent.getTitle().getPlainText());
+    div.add(link);
+    div.add(" >");
+    return div;
   }
 	
-  private String getMainXhtml() {
-    String xhtml = "<h3>" + entry.getTitle().getPlainText() + "</h3>\n";
-    xhtml += ((XhtmlTextConstruct)(entry.getTextContent().getContent()))
+  /**
+   * Returns the main xhtml for this page including the title.
+   * TODO: Return the special content if this is not a WebPageEntry
+   */
+  private XmlElement getMainXhtml() {
+    XmlElement div = new XmlElement("div");
+    XmlElement title = new XmlElement("h3");
+    title.add(entry.getTitle().getPlainText());
+    div.add(title);
+    String xhtmlContent = ((XhtmlTextConstruct)(entry.getTextContent().getContent()))
         .getXhtml().getBlob();
-    return xhtml;
+    div.add(xhtmlContent);
+    return div;
   }
 	
-  private String getSubPagesXhtml() {
+  /**
+   * Returns the xhtml containing links to this page's subpages, if they
+   * exist. If this page has no pages below it, this returns {@code null}.
+   */
+  private XmlElement getSubPagesXhtml() {
     ContentQuery childrenQuery = new ContentQuery(feedUrl);
     String id = entry.getId().substring(entry.getId().lastIndexOf('/') + 1);
     childrenQuery.setParent(id);
-    String xhtml = "";
-    int numSubPages = 0;
+    XmlElement div = new XmlElement("div");
+    List<XmlElement> links = new LinkedList<XmlElement>();
     for(BaseEntry<?> e : new ContinuousContentFeed(childrenQuery)) {
       if(EntryType.isPage(EntryType.getType(e))) {
-        xhtml += "<a href=\""+ getNiceTitle(e) + "/index.html\">" + 
-                 e.getTitle().getPlainText() + "</a>\n";
-        numSubPages++;
+        String href = getNiceTitle(e) + "/index.html";
+        links.add(new HyperLink(href, e.getTitle().getPlainText())); 
       }
     }
-    if(numSubPages > 0) {
-      xhtml = xhtml.substring(0, xhtml.length()-2);
-      xhtml = "<hr /><div>Subpages (" + numSubPages + "): " + xhtml + "</div>\n";
+    if(links.size() == 0)
+      return null;
+    div.add(new XmlElement("hr"));
+    div.add("Subpages (" + links.size() + "): ");
+    boolean firstLink = true;
+    for(XmlElement link : links) {
+      if(!firstLink) {
+        div.add(", ");
+      }
+      div.add(link);
+      firstLink = false;
     }
-    return xhtml;
+    return div;
   }
 	
-  private String getCommentsXhtml() {
+  /**
+   * Returns the xhtml for this page's comments.
+   */
+  private XmlElement getCommentsXhtml() {
     ContentQuery childrenQuery = new ContentQuery(feedUrl);
     String id = entry.getId().substring(entry.getId().lastIndexOf('/') + 1);
     childrenQuery.setParent(id);
-    String xhtml = "";
-    int numComments = 0;
+    XmlElement div = new XmlElement("div");
+    List<XmlElement> comments = new LinkedList<XmlElement>();
     for(BaseEntry<?> e : new ContinuousContentFeed(childrenQuery)) {
       if(EntryType.getType(e) == EntryType.COMMENT) {
-        String content = ((XhtmlTextConstruct)e.getTextContent().getContent())
+        String xhtmlContent = ((XhtmlTextConstruct)e.getTextContent().getContent())
             .getXhtml().getBlob();
-        xhtml += "<div><strong>" + e.getAuthors().get(0).getEmail() + 
-                 "</strong> - " + e.getUpdated().toUiString() + "</div>\n" +
-                 content;
-        numComments++;
+        XmlElement comment = new XmlElement("div");
+        XmlElement strong = new XmlElement("strong");
+        strong.add(e.getAuthors().get(0).getEmail());
+        comment.add(strong);
+        comment.add(" - " + e.getUpdated().toUiString());
+        comment.addXml(xhtmlContent);
       }
     }
-    xhtml = "<hr /><h4>Comments (" + numComments + ")</h4>\n" + xhtml;
-    return xhtml;
+    div.add(new XmlElement("hr"));
+    XmlElement h4 = new XmlElement("h4");
+    h4.add("Comments (" + comments.size() + ")");
+    div.add(h4);
+    for(XmlElement comment : comments) {
+      div.add(comment);
+    }
+    return div;
   }
 	
-  private String getAttachmentsXhtml() {
+  /**
+   * Returns the xhtml for this page's attachments
+   */
+  private XmlElement getAttachmentsXhtml() {
     ContentQuery childrenQuery = new ContentQuery(feedUrl);
     String id = entry.getId().substring(entry.getId().lastIndexOf('/') + 1);
     childrenQuery.setParent(id);
-    String xhtml = "";
-    int numAttachments = 0;
+    XmlElement div = new XmlElement("div");
+    List<XmlElement> attachments = new LinkedList<XmlElement>();
     for(BaseEntry<?> e : new ContinuousContentFeed(childrenQuery)) {
       if(EntryType.getType(e) == EntryType.ATTACHMENT) {
-        xhtml += "<div>" + e.getTitle().getPlainText() + " - on " +
-                 e.getUpdated().toUiString() + " by " + 
-                 e.getAuthors().get(0).getEmail() + "</div>\n";
-        numAttachments++;
+        XmlElement attachment = new XmlElement("div");
+        attachment.add(e.getTitle().getPlainText() + " - on " +
+                       e.getUpdated().toUiString() + " by " +
+                       e.getAuthors().get(0).getEmail());
       }
     }
-    xhtml = "<hr /><h4>Attachments (" + numAttachments + ")</h4>\n" + xhtml;
-    return xhtml;
+    div.add(new XmlElement("hr"));
+    XmlElement h4 = new XmlElement("h4");
+    h4.add("Attachments (" + attachments.size() + ")");
+    div.add(h4);
+    for(XmlElement attachment : attachments) {
+      div.add(attachment);
+    }
+    return div;
   }
   
+  /**
+   * Returns the given entry's title with all sequences of non-word characters
+   * (^[a-zA-z0-9_]) replaced by a single hyphen.
+   */
   private String getNiceTitle(BaseEntry<?> entry) {
     String title = entry.getTitle().getPlainText();
     String niceTitle = "";

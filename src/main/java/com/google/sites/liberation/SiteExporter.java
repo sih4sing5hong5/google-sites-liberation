@@ -33,6 +33,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
 
+/**
+ * This class exports an entire site to a given root folder
+ * 
+ * @author bsimon@google.com (Benjamin Simon)
+ */
 public final class SiteExporter {
 
   private String path;
@@ -47,21 +52,21 @@ public final class SiteExporter {
       if(EntryType.isPage(type)) {
         String fullPath = getFullPath(entry);
         (new File(fullPath)).mkdirs();
-    	PageExporter exporter = new PageExporter(entry, feedUrl);
-    	BufferedWriter out = new BufferedWriter(new FileWriter(
-    	    fullPath + "index.html"));
-    	out.write(exporter.getXhtml());
-    	out.close();
+      	PageExporter exporter = new PageExporter(entry, feedUrl);
+      	BufferedWriter out = new BufferedWriter(new FileWriter(
+      	    fullPath + "index.html"));
+      	out.write(exporter.getXhtml());
+      	out.close();
       }
     }
   }
   
   private String getFullPath(BaseEntry<?> entry) {
     Preconditions.checkNotNull(entry);
-	Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
-	if(parentLink == null)
-	  return path + getNiceTitle(entry) + "/";
-	BaseEntry<?> parent = null;
+  	Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
+  	if(parentLink == null)
+  	  return path + getNiceTitle(entry) + "/";
+  	BaseEntry<?> parent = null;
     try {
       URL parentUrl = new URL(parentLink.getHref());
       parent = (new SitesService("google-sites-export")).getEntry(
@@ -75,6 +80,7 @@ public final class SiteExporter {
   }
   
   private String getNiceTitle(BaseEntry<?> entry) {
+    Preconditions.checkNotNull(entry);
     String title = entry.getTitle().getPlainText();
     String niceTitle = "";
     for(String s : title.split("[\\W]+")) {
