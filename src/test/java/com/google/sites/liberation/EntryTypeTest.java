@@ -16,7 +16,8 @@
 
 package com.google.sites.liberation;
 
-import com.google.gdata.data.sites.BaseEditableContentEntry;
+import static org.junit.Assert.*;
+
 import com.google.gdata.data.sites.AnnouncementEntry;
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
 import com.google.gdata.data.sites.AttachmentEntry;
@@ -25,16 +26,17 @@ import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.gdata.data.sites.ListItemEntry;
 import com.google.gdata.data.sites.ListPageEntry;
 import com.google.gdata.data.sites.WebPageEntry;
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * Test for {@link EntryType}
  * 
  * @author bsimon@google.com (Ben Simon)
  */
-public class EntryTypeTest extends TestCase {
+public class EntryTypeTest {
   
-  public static void testGetType() {
+  @Test
+  public void testGetType() {
     assertEquals(EntryType.getType(new AnnouncementEntry()), 
         EntryType.ANNOUNCEMENT);
     assertEquals(EntryType.getType(new AnnouncementsPageEntry()), 
@@ -51,6 +53,19 @@ public class EntryTypeTest extends TestCase {
         EntryType.LIST_PAGE);
     assertEquals(EntryType.getType(new WebPageEntry()), 
         EntryType.WEB_PAGE);
+  }
+  
+  @Test
+  public void testIsPage() {
+    assertTrue(EntryType.isPage(EntryType.ANNOUNCEMENT));
+    assertTrue(EntryType.isPage(EntryType.ANNOUNCEMENTS_PAGE));
+    assertTrue(EntryType.isPage(EntryType.FILE_CABINET_PAGE));
+    assertTrue(EntryType.isPage(EntryType.LIST_PAGE));
+    assertTrue(EntryType.isPage(EntryType.WEB_PAGE));
+    assertFalse(EntryType.isPage(EntryType.ATTACHMENT));
+    assertFalse(EntryType.isPage(EntryType.COMMENT));
+    assertFalse(EntryType.isPage(EntryType.LIST_ITEM));
+    assertFalse(EntryType.isPage(EntryType.OTHER));
   }
   
 }
