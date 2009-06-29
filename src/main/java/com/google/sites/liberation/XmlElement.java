@@ -7,6 +7,8 @@ import java.util.Map;
 
 import com.google.gdata.util.common.base.Preconditions;
 
+import org.apache.commons.lang.StringEscapeUtils;
+
 /**
  * This is a very simple implementation of an xml element to aid
  * in generating well formed xhtml pages.
@@ -48,8 +50,7 @@ public class XmlElement {
    */
   public void add(String child) {
     Preconditions.checkNotNull(child);
-    //TODO: escape child string
-    children.add(child);
+    children.add(StringEscapeUtils.escapeHtml(child));
   }
   
   /**
@@ -82,14 +83,16 @@ public class XmlElement {
     for(Map.Entry<String, String> a : attributes.entrySet()) {
       builder.append(" " + a.getKey() + "=\"" + a.getValue() + "\"");
     }
-    if(children.isEmpty())
+    if (children.isEmpty()) {
       builder.append(" /");
+    }
     builder.append(">\n");
     for(Object c : children) {
       builder.append(c);
     }
-    if(!children.isEmpty())
+    if (!children.isEmpty()) {
       builder.append("</" + elementType + ">\n");
+    }
     return builder.toString();
   }
   

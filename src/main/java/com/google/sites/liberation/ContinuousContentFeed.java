@@ -16,6 +16,7 @@
 
 package com.google.sites.liberation;
 
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.BaseEntry;
 import com.google.gdata.data.Kind.AdaptorException;
 import com.google.gdata.data.sites.ContentFeed;
@@ -24,10 +25,11 @@ import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.util.ServiceException;
 import com.google.gdata.util.common.base.Preconditions;
 import com.google.gdata.client.sites.ContentQuery;
+import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.Iterators;
 
 import java.net.URL;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.io.IOException;
 
 /**
@@ -40,7 +42,7 @@ import java.io.IOException;
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-public final class ContinuousContentFeed implements Iterable<BaseEntry<?>> {
+final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
 
   private SitesService service;
   private ContentQuery query;
@@ -81,7 +83,7 @@ public final class ContinuousContentFeed implements Iterable<BaseEntry<?>> {
    * will make its own RPC's, and so the use of multiple iterators should be 
    * avoided.
    */
-  public Iterator<BaseEntry<?>> iterator() {
+  public AbstractIterator<BaseContentEntry<?>> iterator() {
     return new FeedIterator();
   }
 
@@ -89,29 +91,29 @@ public final class ContinuousContentFeed implements Iterable<BaseEntry<?>> {
    * This class defines the iterator returned by a 
    * {@code ContinuousContentFeed} iterable.
    */
-  private class FeedIterator implements Iterator<BaseEntry<?>> {
+  private class FeedIterator extends AbstractIterator<BaseContentEntry<?>> {
 
     @SuppressWarnings("unchecked")
-    private Iterator<BaseEntry> currentItr;
-    private int index;
+    Iterator<BaseEntry> currentItr;
+    int index;
 
     /**
      * Constructs a new iterator for this {@code ContinuousContentFeed}.
      */
-    private FeedIterator() {
-      currentItr = null;
+    FeedIterator() {
+      currentItr = Iterators.emptyIterator();
       index = query.getStartIndex();
-      if(index == Query.UNDEFINED)
+      if (index == Query.UNDEFINED) {
         index = 1;
+      }
     }
 
-    /**
-     * Returns true if the iteration has more elements.
-     */
-    public boolean hasNext() {
-      if(maxResults != Query.UNDEFINED && maxResults < index)
-        return false;
-      if(currentItr == null || !currentItr.hasNext()) {
+    @Override
+    public BaseContentEntry<?> computeNext() {
+      if ((maxResults != Query.UNDEFINED) && (maxResults < index)) {
+        return endOfData();
+      }
+      if (!currentItr.hasNext()) {
         int origIndex = query.getStartIndex();
         query.setStartIndex(index);
         ContentFeed contentFeed = null;
@@ -124,33 +126,17 @@ public final class ContinuousContentFeed implements Iterable<BaseEntry<?>> {
         }
         query.setStartIndex(origIndex);
         currentItr = contentFeed.getEntries().iterator();
+        if (!currentItr.hasNext()) {
+          return endOfData();
+        }
       }
-      return currentItr.hasNext();
-    }
-
-    /**
-     * Returns the next element in the iteration.
-     * 
-     * @throws NoSuchElementException the iteration has no more elements.
-     */
-    public BaseEntry<?> next() {
-      if(!hasNext())
-        throw new NoSuchElementException();
-      index++;
       BaseEntry<?> next = currentItr.next();
+      index++;
       try {
-        return next.getAdaptedEntry();
+        return (BaseContentEntry<?>)next.getAdaptedEntry();
       } catch (AdaptorException e) {
-        return next;
+        return (BaseContentEntry<?>)next;
       }
-    }
-
-    /**
-     * @throws UnsupportedOperationException the remove operation is not
-     *         supported by this iterator. 
-     */
-    public void remove() {
-      throw new UnsupportedOperationException();
     }
   }
 }

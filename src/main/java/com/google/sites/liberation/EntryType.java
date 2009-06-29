@@ -16,7 +16,7 @@
 
 package com.google.sites.liberation;
 
-import com.google.gdata.data.BaseEntry;
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.AnnouncementEntry;
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
 import com.google.gdata.data.sites.AttachmentEntry;
@@ -48,24 +48,32 @@ public enum EntryType {
   /**
    * Returns the <code>EntryType</code> for the given entry
    */
-  public static EntryType getType(BaseEntry<?> entry) {
+  public static EntryType getType(BaseContentEntry<?> entry) {
     Preconditions.checkNotNull(entry);
-    if (entry instanceof AnnouncementEntry)
+    if (entry instanceof AnnouncementEntry) {
       return EntryType.ANNOUNCEMENT;
-    if (entry instanceof AnnouncementsPageEntry)
+    }
+    if (entry instanceof AnnouncementsPageEntry) {
       return EntryType.ANNOUNCEMENTS_PAGE;
-    if (entry instanceof AttachmentEntry || entry instanceof AttachmentRevisionEntry)
+    }
+    if (entry instanceof AttachmentEntry || entry instanceof AttachmentRevisionEntry) {
       return EntryType.ATTACHMENT;
-    if (entry instanceof CommentEntry || entry instanceof CommentRevisionEntry)
+    }
+    if (entry instanceof CommentEntry || entry instanceof CommentRevisionEntry) {
       return EntryType.COMMENT;
-    if (entry instanceof FileCabinetPageEntry)
+    }
+    if (entry instanceof FileCabinetPageEntry) {
       return EntryType.FILE_CABINET_PAGE;
-    if (entry instanceof ListItemEntry)
+    }
+    if (entry instanceof ListItemEntry) {
       return EntryType.LIST_ITEM;
-    if (entry instanceof ListPageEntry)
+    }
+    if (entry instanceof ListPageEntry) {
       return EntryType.LIST_PAGE;
-    if (entry instanceof WebPageEntry)
+    }
+    if (entry instanceof WebPageEntry) {
       return EntryType.WEB_PAGE;
+    }
     return EntryType.OTHER;
   }
 
@@ -88,7 +96,7 @@ public enum EntryType {
   /**
    * Returns whether or not this entry represents a page in a site
    */
-  public static boolean isPage(BaseEntry<?> entry) {
+  public static boolean isPage(BaseContentEntry<?> entry) {
     return isPage(getType(entry));
   }
 }

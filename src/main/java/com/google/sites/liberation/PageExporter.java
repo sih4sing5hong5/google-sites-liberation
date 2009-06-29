@@ -21,7 +21,7 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.google.gdata.data.BaseEntry;
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.ILink;
 import com.google.gdata.data.sites.SitesLink;
 import com.google.gdata.data.Link;
@@ -40,7 +40,7 @@ import com.google.common.base.Preconditions;
  */
 public final class PageExporter {
 
-  BaseEntry<?> entry;
+  BaseContentEntry<?> entry;
   URL feedUrl;
 	
   /**
@@ -48,7 +48,7 @@ public final class PageExporter {
    * to which the entry belongs. The entry must be of a type that 
    * represents a page in a Site.
    */
-  public PageExporter(BaseEntry<?> entry, URL feedUrl) {
+  public PageExporter(BaseContentEntry<?> entry, URL feedUrl) {
     Preconditions.checkNotNull(entry, "entry");
     Preconditions.checkNotNull(feedUrl, "feedUrl");
     Preconditions.checkArgument(EntryType.isPage(entry));
@@ -63,12 +63,14 @@ public final class PageExporter {
     XmlElement html = new XmlElement("html");
     XmlElement body = new XmlElement("body");
     XmlElement parent = getParentXhtml();
-    if(parent != null)
+    if (parent != null) {
       body.add(parent);
+    }
     body.add(getMainXhtml());
     XmlElement subPages = getSubPagesXhtml();
-    if(subPages != null)
+    if (subPages != null) {
       body.add(subPages);
+    }
     body.add(getAttachmentsXhtml());
     body.add(getCommentsXhtml());
     html.add(body);
@@ -83,13 +85,14 @@ public final class PageExporter {
   private XmlElement getParentXhtml() {
     XmlElement div = new XmlElement("div");
     Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
-    if(parentLink == null)
+    if (parentLink == null) {
       return null;
-    BaseEntry<?> parent = null;
+    }
+    BaseContentEntry<?> parent = null;
     try {
       URL parentUrl = new URL(parentLink.getHref());
-      parent = (new SitesService("google-sites-export")).getEntry(
-          parentUrl, Entry.class).getAdaptedEntry();
+      parent = (BaseContentEntry<?>)(new SitesService("google-sites-export"))
+          .getEntry(parentUrl, Entry.class).getAdaptedEntry();
     } catch (IOException e) {
       e.printStackTrace();
     } catch (ServiceException e) {
@@ -112,7 +115,7 @@ public final class PageExporter {
     div.add(title);
     String xhtmlContent = ((XhtmlTextConstruct)(entry.getTextContent().getContent()))
         .getXhtml().getBlob();
-    div.add(xhtmlContent);
+    div.addXml(xhtmlContent);
     return div;
   }
 	
@@ -126,19 +129,20 @@ public final class PageExporter {
     childrenQuery.setParent(id);
     XmlElement div = new XmlElement("div");
     List<XmlElement> links = new LinkedList<XmlElement>();
-    for(BaseEntry<?> e : new ContinuousContentFeed(childrenQuery)) {
-      if(EntryType.isPage(EntryType.getType(e))) {
+    for(BaseContentEntry<?> e : new ContinuousContentFeed(childrenQuery)) {
+      if (EntryType.isPage(EntryType.getType(e))) {
         String href = getNiceTitle(e) + "/index.html";
         links.add(new HyperLink(href, e.getTitle().getPlainText())); 
       }
     }
-    if(links.size() == 0)
+    if (links.size() == 0) {
       return null;
+    }
     div.add(new XmlElement("hr"));
     div.add("Subpages (" + links.size() + "): ");
     boolean firstLink = true;
     for(XmlElement link : links) {
-      if(!firstLink) {
+      if (!firstLink) {
         div.add(", ");
       }
       div.add(link);
@@ -156,8 +160,8 @@ public final class PageExporter {
     childrenQuery.setParent(id);
     XmlElement div = new XmlElement("div");
     List<XmlElement> comments = new LinkedList<XmlElement>();
-    for(BaseEntry<?> e : new ContinuousContentFeed(childrenQuery)) {
-      if(EntryType.getType(e) == EntryType.COMMENT) {
+    for(BaseContentEntry<?> e : new ContinuousContentFeed(childrenQuery)) {
+      if (EntryType.getType(e) == EntryType.COMMENT) {
         String xhtmlContent = ((XhtmlTextConstruct)e.getTextContent().getContent())
             .getXhtml().getBlob();
         XmlElement comment = new XmlElement("div");
@@ -187,8 +191,8 @@ public final class PageExporter {
     childrenQuery.setParent(id);
     XmlElement div = new XmlElement("div");
     List<XmlElement> attachments = new LinkedList<XmlElement>();
-    for(BaseEntry<?> e : new ContinuousContentFeed(childrenQuery)) {
-      if(EntryType.getType(e) == EntryType.ATTACHMENT) {
+    for(BaseContentEntry<?> e : new ContinuousContentFeed(childrenQuery)) {
+      if (EntryType.getType(e) == EntryType.ATTACHMENT) {
         XmlElement attachment = new XmlElement("div");
         attachment.add(e.getTitle().getPlainText() + " - on " +
                        e.getUpdated().toUiString() + " by " +
@@ -209,16 +213,18 @@ public final class PageExporter {
    * Returns the given entry's title with all sequences of non-word characters
    * (^[a-zA-z0-9_]) replaced by a single hyphen.
    */
-  private String getNiceTitle(BaseEntry<?> entry) {
+  private String getNiceTitle(BaseContentEntry<?> entry) {
     String title = entry.getTitle().getPlainText();
     String niceTitle = "";
     for(String s : title.split("[\\W]+")) {
       niceTitle += s + "-";
     }
-    if(niceTitle.length() > 0)
+    if (niceTitle.length() > 0) {
       niceTitle = niceTitle.substring(0, niceTitle.length()-1);
-    else
+    }
+    else {
       niceTitle = "-";
+    }
     return niceTitle;
   }		
 }
