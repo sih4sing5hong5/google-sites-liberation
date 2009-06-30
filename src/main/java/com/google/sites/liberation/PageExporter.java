@@ -16,21 +16,21 @@
 
 package com.google.sites.liberation;
 
+import com.google.common.base.Preconditions;
+import com.google.gdata.client.sites.ContentQuery;
+import com.google.gdata.client.sites.SitesService;
+import com.google.gdata.data.Entry;
+import com.google.gdata.data.ILink;
+import com.google.gdata.data.Link;
+import com.google.gdata.data.XhtmlTextConstruct;
+import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.SitesLink;
+import com.google.gdata.util.ServiceException;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
-
-import com.google.gdata.data.sites.BaseContentEntry;
-import com.google.gdata.data.ILink;
-import com.google.gdata.data.sites.SitesLink;
-import com.google.gdata.data.Link;
-import com.google.gdata.data.Entry;
-import com.google.gdata.data.XhtmlTextConstruct;
-import com.google.gdata.util.ServiceException;
-import com.google.gdata.client.sites.ContentQuery;
-import com.google.gdata.client.sites.SitesService;
-import com.google.common.base.Preconditions;
 
 /**
  * This class can be used to export a single page in a Site as
@@ -64,16 +64,16 @@ public final class PageExporter {
     XmlElement body = new XmlElement("body");
     XmlElement parent = getParentXhtml();
     if (parent != null) {
-      body.add(parent);
+      body.addChild(parent);
     }
-    body.add(getMainXhtml());
+    body.addChild(getMainXhtml());
     XmlElement subPages = getSubPagesXhtml();
     if (subPages != null) {
-      body.add(subPages);
+      body.addChild(subPages);
     }
-    body.add(getAttachmentsXhtml());
-    body.add(getCommentsXhtml());
-    html.add(body);
+    body.addChild(getAttachmentsXhtml());
+    body.addChild(getCommentsXhtml());
+    html.addChild(body);
     return html.toString();
   }
 	
@@ -99,8 +99,8 @@ public final class PageExporter {
       e.printStackTrace();
     }
     HyperLink link = new HyperLink("../index.html", parent.getTitle().getPlainText());
-    div.add(link);
-    div.add(" >");
+    div.addChild(link);
+    div.addText(" >");
     return div;
   }
 	
@@ -111,8 +111,8 @@ public final class PageExporter {
   private XmlElement getMainXhtml() {
     XmlElement div = new XmlElement("div");
     XmlElement title = new XmlElement("h3");
-    title.add(entry.getTitle().getPlainText());
-    div.add(title);
+    title.addText(entry.getTitle().getPlainText());
+    div.addChild(title);
     String xhtmlContent = ((XhtmlTextConstruct)(entry.getTextContent().getContent()))
         .getXhtml().getBlob();
     div.addXml(xhtmlContent);
@@ -138,14 +138,14 @@ public final class PageExporter {
     if (links.size() == 0) {
       return null;
     }
-    div.add(new XmlElement("hr"));
-    div.add("Subpages (" + links.size() + "): ");
+    div.addChild(new XmlElement("hr"));
+    div.addText("Subpages (" + links.size() + "): ");
     boolean firstLink = true;
     for(XmlElement link : links) {
       if (!firstLink) {
-        div.add(", ");
+        div.addText(", ");
       }
-      div.add(link);
+      div.addChild(link);
       firstLink = false;
     }
     return div;
@@ -166,18 +166,19 @@ public final class PageExporter {
             .getXhtml().getBlob();
         XmlElement comment = new XmlElement("div");
         XmlElement strong = new XmlElement("strong");
-        strong.add(e.getAuthors().get(0).getEmail());
-        comment.add(strong);
-        comment.add(" - " + e.getUpdated().toUiString());
+        strong.addText(e.getAuthors().get(0).getEmail());
+        comment.addChild(strong);
+        comment.addText(" - " + e.getUpdated().toUiString());
         comment.addXml(xhtmlContent);
+        comments.add(comment);
       }
     }
-    div.add(new XmlElement("hr"));
+    div.addChild(new XmlElement("hr"));
     XmlElement h4 = new XmlElement("h4");
-    h4.add("Comments (" + comments.size() + ")");
-    div.add(h4);
+    h4.addText("Comments (" + comments.size() + ")");
+    div.addChild(h4);
     for(XmlElement comment : comments) {
-      div.add(comment);
+      div.addChild(comment);
     }
     return div;
   }
@@ -194,17 +195,18 @@ public final class PageExporter {
     for(BaseContentEntry<?> e : new ContinuousContentFeed(childrenQuery)) {
       if (EntryType.getType(e) == EntryType.ATTACHMENT) {
         XmlElement attachment = new XmlElement("div");
-        attachment.add(e.getTitle().getPlainText() + " - on " +
+        attachment.addText(e.getTitle().getPlainText() + " - on " +
                        e.getUpdated().toUiString() + " by " +
                        e.getAuthors().get(0).getEmail());
+        attachments.add(attachment);
       }
     }
-    div.add(new XmlElement("hr"));
+    div.addChild(new XmlElement("hr"));
     XmlElement h4 = new XmlElement("h4");
-    h4.add("Attachments (" + attachments.size() + ")");
-    div.add(h4);
+    h4.addText("Attachments (" + attachments.size() + ")");
+    div.addChild(h4);
     for(XmlElement attachment : attachments) {
-      div.add(attachment);
+      div.addChild(attachment);
     }
     return div;
   }

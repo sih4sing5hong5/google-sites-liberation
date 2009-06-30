@@ -18,7 +18,7 @@ public class HyperLink extends XmlElement {
     Preconditions.checkNotNull(href, "href");
     Preconditions.checkNotNull(text, "text");
     this.setAttribute("href", href);
-    this.add(text);
+    this.addText(text);
   }
   
 }

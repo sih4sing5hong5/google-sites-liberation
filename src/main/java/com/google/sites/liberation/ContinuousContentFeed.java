@@ -16,21 +16,21 @@
 
 package com.google.sites.liberation;
 
-import com.google.gdata.data.sites.BaseContentEntry;
-import com.google.gdata.data.BaseEntry;
-import com.google.gdata.data.Kind.AdaptorException;
-import com.google.gdata.data.sites.ContentFeed;
-import com.google.gdata.client.Query;
-import com.google.gdata.client.sites.SitesService;
-import com.google.gdata.util.ServiceException;
-import com.google.gdata.util.common.base.Preconditions;
-import com.google.gdata.client.sites.ContentQuery;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
+import com.google.gdata.client.Query;
+import com.google.gdata.client.sites.ContentQuery;
+import com.google.gdata.client.sites.SitesService;
+import com.google.gdata.data.BaseEntry;
+import com.google.gdata.data.Kind.AdaptorException;
+import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.ContentFeed;
+import com.google.gdata.util.ServiceException;
+import com.google.gdata.util.common.base.Preconditions;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
-import java.io.IOException;
 
 /**
  * This class removes some of the boiler-plate code involved in retrieving 
@@ -44,9 +44,9 @@ import java.io.IOException;
  */
 final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
 
-  private SitesService service;
+  private final SitesService service;
   private ContentQuery query;
-  private int maxResults;
+  private final int maxResults;
 
   /**
    * Creates a new instance of {@code ContinuousContentFeed} for the given
@@ -70,8 +70,8 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
   public ContinuousContentFeed(ContentQuery query) {
     Preconditions.checkNotNull(query);
     this.query = query;
-    service = new SitesService("google-sites-export");
-    maxResults = query.getMaxResults();
+    this.service = new SitesService("google-sites-export");
+    this.maxResults = query.getMaxResults();
   }
   
   /**

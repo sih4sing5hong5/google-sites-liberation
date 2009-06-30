@@ -16,11 +16,12 @@
 
 package com.google.sites.liberation;
 
-import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.AnnouncementEntry;
+import com.google.gdata.data.sites.AnnouncementRevisionEntry;
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.AttachmentRevisionEntry;
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.CommentEntry;
 import com.google.gdata.data.sites.CommentRevisionEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
@@ -50,7 +51,7 @@ public enum EntryType {
    */
   public static EntryType getType(BaseContentEntry<?> entry) {
     Preconditions.checkNotNull(entry);
-    if (entry instanceof AnnouncementEntry) {
+    if (entry instanceof AnnouncementEntry || entry instanceof AnnouncementRevisionEntry) {
       return EntryType.ANNOUNCEMENT;
     }
     if (entry instanceof AnnouncementsPageEntry) {
@@ -88,8 +89,8 @@ public enum EntryType {
   	  case FILE_CABINET_PAGE:
   	  case LIST_PAGE:
   	  case WEB_PAGE:
-  		  return true;
-        default: return false;
+  		return true;
+      default: return false;
   	}
   }
   

@@ -1,13 +1,14 @@
 package com.google.sites.liberation;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TreeMap;
-import java.util.Map;
-
 import com.google.gdata.util.common.base.Preconditions;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.Validate;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * This is a very simple implementation of an xml element to aid
@@ -17,13 +18,13 @@ import org.apache.commons.lang.StringEscapeUtils;
  */
 public class XmlElement {
 	
-  private String elementType;
-  private List<Object> children;
-  private Map<String, String> attributes;
+  private final String elementType;
+  private final List<Object> children;
+  private final Map<String, String> attributes;
 
   /**
    * Creates a new {@code XmlElement} of the given type.
-   * @param elementType
+   * @param elementType Tag name of this element
    */
   public XmlElement(String elementType) {
     Preconditions.checkNotNull(elementType);
@@ -37,7 +38,7 @@ public class XmlElement {
    * 
    * Children appear in the order in which they are added in the xml output.
    */
-  public void add(XmlElement child) {
+  public void addChild(XmlElement child) {
     Preconditions.checkNotNull(child);
     children.add(child);
   }
@@ -48,14 +49,15 @@ public class XmlElement {
    * 
    * Children appear in the order in which they are added in the xml output.
    */
-  public void add(String child) {
-    Preconditions.checkNotNull(child);
-    children.add(StringEscapeUtils.escapeHtml(child));
+  public void addText(String text) {
+    Preconditions.checkNotNull(text);
+    children.add(StringEscapeUtils.escapeXml(text));
   }
   
   /**
-   * Adds a string of xml as a child to this element. Unlike add(String),
-   * the {@code xml} string provided will be left as is. 
+   * Adds a string of xml as a child to this element. Unlike addText(String),
+   * the string provided will not be escaped. If the given String is not well 
+   * formed, then this element may not be well formed.
    */
   public void addXml(String xml) {
     Preconditions.checkNotNull(xml);
@@ -89,6 +91,8 @@ public class XmlElement {
     builder.append(">\n");
     for(Object c : children) {
       builder.append(c);
+      if(c instanceof String)
+        builder.append("\n");
     }
     if (!children.isEmpty()) {
       builder.append("</" + elementType + ">\n");
