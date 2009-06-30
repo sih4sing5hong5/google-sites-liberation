@@ -3,7 +3,6 @@ package com.google.sites.liberation;
 import com.google.gdata.util.common.base.Preconditions;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.Validate;
 
 import java.util.LinkedList;
 import java.util.List;

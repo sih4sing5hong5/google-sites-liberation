@@ -33,12 +33,15 @@ import java.net.URL;
 import java.util.Iterator;
 
 /**
- * This class removes some of the boiler-plate code involved in retrieving 
- * the entries for a given query, and also provides a continuous iterable of
- * entries even if the results of a query are split across multiple feeds. 
+ * This class provides a continuous iterable of entries even if the results of 
+ * a query are split across multiple feeds, and also removes some of the 
+ * boiler-plate code involved in retrieving the entries for a given query. 
  * 
  * This class can produce unexpected results if used on a feed other than the
  * content feed for a Google Site.
+ * 
+ * A RuntimeException is thrown if there are problems communicating with the 
+ * server during iteration.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
@@ -124,6 +127,9 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
         } catch(ServiceException e) {
           throw new RuntimeException(e);
         }
+        // The start index is reset to the original index so that if a second
+        // instance of the iterator is instantiated, it will start at the
+        // correct index.
         query.setStartIndex(origIndex);
         currentItr = contentFeed.getEntries().iterator();
         if (!currentItr.hasNext()) {
