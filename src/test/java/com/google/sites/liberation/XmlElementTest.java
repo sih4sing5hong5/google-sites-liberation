@@ -25,9 +25,9 @@ public class XmlElementTest {
   @Test
   public void testConstructor() {
     XmlElement empty = new XmlElement("");
-    assertEquals("< />\n", empty.toString());
+    assertEquals("< />", empty.toString());
     XmlElement div = new XmlElement("div");
-    assertEquals("<div />\n", div.toString());
+    assertEquals("<div />", div.toString());
   }
   
   @Test
@@ -36,38 +36,35 @@ public class XmlElementTest {
     XmlElement span = new XmlElement("span");
     XmlElement hr = new XmlElement("hr");
     XmlElement br = new XmlElement("br");
-    boolean thrown = false;
     try {
       div.addChild(null);
-    } catch(NullPointerException e) {
-      thrown = true;
-    }
-    assertTrue(thrown);
+      fail("Adding null child should throw exception");
+    } catch(NullPointerException e) {}
     div.addChild(span);
-    assertEquals("<div>\n<span />\n</div>\n", div.toString());
+    assertEquals("<div><span /></div>", div.toString());
     div.addChild(hr);
-    assertEquals("<div>\n<span />\n<hr />\n</div>\n", div.toString());
+    assertEquals("<div><span /><hr /></div>", div.toString());
     div = new XmlElement("div");
     div.addChild(hr);
     div.addChild(span);
-    assertEquals("<div>\n<hr />\n<span />\n</div>\n", div.toString());
+    assertEquals("<div><hr /><span /></div>", div.toString());
     div = new XmlElement("div");
     span.addChild(hr);
     div.addChild(span);
-    assertEquals("<div>\n<span>\n<hr />\n</span>\n</div>\n", div.toString());
+    assertEquals("<div><span><hr /></span></div>", div.toString());
   }
   
   @Test
   public void testAddText() {
     XmlElement div = new XmlElement("div");
     div.addText("text");
-    assertEquals("<div>\ntext\n</div>\n", div.toString());
+    assertEquals("<div>text</div>", div.toString());
     div.addText("");
-    assertEquals("<div>\ntext\n\n</div>\n", div.toString());
+    assertEquals("<div>text</div>", div.toString());
     div.addText("more text");
-    assertEquals("<div>\ntext\n\nmore text\n</div>\n", div.toString());
+    assertEquals("<div>textmore text</div>", div.toString());
     div.addText("<div />");
-    assertEquals("<div>\ntext\n\nmore text\n&lt;div /&gt;\n</div>\n", 
+    assertEquals("<div>textmore text&lt;div /&gt;</div>", 
         div.toString());
   }
   
@@ -75,9 +72,9 @@ public class XmlElementTest {
   public void testAddXml() {
     XmlElement div = new XmlElement("div");
     div.addXml("");
-    assertEquals("<div>\n\n</div>\n", div.toString());
+    assertEquals("<div></div>", div.toString());
     div.addXml("<span class=\"class\"><hr />text</span>");
-    assertEquals("<div>\n\n<span class=\"class\"><hr />text</span>\n</div>\n",
+    assertEquals("<div><span class=\"class\"><hr />text</span></div>",
         div.toString());
   }
   
@@ -85,10 +82,10 @@ public class XmlElementTest {
   public void testSetAttribute() {
     XmlElement div = new XmlElement("div");
     div.setAttribute("href", "#");
-    assertEquals("<div href=\"#\" />\n", div.toString());
+    assertEquals("<div href=\"#\" />", div.toString());
     div.setAttribute("class", "main");
-    assertEquals("<div class=\"main\" href=\"#\" />\n", div.toString());
+    assertEquals("<div class=\"main\" href=\"#\" />", div.toString());
     div.setAttribute("href", "not#");
-    assertEquals("<div class=\"main\" href=\"not#\" />\n", div.toString());
+    assertEquals("<div class=\"main\" href=\"not#\" />", div.toString());
   }
 }
