@@ -17,20 +17,15 @@
 package com.google.sites.liberation;
 
 import com.google.common.base.Preconditions;
-import com.google.gdata.client.sites.ContentQuery;
-import com.google.gdata.client.sites.SitesService;
-import com.google.gdata.data.Entry;
 import com.google.gdata.data.ILink;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.XhtmlTextConstruct;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.SitesLink;
-import com.google.gdata.util.ServiceException;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This class can be used to export a single page in a Site as
@@ -41,38 +36,52 @@ import java.util.List;
 public final class PageExporter {
 
   BaseContentEntry<?> entry;
-  URL feedUrl;
+  EntryStore entryStore;
 	
   /**
    * Constructs a new PageExporter for the given entry and feedUrl
    * to which the entry belongs. The entry must be of a type that 
    * represents a page in a Site.
    */
-  public PageExporter(BaseContentEntry<?> entry, URL feedUrl) {
+  public PageExporter(BaseContentEntry<?> entry, EntryStore entryStore) {
     Preconditions.checkNotNull(entry, "entry");
-    Preconditions.checkNotNull(feedUrl, "feedUrl");
+    Preconditions.checkNotNull(entryStore, "entryStore");
     Preconditions.checkArgument(EntryType.isPage(entry));
     this.entry = entry;
-    this.feedUrl = feedUrl;
+    this.entryStore = entryStore;
   }
 	
   /**
    * Exports this page as a String of XHTML.
    */
   public String getXhtml() {
+    Set<BaseContentEntry<?>> subPages = new HashSet<BaseContentEntry<?>>();
+    Set<BaseContentEntry<?>> attachments = new HashSet<BaseContentEntry<?>>();
+    Set<BaseContentEntry<?>> comments = new HashSet<BaseContentEntry<?>>();
+    for(BaseContentEntry<?> child : entryStore.getChildren(entry.getId())) {
+      if (EntryType.isPage(child)) {
+        subPages.add(child);
+      }
+      if (EntryType.getType(child) == EntryType.ATTACHMENT) {
+        attachments.add(child);
+      }
+      if (EntryType.getType(child) == EntryType.COMMENT) {
+        comments.add(child);
+      }
+    }
     XmlElement html = new XmlElement("html");
     XmlElement body = new XmlElement("body");
-    XmlElement parent = getParentXhtml();
-    if (parent != null) {
-      body.addChild(parent);
+    XmlElement parentXhtml = getParentXhtml();
+    if (parentXhtml != null) {
+      body.addChild(parentXhtml);
     }
     body.addChild(getMainXhtml());
-    XmlElement subPages = getSubPagesXhtml();
-    if (subPages != null) {
-      body.addChild(subPages);
+    XmlElement subPagesXhtml = getSubPagesXhtml(subPages);
+    if (subPagesXhtml != null) {
+      body.addChild(subPagesXhtml);
     }
-    body.addChild(getAttachmentsXhtml());
-    body.addChild(getCommentsXhtml());
+    body.addChild(getAttachmentsXhtml(attachments));
+    body.addChild(getCommentsXhtml(comments));
     html.addChild(body);
     return html.toString();
   }
@@ -88,17 +97,9 @@ public final class PageExporter {
     if (parentLink == null) {
       return null;
     }
-    BaseContentEntry<?> parent = null;
-    try {
-      URL parentUrl = new URL(parentLink.getHref());
-      parent = (BaseContentEntry<?>)(new SitesService("google-sites-export"))
-          .getEntry(parentUrl, Entry.class).getAdaptedEntry();
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (ServiceException e) {
-      e.printStackTrace();
-    }
-    HyperLink link = new HyperLink("../index.html", parent.getTitle().getPlainText());
+    BaseContentEntry<?> parent = entryStore.getEntry(parentLink.getHref());
+    HyperLink link = new HyperLink("../" + getNiceTitle(parent) + ".html", 
+        parent.getTitle().getPlainText());
     div.addChild(link);
     div.addText(" >");
     return div;
@@ -112,8 +113,8 @@ public final class PageExporter {
     XmlElement title = new XmlElement("h3");
     title.addText(entry.getTitle().getPlainText());
     div.addChild(title);
-    String xhtmlContent = ((XhtmlTextConstruct)(entry.getTextContent().getContent()))
-        .getXhtml().getBlob();
+    String xhtmlContent = ((XhtmlTextConstruct)(entry.getTextContent()
+        .getContent())).getXhtml().getBlob();
     div.addXml(xhtmlContent);
     return div;
   }
@@ -122,29 +123,17 @@ public final class PageExporter {
    * Returns the xhtml containing links to this page's subpages, if they
    * exist. If this page has no pages below it, this returns {@code null}.
    */
-  private XmlElement getSubPagesXhtml() {
-    ContentQuery childrenQuery = new ContentQuery(feedUrl);
-    String id = entry.getId().substring(entry.getId().lastIndexOf('/') + 1);
-    childrenQuery.setParent(id);
+  private XmlElement getSubPagesXhtml(Collection<BaseContentEntry<?>> subPages) {
     XmlElement div = new XmlElement("div");
-    List<XmlElement> links = new LinkedList<XmlElement>();
-    for(BaseContentEntry<?> e : new ContinuousContentFeed(childrenQuery)) {
-      if (EntryType.isPage(EntryType.getType(e))) {
-        String href = getNiceTitle(e) + "/index.html";
-        links.add(new HyperLink(href, e.getTitle().getPlainText())); 
-      }
-    }
-    if (links.size() == 0) {
-      return null;
-    }
     div.addChild(new XmlElement("hr"));
-    div.addText("Subpages (" + links.size() + "): ");
+    div.addText("Subpages (" + subPages.size() + "): ");
     boolean firstLink = true;
-    for(XmlElement link : links) {
+    for(BaseContentEntry<?> subPage : subPages) {
+      String href = getNiceTitle(entry) + "/" + getNiceTitle(subPage) + ".html";
       if (!firstLink) {
         div.addText(", ");
       }
-      div.addChild(link);
+      div.addChild(new HyperLink(href, subPage.getTitle().getPlainText()));
       firstLink = false;
     }
     return div;
@@ -153,31 +142,22 @@ public final class PageExporter {
   /**
    * Returns the xhtml for this page's comments.
    */
-  private XmlElement getCommentsXhtml() {
-    ContentQuery childrenQuery = new ContentQuery(feedUrl);
-    String id = entry.getId().substring(entry.getId().lastIndexOf('/') + 1);
-    childrenQuery.setParent(id);
+  private XmlElement getCommentsXhtml(Collection<BaseContentEntry<?>> comments) {
     XmlElement div = new XmlElement("div");
-    List<XmlElement> comments = new LinkedList<XmlElement>();
-    for(BaseContentEntry<?> e : new ContinuousContentFeed(childrenQuery)) {
-      if (EntryType.getType(e) == EntryType.COMMENT) {
-        String xhtmlContent = ((XhtmlTextConstruct)e.getTextContent().getContent())
-            .getXhtml().getBlob();
-        XmlElement comment = new XmlElement("div");
-        XmlElement strong = new XmlElement("strong");
-        strong.addText(e.getAuthors().get(0).getEmail());
-        comment.addChild(strong);
-        comment.addText(" - " + e.getUpdated().toUiString());
-        comment.addXml(xhtmlContent);
-        comments.add(comment);
-      }
-    }
     div.addChild(new XmlElement("hr"));
     XmlElement h4 = new XmlElement("h4");
     h4.addText("Comments (" + comments.size() + ")");
     div.addChild(h4);
-    for(XmlElement comment : comments) {
-      div.addChild(comment);
+    for(BaseContentEntry<?> comment : comments) {
+      String xhtmlContent = ((XhtmlTextConstruct)comment.getTextContent()
+          .getContent()).getXhtml().getBlob();
+      XmlElement commentXhtml = new XmlElement("div");
+      XmlElement strong = new XmlElement("strong");
+      strong.addText(comment.getAuthors().get(0).getEmail());
+      commentXhtml.addChild(strong);
+      commentXhtml.addText(" - " + comment.getUpdated().toUiString());
+      commentXhtml.addXml(xhtmlContent);
+      div.addChild(commentXhtml);
     }
     return div;
   }
@@ -185,27 +165,19 @@ public final class PageExporter {
   /**
    * Returns the xhtml for this page's attachments
    */
-  private XmlElement getAttachmentsXhtml() {
-    ContentQuery childrenQuery = new ContentQuery(feedUrl);
-    String id = entry.getId().substring(entry.getId().lastIndexOf('/') + 1);
-    childrenQuery.setParent(id);
+  private XmlElement getAttachmentsXhtml(
+      Collection<BaseContentEntry<?>> attachments) {
     XmlElement div = new XmlElement("div");
-    List<XmlElement> attachments = new LinkedList<XmlElement>();
-    for(BaseContentEntry<?> e : new ContinuousContentFeed(childrenQuery)) {
-      if (EntryType.getType(e) == EntryType.ATTACHMENT) {
-        XmlElement attachment = new XmlElement("div");
-        attachment.addText(e.getTitle().getPlainText() + " - on " +
-                       e.getUpdated().toUiString() + " by " +
-                       e.getAuthors().get(0).getEmail());
-        attachments.add(attachment);
-      }
-    }
     div.addChild(new XmlElement("hr"));
     XmlElement h4 = new XmlElement("h4");
     h4.addText("Attachments (" + attachments.size() + ")");
     div.addChild(h4);
-    for(XmlElement attachment : attachments) {
-      div.addChild(attachment);
+    for(BaseContentEntry<?> attachment : attachments) {
+      XmlElement attachmentXhtml = new XmlElement("div");
+      attachmentXhtml.addText(attachment.getTitle().getPlainText() + " - on " +
+                     attachment.getUpdated().toUiString() + " by " +
+                     attachment.getAuthors().get(0).getEmail());
+      div.addChild(attachmentXhtml);
     }
     return div;
   }

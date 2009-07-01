@@ -18,20 +18,18 @@ package com.google.sites.liberation;
 
 import com.google.common.base.Preconditions;
 import com.google.gdata.client.sites.ContentQuery;
-import com.google.gdata.client.sites.SitesService;
-import com.google.gdata.data.Entry;
 import com.google.gdata.data.ILink;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.SitesLink;
-import com.google.gdata.util.ServiceException;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This class exports an entire site to a given root folder.
@@ -41,6 +39,7 @@ import java.net.URL;
 public final class SiteExporter {
 
   private URL feedUrl;
+  private EntryStore entryStore;
   
   /**
    * Creates a new SiteExporter for the given feedUrl
@@ -48,6 +47,7 @@ public final class SiteExporter {
   public SiteExporter(URL feedUrl) {
     Preconditions.checkNotNull(feedUrl);
     this.feedUrl = feedUrl;
+    this.entryStore = new InMemoryEntryStore();
   }
   
   /**
@@ -59,17 +59,22 @@ public final class SiteExporter {
   public boolean export(String path) {
     try {
       ContentQuery query = new ContentQuery(feedUrl);
+      Set<String> pageIds = new HashSet<String>();
       for(BaseContentEntry<?> entry : new ContinuousContentFeed(query)) {
-        EntryType type = EntryType.getType(entry);
-        if (EntryType.isPage(type)) {
-          String fullPath = path + getPath(entry);
-          (new File(fullPath)).mkdirs();
-          PageExporter exporter = new PageExporter(entry, feedUrl);
-          BufferedWriter out = new BufferedWriter(new FileWriter(
-              fullPath + "index.html"));
-          out.write(exporter.getXhtml());
-          out.close();
+        entryStore.addEntry(entry);
+        if (EntryType.isPage(entry)) {
+          pageIds.add(entry.getId());
         }
+      }
+      for(String id : pageIds) {
+        BaseContentEntry<?> entry = entryStore.getEntry(id);
+        String fullPath = path + getPath(entry);
+        (new File(fullPath)).mkdirs();
+        PageExporter exporter = new PageExporter(entry, entryStore);
+        BufferedWriter out = new BufferedWriter(new FileWriter(
+            fullPath + getNiceTitle(entry) + ".html"));
+        out.write(exporter.getXhtml());
+        out.close();
       }
       return true;
     } catch(Exception e) {
@@ -83,21 +88,28 @@ public final class SiteExporter {
 	if (parentLink == null) {
 	  return PageExporter.getNiceTitle(entry) + "/";
 	}
-	BaseContentEntry<?> parent = null;
-    try {
-      URL parentUrl = new URL(parentLink.getHref());
-      parent = (BaseContentEntry<?>)(new SitesService("google-sites-export"))
-          .getEntry(parentUrl, Entry.class).getAdaptedEntry();
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (ServiceException e) {
-      e.printStackTrace();
+	BaseContentEntry<?> parent = entryStore.getEntry(parentLink.getHref());
+    return getPath(parent) + getNiceTitle(parent) + "/";
+  }
+  
+  private String getNiceTitle(BaseContentEntry<?> entry) {
+    Preconditions.checkNotNull(entry);
+    String title = entry.getTitle().getPlainText();
+    String niceTitle = "";
+    for(String s : title.split("[\\W]+")) {
+      niceTitle += s + "-";
+    }
+    if (niceTitle.length() > 0) {
+      niceTitle = niceTitle.substring(0, niceTitle.length()-1);
+    }
+    else {
+      niceTitle = "-";
     }
     return getPath(parent) + PageExporter.getNiceTitle(entry) + "/";
   }
   
   public static void main(String[] args) throws MalformedURLException {
-    URL feedUrl = new URL("http://bsimon-chi.chi.corp.google.com:7000/feeds/content/site/test");
+    URL feedUrl = new URL("http://bsimon-chi.chi.corp.google.com:7000/feeds/content/site/test/");
     String path = "/home/bsimon/Desktop/test/";
     SiteExporter exporter = new SiteExporter(feedUrl);
     exporter.export(path);
