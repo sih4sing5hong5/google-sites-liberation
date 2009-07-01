@@ -31,9 +31,9 @@ import com.google.gdata.data.sites.WebPageEntry;
 import com.google.gdata.util.common.base.Preconditions;
 
 /**
- * An enumeration of the possible entry types
+ * An enumeration of the possible entry types.
  * 
- * @author bsimon@google.com (Ben Simon)
+ * @author bsimon@google.com (Benjamin Simon)
  */
 public enum EntryType {
   ANNOUNCEMENT,
@@ -47,7 +47,7 @@ public enum EntryType {
   OTHER;
   
   /**
-   * Returns the <code>EntryType</code> for the given entry
+   * Returns the <code>EntryType</code> for the given entry.
    */
   public static EntryType getType(BaseContentEntry<?> entry) {
     Preconditions.checkNotNull(entry);
@@ -79,7 +79,7 @@ public enum EntryType {
   }
 
   /**
-   * Returns whether or not this EntryType represents a page in a site
+   * Returns whether or not this EntryType represents a page in a site.
    */
   public static boolean isPage(EntryType type) {
   	Preconditions.checkNotNull(type);
@@ -95,7 +95,7 @@ public enum EntryType {
   }
   
   /**
-   * Returns whether or not this entry represents a page in a site
+   * Returns whether or not this entry represents a page in a site.
    */
   public static boolean isPage(BaseContentEntry<?> entry) {
     return isPage(getType(entry));

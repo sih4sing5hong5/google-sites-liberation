@@ -34,7 +34,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * This class exports an entire site to a given root folder
+ * This class exports an entire site to a given root folder.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
@@ -51,8 +51,10 @@ public final class SiteExporter {
   }
   
   /**
-   * Exports this site to a root folder given by {@code path}
-   * @return true if the export succeeds, false otherwise
+   * Exports this site to a root folder given by {@code path}.
+   * 
+   * @param path the path to the root folder for the exported site.
+   * @return true if the export succeeds, false otherwise.
    */
   public boolean export(String path) {
     try {
@@ -79,7 +81,7 @@ public final class SiteExporter {
     Preconditions.checkNotNull(entry);
 	Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
 	if (parentLink == null) {
-	  return getNiceTitle(entry) + "/";
+	  return PageExporter.getNiceTitle(entry) + "/";
 	}
 	BaseContentEntry<?> parent = null;
     try {
@@ -91,23 +93,7 @@ public final class SiteExporter {
     } catch (ServiceException e) {
       e.printStackTrace();
     }
-    return getPath(parent) + getNiceTitle(entry) + "/";
-  }
-  
-  private String getNiceTitle(BaseContentEntry<?> entry) {
-    Preconditions.checkNotNull(entry);
-    String title = entry.getTitle().getPlainText();
-    String niceTitle = "";
-    for(String s : title.split("[\\W]+")) {
-      niceTitle += s + "-";
-    }
-    if (niceTitle.length() > 0) {
-      niceTitle = niceTitle.substring(0, niceTitle.length()-1);
-    }
-    else {
-      niceTitle = "-";
-    }
-    return niceTitle;
+    return getPath(parent) + PageExporter.getNiceTitle(entry) + "/";
   }
   
   public static void main(String[] args) throws MalformedURLException {

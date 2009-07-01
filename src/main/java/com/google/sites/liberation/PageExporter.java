@@ -106,7 +106,6 @@ public final class PageExporter {
 	
   /**
    * Returns the main xhtml for this page including the title.
-   * TODO: Return the special content if this is not a WebPageEntry
    */
   private XmlElement getMainXhtml() {
     XmlElement div = new XmlElement("div");
@@ -215,18 +214,12 @@ public final class PageExporter {
    * Returns the given entry's title with all sequences of non-word characters
    * (^[a-zA-z0-9_]) replaced by a single hyphen.
    */
-  private String getNiceTitle(BaseContentEntry<?> entry) {
+  public static String getNiceTitle(BaseContentEntry<?> entry) {
     String title = entry.getTitle().getPlainText();
-    String niceTitle = "";
-    for(String s : title.split("[\\W]+")) {
-      niceTitle += s + "-";
-    }
-    if (niceTitle.length() > 0) {
-      niceTitle = niceTitle.substring(0, niceTitle.length()-1);
-    }
-    else {
+    String niceTitle = title.replaceAll("[\\W]+", "-");
+    if(niceTitle.length() == 0) {
       niceTitle = "-";
     }
     return niceTitle;
-  }		
+  }
 }

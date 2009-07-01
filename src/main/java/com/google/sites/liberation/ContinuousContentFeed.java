@@ -50,13 +50,14 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
   private final SitesService service;
   private ContentQuery query;
   private final int maxResults;
+  private final int startIndex;
 
   /**
    * Creates a new instance of {@code ContinuousContentFeed} for the given
    * {@code feedUrl}.
    * 
-   * This {@code ContinuousContentFeed} will contain all of the entries
-   * in the feed at {@code feedUrl}.
+   * <p>This {@code ContinuousContentFeed} will contain all of the entries
+   * in the feed at {@code feedUrl}.</p>
    */
   public ContinuousContentFeed(URL feedUrl) {
     this(new ContentQuery(feedUrl));
@@ -75,16 +76,17 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
     this.query = query;
     this.service = new SitesService("google-sites-export");
     this.maxResults = query.getMaxResults();
+    this.startIndex = query.getStartIndex();
   }
   
   /**
-   * Returns a new iterator of {@code BaseEntry}s for this feed. The iterator
-   * returned will iterate through all of the entries corresponding to this 
-   * {@code ContinuousContentFeed} even if the results are spread over multiple
-   * feeds. Subsequent calls to this method will return independent iterators,
-   * each starting at the beginning of the feed. However, each iterator instance
-   * will make its own RPC's, and so the use of multiple iterators should be 
-   * avoided.
+   * Returns a new iterator of {@code BaseContentEntry}s for this feed. The 
+   * iterator returned will iterate through all of the entries corresponding to 
+   * this {@code ContinuousContentFeed} even if the results are spread over 
+   * multiple feeds. Subsequent calls to this method will return independent 
+   * iterators, each starting at the beginning of the feed. However, each 
+   * iterator instance will make its own RPC's, and so the use of multiple 
+   * iterators should be avoided.
    */
   public AbstractIterator<BaseContentEntry<?>> iterator() {
     return new FeedIterator();
@@ -105,10 +107,7 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
      */
     FeedIterator() {
       currentItr = Iterators.emptyIterator();
-      index = query.getStartIndex();
-      if (index == Query.UNDEFINED) {
-        index = 1;
-      }
+      index = (startIndex == Query.UNDEFINED) ? 1 : startIndex;
     }
 
     @Override
@@ -117,7 +116,6 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
         return endOfData();
       }
       if (!currentItr.hasNext()) {
-        int origIndex = query.getStartIndex();
         query.setStartIndex(index);
         ContentFeed contentFeed = null;
         try {
@@ -127,10 +125,6 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
         } catch(ServiceException e) {
           throw new RuntimeException(e);
         }
-        // The start index is reset to the original index so that if a second
-        // instance of the iterator is instantiated, it will start at the
-        // correct index.
-        query.setStartIndex(origIndex);
         currentItr = contentFeed.getEntries().iterator();
         if (!currentItr.hasNext()) {
           return endOfData();
