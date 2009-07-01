@@ -72,7 +72,7 @@ public final class SiteExporter {
         (new File(fullPath)).mkdirs();
         PageExporter exporter = new PageExporter(entry, entryStore);
         BufferedWriter out = new BufferedWriter(new FileWriter(
-            fullPath + getNiceTitle(entry) + ".html"));
+            fullPath + PageExporter.getNiceTitle(entry) + ".html"));
         out.write(exporter.getXhtml());
         out.close();
       }
@@ -86,26 +86,10 @@ public final class SiteExporter {
     Preconditions.checkNotNull(entry);
 	Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
 	if (parentLink == null) {
-	  return PageExporter.getNiceTitle(entry) + "/";
+	  return "";
 	}
 	BaseContentEntry<?> parent = entryStore.getEntry(parentLink.getHref());
-    return getPath(parent) + getNiceTitle(parent) + "/";
-  }
-  
-  private String getNiceTitle(BaseContentEntry<?> entry) {
-    Preconditions.checkNotNull(entry);
-    String title = entry.getTitle().getPlainText();
-    String niceTitle = "";
-    for(String s : title.split("[\\W]+")) {
-      niceTitle += s + "-";
-    }
-    if (niceTitle.length() > 0) {
-      niceTitle = niceTitle.substring(0, niceTitle.length()-1);
-    }
-    else {
-      niceTitle = "-";
-    }
-    return getPath(parent) + PageExporter.getNiceTitle(entry) + "/";
+    return getPath(parent) + PageExporter.getNiceTitle(parent) + "/";
   }
   
   public static void main(String[] args) throws MalformedURLException {
