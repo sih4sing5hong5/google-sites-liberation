@@ -20,6 +20,7 @@ import static com.google.sites.liberation.EntryType.ANNOUNCEMENT;
 import static com.google.sites.liberation.EntryType.ATTACHMENT;
 import static com.google.sites.liberation.EntryType.COMMENT;
 
+import com.google.gdata.data.XhtmlTextConstruct;
 import com.google.gdata.data.sites.AnnouncementEntry;
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
 import com.google.gdata.data.sites.AttachmentEntry;
@@ -27,6 +28,8 @@ import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.CommentEntry;
 import com.google.sites.liberation.EntryStore;
 import com.google.sites.liberation.EntryType;
+import com.google.sites.liberation.HyperLink;
+import com.google.sites.liberation.PageExporter;
 import com.google.sites.liberation.XmlElement;
 
 import java.util.Collection;
@@ -74,9 +77,6 @@ class AnnouncementsPageRenderer extends
       else if (EntryType.getType(child) == ANNOUNCEMENT) {
         announcements.add((AnnouncementEntry)child);
       }
-      else if (EntryType.isPage(child)) {
-        subpages.add(child);
-      }
     }
   }
   
@@ -85,8 +85,29 @@ class AnnouncementsPageRenderer extends
    */
   @Override
   public XmlElement renderSpecialContent() {
+    if (announcements.size() == 0) {
+      return null;
+    }  
     XmlElement div = new XmlElement("div");
-    div.addText("This is where the Announcements will eventually go");
+    for(AnnouncementEntry announcement : announcements) {
+      XmlElement announceDiv = new XmlElement("div");
+      XmlElement title = new XmlElement("h4");
+      String href = PageExporter.getNiceTitle(entry) + "/" + 
+          PageExporter.getNiceTitle(announcement) + ".html";
+      title.addChild(new HyperLink(href, 
+          announcement.getTitle().getPlainText()));
+      announceDiv.addChild(title);
+      XmlElement info = new XmlElement("span");
+      info.addText("posted by " + announcement.getAuthors().get(0).getEmail());
+      announceDiv.addChild(info);
+      String xhtmlContent = ((XhtmlTextConstruct)(announcement.getTextContent()
+          .getContent())).getXhtml().getBlob();
+      XmlElement mainHtml = new XmlElement("div");
+      mainHtml.addXml(xhtmlContent);
+      announceDiv.addChild(mainHtml);
+      div.addChild(new XmlElement("hr"));
+      div.addChild(announceDiv);
+    }
     return div;
   }
 }

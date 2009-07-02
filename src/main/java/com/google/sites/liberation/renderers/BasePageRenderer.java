@@ -94,8 +94,9 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
   
   @Override
   public XmlElement renderAttachments() {
-    if(attachments.size() == 0)
+    if (attachments.size() == 0) {
       return null;
+    }
     XmlElement div = new XmlElement("div");
     div.addChild(new XmlElement("hr"));
     XmlElement h4 = new XmlElement("h4");
@@ -113,8 +114,9 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
   
   @Override
   public XmlElement renderComments() {
-    if(comments.size() == 0)
+    if (comments.size() == 0) {
       return null;
+    }
     XmlElement div = new XmlElement("div");
     div.addChild(new XmlElement("hr"));
     XmlElement h4 = new XmlElement("h4");
@@ -158,8 +160,9 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
         ancestors.add(currentChild);
       }
     }
-    if(ancestors.size() == 0)
+    if (ancestors.size() == 0) {
       return null;
+    }
     XmlElement div = new XmlElement("div");
     for(int i = ancestors.size() - 1; i >= 0; i--) {
       BaseContentEntry<?> ancestor = ancestors.get(i);
@@ -183,8 +186,9 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
 
   @Override
   public XmlElement renderSubpageLinks() {
-    if(subpages.size() == 0)
+    if (subpages.size() == 0) {
       return null;
+    }
     XmlElement div = new XmlElement("div");
     div.addChild(new XmlElement("hr"));
     div.addText("Subpages (" + subpages.size() + "): ");
