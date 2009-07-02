@@ -118,5 +118,4 @@ public class XmlElement {
     }
     return builder.toString();
   }
-  
 }
