@@ -23,9 +23,7 @@ import com.google.gdata.data.Link;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.SitesLink;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
@@ -71,10 +69,7 @@ public final class SiteExporter {
         String fullPath = path + getPath(entry);
         (new File(fullPath)).mkdirs();
         PageExporter exporter = new PageExporter(entry, entryStore);
-        BufferedWriter out = new BufferedWriter(new FileWriter(
-            fullPath + PageExporter.getNiceTitle(entry) + ".html"));
-        out.write(exporter.getXhtml());
-        out.close();
+        exporter.export(fullPath + PageExporter.getNiceTitle(entry) + ".html");
       }
       return true;
     } catch(Exception e) {

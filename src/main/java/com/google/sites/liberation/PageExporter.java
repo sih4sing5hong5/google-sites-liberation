@@ -16,16 +16,15 @@
 
 package com.google.sites.liberation;
 
-import com.google.common.base.Preconditions;
-import com.google.gdata.data.ILink;
-import com.google.gdata.data.Link;
-import com.google.gdata.data.XhtmlTextConstruct;
-import com.google.gdata.data.sites.BaseContentEntry;
-import com.google.gdata.data.sites.SitesLink;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.sites.liberation.renderers.PageRenderer;
+import com.google.sites.liberation.renderers.PageRendererFactory;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 
 /**
  * This class can be used to export a single page in a Site as
@@ -39,147 +38,53 @@ public final class PageExporter {
   EntryStore entryStore;
 	
   /**
-   * Constructs a new PageExporter for the given entry and feedUrl
-   * to which the entry belongs. The entry must be of a type that 
-   * represents a page in a Site.
+   * Constructs a new PageExporter for the given entry and EntryStore.
    */
   public PageExporter(BaseContentEntry<?> entry, EntryStore entryStore) {
-    Preconditions.checkNotNull(entry, "entry");
-    Preconditions.checkNotNull(entryStore, "entryStore");
-    Preconditions.checkArgument(EntryType.isPage(entry));
-    this.entry = entry;
-    this.entryStore = entryStore;
+    this.entry = checkNotNull(entry);
+    this.entryStore = checkNotNull(entryStore);
   }
-	
+  
   /**
-   * Exports this page as a String of XHTML.
+   * Exports this entry's page as XHTML to the given file name.
    */
-  public String getXhtml() {
-    Set<BaseContentEntry<?>> subPages = new HashSet<BaseContentEntry<?>>();
-    Set<BaseContentEntry<?>> attachments = new HashSet<BaseContentEntry<?>>();
-    Set<BaseContentEntry<?>> comments = new HashSet<BaseContentEntry<?>>();
-    for(BaseContentEntry<?> child : entryStore.getChildren(entry.getId())) {
-      if (EntryType.isPage(child)) {
-        subPages.add(child);
-      }
-      if (EntryType.getType(child) == EntryType.ATTACHMENT) {
-        attachments.add(child);
-      }
-      if (EntryType.getType(child) == EntryType.COMMENT) {
-        comments.add(child);
-      }
-    }
+  public void export(String fileName) throws IOException {
+    PageRenderer renderer = 
+        PageRendererFactory.getPageRenderer(entry, entryStore);
     XmlElement html = new XmlElement("html");
     XmlElement body = new XmlElement("body");
-    XmlElement parentXhtml = getParentXhtml();
-    if (parentXhtml != null) {
-      body.addChild(parentXhtml);
+    XmlElement parentLinks = renderer.renderParentLinks();
+    if (parentLinks != null) {
+      body.addChild(parentLinks);
     }
-    body.addChild(getMainXhtml());
-    XmlElement subPagesXhtml = getSubPagesXhtml(subPages);
-    if (subPagesXhtml != null) {
-      body.addChild(subPagesXhtml);
+    XmlElement title = renderer.renderTitle();
+    if (title != null) {
+      body.addChild(title);
     }
-    body.addChild(getAttachmentsXhtml(attachments));
-    body.addChild(getCommentsXhtml(comments));
+    XmlElement mainHtml = renderer.renderMainHtml();
+    if (mainHtml != null) {
+      body.addChild(mainHtml);
+    }
+    XmlElement specialContent = renderer.renderSpecialContent();
+    if(specialContent != null) {
+      body.addChild(specialContent);
+    }
+    XmlElement subpageLinks = renderer.renderSubpageLinks();
+    if (subpageLinks != null) {
+      body.addChild(subpageLinks);
+    }
+    XmlElement attachments = renderer.renderAttachments();
+    if (attachments != null) {
+      body.addChild(attachments);
+    }
+    XmlElement comments = renderer.renderComments();
+    if (comments != null) {
+      body.addChild(comments);
+    }
     html.addChild(body);
-    return html.toString();
-  }
-	
-  /**
-   * Returns the {@code XmlElement} containing the xhtml representing the link
-   * to this page's parent page if it exists. Returns {@code null} if this is
-   * a top-level page.
-   */
-  private XmlElement getParentXhtml() {
-    XmlElement div = new XmlElement("div");
-    Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
-    if (parentLink == null) {
-      return null;
-    }
-    BaseContentEntry<?> parent = entryStore.getEntry(parentLink.getHref());
-    HyperLink link = new HyperLink("../" + getNiceTitle(parent) + ".html", 
-        parent.getTitle().getPlainText());
-    div.addChild(link);
-    div.addText(" >");
-    return div;
-  }
-	
-  /**
-   * Returns the main xhtml for this page including the title.
-   */
-  private XmlElement getMainXhtml() {
-    XmlElement div = new XmlElement("div");
-    XmlElement title = new XmlElement("h3");
-    title.addText(entry.getTitle().getPlainText());
-    div.addChild(title);
-    String xhtmlContent = ((XhtmlTextConstruct)(entry.getTextContent()
-        .getContent())).getXhtml().getBlob();
-    div.addXml(xhtmlContent);
-    return div;
-  }
-	
-  /**
-   * Returns the xhtml containing links to this page's subpages, if they
-   * exist. If this page has no pages below it, this returns {@code null}.
-   */
-  private XmlElement getSubPagesXhtml(Collection<BaseContentEntry<?>> subPages) {
-    XmlElement div = new XmlElement("div");
-    div.addChild(new XmlElement("hr"));
-    div.addText("Subpages (" + subPages.size() + "): ");
-    boolean firstLink = true;
-    for(BaseContentEntry<?> subPage : subPages) {
-      String href = getNiceTitle(entry) + "/" + getNiceTitle(subPage) + ".html";
-      if (!firstLink) {
-        div.addText(", ");
-      }
-      div.addChild(new HyperLink(href, subPage.getTitle().getPlainText()));
-      firstLink = false;
-    }
-    return div;
-  }
-	
-  /**
-   * Returns the xhtml for this page's comments.
-   */
-  private XmlElement getCommentsXhtml(Collection<BaseContentEntry<?>> comments) {
-    XmlElement div = new XmlElement("div");
-    div.addChild(new XmlElement("hr"));
-    XmlElement h4 = new XmlElement("h4");
-    h4.addText("Comments (" + comments.size() + ")");
-    div.addChild(h4);
-    for(BaseContentEntry<?> comment : comments) {
-      String xhtmlContent = ((XhtmlTextConstruct)comment.getTextContent()
-          .getContent()).getXhtml().getBlob();
-      XmlElement commentXhtml = new XmlElement("div");
-      XmlElement strong = new XmlElement("strong");
-      strong.addText(comment.getAuthors().get(0).getEmail());
-      commentXhtml.addChild(strong);
-      commentXhtml.addText(" - " + comment.getUpdated().toUiString());
-      commentXhtml.addXml(xhtmlContent);
-      div.addChild(commentXhtml);
-    }
-    return div;
-  }
-	
-  /**
-   * Returns the xhtml for this page's attachments
-   */
-  private XmlElement getAttachmentsXhtml(
-      Collection<BaseContentEntry<?>> attachments) {
-    XmlElement div = new XmlElement("div");
-    div.addChild(new XmlElement("hr"));
-    XmlElement h4 = new XmlElement("h4");
-    h4.addText("Attachments (" + attachments.size() + ")");
-    div.addChild(h4);
-    for(BaseContentEntry<?> attachment : attachments) {
-      XmlElement attachmentXhtml = new XmlElement("div");
-      attachmentXhtml.addText(attachment.getTitle().getPlainText() + " - on " +
-                     attachment.getUpdated().toUiString() + " by " +
-                     attachment.getAuthors().get(0).getEmail());
-      div.addChild(attachmentXhtml);
-    }
-    return div;
+    BufferedWriter out = new BufferedWriter(new FileWriter(fileName));
+    out.write(html.toString());
+    out.close();
   }
   
   /**

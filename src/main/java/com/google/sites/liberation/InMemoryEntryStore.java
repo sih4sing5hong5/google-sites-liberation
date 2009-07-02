@@ -30,10 +30,7 @@ final class InMemoryEntryStore implements EntryStore {
     entries = Maps.newHashMap();
     children = HashMultimap.create();
   }
-  
-  /**
-   * Stores the given content entry.
-   */
+
   @Override
   public void addEntry(BaseContentEntry<?> entry) {
     Preconditions.checkNotNull(entry);
@@ -48,24 +45,15 @@ final class InMemoryEntryStore implements EntryStore {
     }
   }
   
-  /**
-   * Returns a collection containing all entries with parent specified by the 
-   * given {@code id}.
-   */
   @Override
   public Collection<BaseContentEntry<?>> getChildren(String id) {
     Preconditions.checkNotNull(id);
     return children.get(id);
   }
 
-  /**
-  * Retrieves the entry with the given {@code id} or {@code null} if there is 
-  * no such entry.
-  */
   @Override
   public BaseContentEntry<?> getEntry(String id) {
     Preconditions.checkNotNull(id);
     return entries.get(id);
   }
-
 }
