@@ -20,7 +20,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.sites.liberation.renderers.PageRenderer;
-import com.google.sites.liberation.renderers.PageRendererFactory;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -34,23 +33,19 @@ import java.io.IOException;
  */
 public final class PageExporter {
 
-  BaseContentEntry<?> entry;
-  EntryStore entryStore;
+  PageRenderer renderer;
 	
   /**
-   * Constructs a new PageExporter for the given entry and EntryStore.
+   * Constructs a new PageExporter from the given PageRenderer.
    */
-  public PageExporter(BaseContentEntry<?> entry, EntryStore entryStore) {
-    this.entry = checkNotNull(entry);
-    this.entryStore = checkNotNull(entryStore);
+  public PageExporter(PageRenderer renderer) {
+    this.renderer = checkNotNull(renderer);
   }
   
   /**
    * Exports this entry's page as XHTML to the given file name.
    */
   public void export(String fileName) throws IOException {
-    PageRenderer renderer = 
-        PageRendererFactory.getPageRenderer(entry, entryStore);
     XmlElement html = new XmlElement("html");
     XmlElement body = new XmlElement("body");
     XmlElement parentLinks = renderer.renderParentLinks();

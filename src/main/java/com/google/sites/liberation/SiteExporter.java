@@ -22,6 +22,8 @@ import com.google.gdata.data.ILink;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.SitesLink;
+import com.google.sites.liberation.renderers.PageRenderer;
+import com.google.sites.liberation.renderers.PageRendererFactory;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -68,7 +70,9 @@ public final class SiteExporter {
         BaseContentEntry<?> entry = entryStore.getEntry(id);
         String fullPath = path + getPath(entry);
         (new File(fullPath)).mkdirs();
-        PageExporter exporter = new PageExporter(entry, entryStore);
+        PageRenderer renderer = PageRendererFactory.getPageRenderer(entry, 
+            entryStore);
+        PageExporter exporter = new PageExporter(renderer);
         exporter.export(fullPath + PageExporter.getNiceTitle(entry) + ".html");
       }
       return true;
