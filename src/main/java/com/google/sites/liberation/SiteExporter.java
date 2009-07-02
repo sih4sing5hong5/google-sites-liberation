@@ -77,8 +77,9 @@ public final class SiteExporter {
       }
       return true;
     } catch(Exception e) {
-      return false;
+      e.printStackTrace();
     }
+    return false;
   }
   
   private String getPath(BaseContentEntry<?> entry) {
