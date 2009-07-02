@@ -109,16 +109,13 @@ public class XmlElement {
     if (children.isEmpty()) {
       builder.append(" /");
     }
-    builder.append(">\n");
+    builder.append(">");
     for(Object c : children) {
       builder.append(c);
-      if(c instanceof String)
-        builder.append("\n");
     }
     if (!children.isEmpty()) {
-      builder.append("</" + elementType + ">\n");
+      builder.append("</" + elementType + ">");
     }
     return builder.toString();
   }
-  
 }
