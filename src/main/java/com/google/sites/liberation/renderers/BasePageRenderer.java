@@ -30,7 +30,6 @@ import com.google.gdata.data.sites.SitesLink;
 import com.google.sites.liberation.EntryStore;
 import com.google.sites.liberation.EntryType;
 import com.google.sites.liberation.HyperLink;
-import com.google.sites.liberation.PageExporter;
 import com.google.sites.liberation.XmlElement;
 
 import java.util.ArrayList;
@@ -98,16 +97,20 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
       return null;
     }
     XmlElement div = new XmlElement("div");
-    div.addChild(new XmlElement("hr"));
+    div.addElement(new XmlElement("hr"));
     XmlElement h4 = new XmlElement("h4");
     h4.addText("Attachments (" + attachments.size() + ")");
-    div.addChild(h4);
+    div.addElement(h4);
     for(BaseContentEntry<?> attachment : attachments) {
       XmlElement attachmentXhtml = new XmlElement("div");
+      String author = attachment.getAuthors().get(0).getName();
+      if(author == null) {
+        author = attachment.getAuthors().get(0).getEmail();
+      }
       attachmentXhtml.addText(attachment.getTitle().getPlainText() + " - on " +
                      attachment.getUpdated().toUiString() + " by " +
-                     attachment.getAuthors().get(0).getEmail());
-      div.addChild(attachmentXhtml);
+                     author);
+      div.addElement(attachmentXhtml);
     }
     return div;
   }
@@ -118,20 +121,24 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
       return null;
     }
     XmlElement div = new XmlElement("div");
-    div.addChild(new XmlElement("hr"));
+    div.addElement(new XmlElement("hr"));
     XmlElement h4 = new XmlElement("h4");
     h4.addText("Comments (" + comments.size() + ")");
-    div.addChild(h4);
+    div.addElement(h4);
     for(BaseContentEntry<?> comment : comments) {
       String xhtmlContent = ((XhtmlTextConstruct)comment.getTextContent()
           .getContent()).getXhtml().getBlob();
       XmlElement commentXhtml = new XmlElement("div");
       XmlElement strong = new XmlElement("strong");
-      strong.addText(comment.getAuthors().get(0).getEmail());
-      commentXhtml.addChild(strong);
+      String author = comment.getAuthors().get(0).getName();
+      if(author == null) {
+        author = comment.getAuthors().get(0).getEmail();
+      }
+      strong.addText(author);
+      commentXhtml.addElement(strong);
       commentXhtml.addText(" - " + comment.getUpdated().toUiString());
       commentXhtml.addXml(xhtmlContent);
-      div.addChild(commentXhtml);
+      div.addElement(commentXhtml);
     }
     return div;
   }
@@ -170,9 +177,9 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
       for(int j = 0; j <= i; j++) {
         path += "../";
       }
-      HyperLink link = new HyperLink(path + PageExporter.getNiceTitle(ancestor) 
+      HyperLink link = new HyperLink(path + entryStore.getName(ancestor.getId()) 
           + ".html", ancestor.getTitle().getPlainText());
-      div.addChild(link);
+      div.addElement(link);
       div.addText(" > ");
     }
     
@@ -190,16 +197,16 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
       return null;
     }
     XmlElement div = new XmlElement("div");
-    div.addChild(new XmlElement("hr"));
+    div.addElement(new XmlElement("hr"));
     div.addText("Subpages (" + subpages.size() + "): ");
     boolean firstLink = true;
     for(BaseContentEntry<?> subpage : subpages) {
-      String href = PageExporter.getNiceTitle(entry) + "/" + 
-          PageExporter.getNiceTitle(subpage) + ".html";
+      String href = entryStore.getName(entry.getId()) + "/" + 
+          entryStore.getName(subpage.getId()) + ".html";
       if (!firstLink) {
         div.addText(", ");
       }
-      div.addChild(new HyperLink(href, subpage.getTitle().getPlainText()));
+      div.addElement(new HyperLink(href, subpage.getTitle().getPlainText()));
       firstLink = false;
     }
     return div;
@@ -207,10 +214,8 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
 
   @Override
   public XmlElement renderTitle() {
-    XmlElement div = new XmlElement("div");
     XmlElement title = new XmlElement("h3");
     title.addText(entry.getTitle().getPlainText());
-    div.addChild(title);
-    return div;
+    return title;
   }
 }

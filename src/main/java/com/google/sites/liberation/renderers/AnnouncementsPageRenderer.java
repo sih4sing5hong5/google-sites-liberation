@@ -29,7 +29,6 @@ import com.google.gdata.data.sites.CommentEntry;
 import com.google.sites.liberation.EntryStore;
 import com.google.sites.liberation.EntryType;
 import com.google.sites.liberation.HyperLink;
-import com.google.sites.liberation.PageExporter;
 import com.google.sites.liberation.XmlElement;
 
 import java.util.Collection;
@@ -92,21 +91,25 @@ class AnnouncementsPageRenderer extends
     for(AnnouncementEntry announcement : announcements) {
       XmlElement announceDiv = new XmlElement("div");
       XmlElement title = new XmlElement("h4");
-      String href = PageExporter.getNiceTitle(entry) + "/" + 
-          PageExporter.getNiceTitle(announcement) + ".html";
-      title.addChild(new HyperLink(href, 
+      String href = entryStore.getName(entry.getId()) + "/" + 
+          entryStore.getName(announcement.getId()) + ".html";
+      title.addElement(new HyperLink(href, 
           announcement.getTitle().getPlainText()));
-      announceDiv.addChild(title);
+      announceDiv.addElement(title);
       XmlElement info = new XmlElement("span");
+      String author = announcement.getAuthors().get(0).getName();
+      if(author == null) {
+        author = announcement.getAuthors().get(0).getEmail();
+      }
       info.addText("posted by " + announcement.getAuthors().get(0).getEmail());
-      announceDiv.addChild(info);
+      announceDiv.addElement(info);
       String xhtmlContent = ((XhtmlTextConstruct)(announcement.getTextContent()
           .getContent())).getXhtml().getBlob();
       XmlElement mainHtml = new XmlElement("div");
       mainHtml.addXml(xhtmlContent);
-      announceDiv.addChild(mainHtml);
-      div.addChild(new XmlElement("hr"));
-      div.addChild(announceDiv);
+      announceDiv.addElement(mainHtml);
+      div.addElement(new XmlElement("hr"));
+      div.addElement(announceDiv);
     }
     return div;
   }

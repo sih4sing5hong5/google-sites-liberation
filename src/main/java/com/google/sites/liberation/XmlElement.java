@@ -20,6 +20,8 @@ import com.google.gdata.util.common.base.Preconditions;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
+import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +37,11 @@ public class XmlElement {
 	
   private final String elementType;
   private final List<Object> children;
+  private final List<ChildType> types;
   private final Map<String, String> attributes;
 
+  private static enum ChildType { ELEMENT, TEXT, XML }
+  
   /**
    * Creates a new {@code XmlElement} of the given type.
    * 
@@ -46,6 +51,7 @@ public class XmlElement {
     Preconditions.checkNotNull(elementType);
     this.elementType = elementType;
     children = new LinkedList<Object>();
+    types = new LinkedList<ChildType>();
     attributes = new TreeMap<String, String>();
   }
 	
@@ -55,9 +61,11 @@ public class XmlElement {
    * <p>Children appear in the order in which they are added in the xml output.
    * </p>
    */
-  public void addChild(XmlElement child) {
+  public XmlElement addElement(XmlElement child) {
     Preconditions.checkNotNull(child);
     children.add(child);
+    types.add(ChildType.ELEMENT);
+    return this;
   }
   
   /**
@@ -67,9 +75,11 @@ public class XmlElement {
    * <p>Children appear in the order in which they are added in the xml output.
    * </p>
    */
-  public void addText(String text) {
+  public XmlElement addText(String text) {
     Preconditions.checkNotNull(text);
     children.add(StringEscapeUtils.escapeXml(text));
+    types.add(ChildType.TEXT);
+    return this;
   }
   
   /**
@@ -79,9 +89,11 @@ public class XmlElement {
    * given String is not well formed, then this element may not be well formed.
    * </p>
    */
-  public void addXml(String xml) {
+  public XmlElement addXml(String xml) {
     Preconditions.checkNotNull(xml);
     children.add(xml);
+    types.add(ChildType.XML);
+    return this;
   }
   
   /**
@@ -89,10 +101,39 @@ public class XmlElement {
    * 
    * <p>Attributes appear alphabetically by name in the xml output.</p>
    */
-  public void setAttribute(String name, String value) {
+  public XmlElement setAttribute(String name, String value) {
     Preconditions.checkNotNull(name, "name");
     Preconditions.checkNotNull(value, "value");
     attributes.put(name, StringEscapeUtils.escapeXml(value));
+    return this;
+  }
+  
+  /**
+   * Appends this XmlElement (and any children) to an Appendable.
+   */
+  public void appendTo(Appendable a) throws IOException {
+    a.append("<" + elementType);
+    for(Map.Entry<String, String> attribute : attributes.entrySet()) {
+      a.append(" ").append(attribute.getKey()).append("=\"")
+          .append(attribute.getValue()).append("\"");
+    }
+    if (children.isEmpty()) {
+      a.append(" />");
+    }
+    else {
+      a.append(">");
+      Iterator<ChildType> typeItr = types.iterator();
+      for(Object c : children) {
+        ChildType type = typeItr.next();
+        if(type == ChildType.ELEMENT) {
+          ((XmlElement)c).appendTo(a);
+        }
+        else {
+          a.append((String)c);
+        }
+      }
+      a.append("</" + elementType + ">");
+    }
   }
   
   /**
@@ -101,20 +142,10 @@ public class XmlElement {
   @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
-    builder.append("<" + elementType);
-    for(Map.Entry<String, String> a : attributes.entrySet()) {
-      builder.append(" ").append(a.getKey()).append("=\"").append(a.getValue())
-          .append("\"");
-    }
-    if (children.isEmpty()) {
-      builder.append(" /");
-    }
-    builder.append(">");
-    for(Object c : children) {
-      builder.append(c);
-    }
-    if (!children.isEmpty()) {
-      builder.append("</" + elementType + ">");
+    try {
+      appendTo(builder);
+    } catch(IOException e) {
+      throw new RuntimeException(e);
     }
     return builder.toString();
   }

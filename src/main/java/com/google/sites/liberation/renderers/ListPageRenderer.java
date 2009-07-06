@@ -25,6 +25,8 @@ import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.CommentEntry;
 import com.google.gdata.data.sites.ListItemEntry;
 import com.google.gdata.data.sites.ListPageEntry;
+import com.google.gdata.data.spreadsheet.Column;
+import com.google.gdata.data.spreadsheet.Field;
 import com.google.sites.liberation.EntryStore;
 import com.google.sites.liberation.EntryType;
 import com.google.sites.liberation.XmlElement;
@@ -56,7 +58,7 @@ class ListPageRenderer extends BasePageRenderer<ListPageEntry> {
     subpages = new TreeSet<BaseContentEntry<?>>(new TitleComparator());
     attachments = new TreeSet<AttachmentEntry>(new UpdatedComparator());
     comments = new TreeSet<CommentEntry>(new UpdatedComparator());
-    listItems = new TreeSet<ListItemEntry>();
+    listItems = new TreeSet<ListItemEntry>(new UpdatedComparator());
     for(BaseContentEntry<?> child : entryStore.getChildren(entry.getId())) {
       if (EntryType.isPage(child)) {
         subpages.add(child);
@@ -78,8 +80,24 @@ class ListPageRenderer extends BasePageRenderer<ListPageEntry> {
    */
   @Override
   public XmlElement renderSpecialContent() {
-    XmlElement div = new XmlElement("div");
-    div.addText("This is where the List will eventually go");
-    return div;
+    XmlElement table = new XmlElement("table");
+    XmlElement header = new XmlElement("tr");
+    for(Column col : entry.getData().getColumns()) {
+      XmlElement cell = new XmlElement("td");
+      XmlElement bold = new XmlElement("b");
+      header.addElement(cell.addElement(bold.addText(col.getName())));
+    }
+    table.addElement(header);
+    for(ListItemEntry item : listItems) {
+      XmlElement row = new XmlElement("tr");
+      for(Field col : item.getFields()) {
+        XmlElement cell = new XmlElement("td");
+        String val = col.getValue();
+        cell.addText((val == null) ? "" : val);
+        row.addElement(cell);
+      }
+      table.addElement(row);
+    }
+    return table;
   }
 }

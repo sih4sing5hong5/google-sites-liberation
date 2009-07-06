@@ -16,6 +16,7 @@
 
 package com.google.sites.liberation.renderers;
 
+import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.sites.liberation.EntryStore;
 import com.google.sites.liberation.XmlElement;
@@ -42,9 +43,21 @@ class FileCabinetPageRenderer extends BasePageRenderer<FileCabinetPageEntry> {
    */
   @Override
   public XmlElement renderSpecialContent() {
-    XmlElement div = new XmlElement("div");
-    div.addText("This is where the File Cabinet will eventually go");
-    return div;
+    XmlElement table = new XmlElement("table");
+    for(AttachmentEntry attachment : attachments) {
+      XmlElement row = new XmlElement("tr");
+      String title = attachment.getTitle().getPlainText();
+      row.addElement((new XmlElement("td").addText(title)));
+      String updated = attachment.getUpdated().toUiString();
+      row.addElement((new XmlElement("td").addText(updated)));
+      String author = attachment.getAuthors().get(0).getName();
+      if(author == null) {
+        author = attachment.getAuthors().get(0).getEmail();
+      }
+      row.addElement((new XmlElement("td").addText(author)));
+      table.addElement(row);
+    }
+    return table;
   }
   
   /**

@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2009 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.sites.liberation;
 
 import com.google.gdata.data.ILink;
@@ -8,9 +24,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Sets;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class is an in-memory implementation of {@link EntryStore}.
@@ -20,7 +38,9 @@ import java.util.Map;
 final class InMemoryEntryStore implements EntryStore {
 
   private final Map<String, BaseContentEntry<?>> entries;
+  private final Set<BaseContentEntry<?>> topLevelEntries;
   private final Multimap<String, BaseContentEntry<?>> children;
+  private final Map<String, String> names;
   
   /**
    * Creates a new InMemoryEntryStore which provides constant time storage 
@@ -28,7 +48,9 @@ final class InMemoryEntryStore implements EntryStore {
    */
   public InMemoryEntryStore() {
     entries = Maps.newHashMap();
+    topLevelEntries = Sets.newHashSet();
     children = HashMultimap.create();
+    names = Maps.newHashMap();
   }
 
   @Override
@@ -38,11 +60,30 @@ final class InMemoryEntryStore implements EntryStore {
     Preconditions.checkArgument(id != null && entries.get(id) == null,
         "All entries must have a unique non-null id!");
     entries.put(entry.getId(), entry);
+    String name = getNiceTitle(entry);
+    int numSameName = 0;
     Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
-    if (parentLink != null) {
+    if (parentLink == null) {
+      for(BaseContentEntry<?> sibling : topLevelEntries) {
+        if (names.get(sibling.getId()).startsWith(name)) {
+          numSameName++;
+        }
+      }
+      topLevelEntries.add(entry);
+    }
+    else {
       String parentId = parentLink.getHref();
+      for(BaseContentEntry<?> sibling : children.get(parentId)) {
+        if (names.get(sibling.getId()).startsWith(name)) {
+          numSameName++;
+        }
+      }
       children.put(parentId, entry);
     }
+    if (numSameName > 0) {
+      name += "-" + numSameName;
+    }
+    names.put(id, name);
   }
   
   @Override
@@ -55,5 +96,24 @@ final class InMemoryEntryStore implements EntryStore {
   public BaseContentEntry<?> getEntry(String id) {
     Preconditions.checkNotNull(id);
     return entries.get(id);
+  }
+  
+  @Override
+  public String getName(String id) {
+    Preconditions.checkNotNull(id);
+    return names.get(id);
+  }
+  
+  /**
+   * Returns the given entry's title with all sequences of non-word characters
+   * (^[a-zA-z0-9_]) replaced by a single hyphen.
+   */
+  private static String getNiceTitle(BaseContentEntry<?> entry) {
+    String title = entry.getTitle().getPlainText();
+    String niceTitle = title.replaceAll("[\\W]+", "-");
+    if(niceTitle.length() == 0) {
+      niceTitle = "-";
+    }
+    return niceTitle;
   }
 }

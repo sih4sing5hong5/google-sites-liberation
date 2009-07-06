@@ -37,20 +37,20 @@ public class XmlElementTest {
     XmlElement hr = new XmlElement("hr");
     XmlElement br = new XmlElement("br");
     try {
-      div.addChild(null);
+      div.addElement(null);
       fail("Adding null child should throw exception");
     } catch(NullPointerException e) {}
-    div.addChild(span);
+    div.addElement(span);
     assertEquals("<div><span /></div>", div.toString());
-    div.addChild(hr);
+    div.addElement(hr);
     assertEquals("<div><span /><hr /></div>", div.toString());
     div = new XmlElement("div");
-    div.addChild(hr);
-    div.addChild(span);
+    div.addElement(hr);
+    div.addElement(span);
     assertEquals("<div><hr /><span /></div>", div.toString());
     div = new XmlElement("div");
-    span.addChild(hr);
-    div.addChild(span);
+    span.addElement(hr);
+    div.addElement(span);
     assertEquals("<div><span><hr /></span></div>", div.toString());
   }
   

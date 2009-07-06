@@ -18,7 +18,6 @@ package com.google.sites.liberation;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.sites.liberation.renderers.PageRenderer;
 
 import java.io.BufferedWriter;
@@ -50,48 +49,35 @@ public final class PageExporter {
     XmlElement body = new XmlElement("body");
     XmlElement parentLinks = renderer.renderParentLinks();
     if (parentLinks != null) {
-      body.addChild(parentLinks);
+      body.addElement(parentLinks);
     }
     XmlElement title = renderer.renderTitle();
     if (title != null) {
-      body.addChild(title);
+      body.addElement(title);
     }
     XmlElement mainHtml = renderer.renderMainHtml();
     if (mainHtml != null) {
-      body.addChild(mainHtml);
+      body.addElement(mainHtml);
     }
     XmlElement specialContent = renderer.renderSpecialContent();
     if(specialContent != null) {
-      body.addChild(specialContent);
+      body.addElement(specialContent);
     }
     XmlElement subpageLinks = renderer.renderSubpageLinks();
     if (subpageLinks != null) {
-      body.addChild(subpageLinks);
+      body.addElement(subpageLinks);
     }
     XmlElement attachments = renderer.renderAttachments();
     if (attachments != null) {
-      body.addChild(attachments);
+      body.addElement(attachments);
     }
     XmlElement comments = renderer.renderComments();
     if (comments != null) {
-      body.addChild(comments);
+      body.addElement(comments);
     }
-    html.addChild(body);
+    html.addElement(body);
     BufferedWriter out = new BufferedWriter(new FileWriter(fileName));
-    out.write(html.toString());
+    html.appendTo(out);
     out.close();
-  }
-  
-  /**
-   * Returns the given entry's title with all sequences of non-word characters
-   * (^[a-zA-z0-9_]) replaced by a single hyphen.
-   */
-  public static String getNiceTitle(BaseContentEntry<?> entry) {
-    String title = entry.getTitle().getPlainText();
-    String niceTitle = title.replaceAll("[\\W]+", "-");
-    if(niceTitle.length() == 0) {
-      niceTitle = "-";
-    }
-    return niceTitle;
   }
 }
