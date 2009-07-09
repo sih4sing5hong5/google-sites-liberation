@@ -16,6 +16,11 @@
 
 package com.google.sites.liberation.renderers;
 
+import static com.google.sites.liberation.HAtomFactory.getAuthorElement;
+import static com.google.sites.liberation.HAtomFactory.getEntryElement;
+import static com.google.sites.liberation.HAtomFactory.getTitleElement;
+import static com.google.sites.liberation.HAtomFactory.getUpdatedElement;
+
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.sites.liberation.EntryStore;
@@ -42,19 +47,17 @@ class FileCabinetPageRenderer extends BasePageRenderer<FileCabinetPageEntry> {
    * Renders the file cabinet section in the page.
    */
   @Override
-  public XmlElement renderSpecialContent() {
+  public XmlElement renderAdditionalContent() {
     XmlElement table = new XmlElement("table");
     for(AttachmentEntry attachment : attachments) {
-      XmlElement row = new XmlElement("tr");
-      String title = attachment.getTitle().getPlainText();
-      row.addElement((new XmlElement("td").addText(title)));
-      String updated = attachment.getUpdated().toUiString();
-      row.addElement((new XmlElement("td").addText(updated)));
-      String author = attachment.getAuthors().get(0).getName();
-      if(author == null) {
-        author = attachment.getAuthors().get(0).getEmail();
-      }
-      row.addElement((new XmlElement("td").addText(author)));
+      XmlElement row = getEntryElement(attachment, "tr");
+      XmlElement titleCell = getTitleElement(attachment, "td");
+      row.addElement(titleCell);
+      XmlElement updated = getUpdatedElement(attachment);
+      XmlElement updatedCell = new XmlElement("td");
+      row.addElement((new XmlElement("td")).addElement(updated));
+      XmlElement author = getAuthorElement(attachment);
+      row.addElement((new XmlElement("td")).addElement(author));
       table.addElement(row);
     }
     return table;

@@ -16,12 +16,13 @@
 
 package com.google.sites.liberation.renderers;
 
+import static com.google.sites.liberation.EntryType.getType;
+
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.gdata.data.sites.ListPageEntry;
 import com.google.sites.liberation.EntryStore;
-import com.google.sites.liberation.EntryType;
 
 /**
  * This class creates appropriate implementations of PageRenderer.
@@ -36,7 +37,7 @@ public class PageRendererFactory {
    */
   public static PageRenderer getPageRenderer(BaseContentEntry<?> entry,
       EntryStore entryStore) {
-    switch(EntryType.getType(entry)) {
+    switch(getType(entry)) {
       case ANNOUNCEMENT:
       case WEB_PAGE:
         return new BasePageRenderer<BaseContentEntry<?>>(entry, entryStore);

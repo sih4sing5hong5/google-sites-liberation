@@ -33,10 +33,10 @@ public interface PageRenderer {
   public XmlElement renderTitle();
   
   /** Renders the main html content of a page. */
-  public XmlElement renderMainHtml();
+  public XmlElement renderMainContent();
   
   /** Renders content that is specific to certain page types if it exists. */
-  public XmlElement renderSpecialContent();
+  public XmlElement renderAdditionalContent();
   
   /** Renders the links to the subpages of a page. */
   public XmlElement renderSubpageLinks();

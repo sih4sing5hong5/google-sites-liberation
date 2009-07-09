@@ -16,10 +16,14 @@
 
 package com.google.sites.liberation;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.sites.liberation.EntryType.ATTACHMENT;
+import static com.google.sites.liberation.EntryType.getType;
+import static com.google.sites.liberation.EntryType.isPage;
 
-import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 import com.google.gdata.client.sites.ContentQuery;
+import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.data.ILink;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.sites.AttachmentEntry;
@@ -45,15 +49,16 @@ import java.util.Set;
  */
 public final class SiteExporter {
 
-  private URL feedUrl;
-  private EntryStore entryStore;
+  private final SitesService service;
+  private final URL feedUrl;
+  private final EntryStore entryStore;
   
   /**
    * Creates a new SiteExporter for the given feedUrl
    */
-  public SiteExporter(URL feedUrl) {
-    Preconditions.checkNotNull(feedUrl);
-    this.feedUrl = feedUrl;
+  public SiteExporter(SitesService service, URL feedUrl) {
+    this.service = checkNotNull(service, "service");
+    this.feedUrl = checkNotNull(feedUrl, "feedUrl");
     this.entryStore = new InMemoryEntryStore();
   }
   
@@ -61,47 +66,39 @@ public final class SiteExporter {
    * Exports this site to a root folder given by {@code path}.
    * 
    * @param path the path to the root folder for the exported site.
-   * @return true if the export succeeds, false otherwise.
    */
-  public boolean export(String path) {
-    try {
-      ContentQuery query = new ContentQuery(feedUrl);
-      Set<String> pageIds = new HashSet<String>();
-      Set<String> attachmentIds = new HashSet<String>();
-      for(BaseContentEntry<?> entry : new ContinuousContentFeed(query)) {
-        entryStore.addEntry(entry);
-        if (EntryType.isPage(entry)) {
-          pageIds.add(entry.getId());
-        }
-        else if(EntryType.getType(entry) == ATTACHMENT) {
-          attachmentIds.add(entry.getId());
-        }
+  public void export(String path) {
+    ContentQuery query = new ContentQuery(feedUrl);
+    Set<String> pageIds = Sets.newHashSet();
+    Set<String> attachmentIds = new HashSet<String>();
+    for(BaseContentEntry<?> entry : new ContinuousContentFeed(service, query)) {
+      entryStore.addEntry(entry);
+      if (isPage(entry)) {
+        pageIds.add(entry.getId());
+      } else if(getType(entry) == ATTACHMENT) {
+        attachmentIds.add(entry.getId());
       }
-      for(String id : pageIds) {
-        BaseContentEntry<?> entry = entryStore.getEntry(id);
-        String fullPath = path + getPath(entry);
-        (new File(fullPath)).mkdirs();
-        PageRenderer renderer = PageRendererFactory.getPageRenderer(entry, 
-            entryStore);
-        PageExporter exporter = new PageExporter(renderer);
-        exporter.export(fullPath + entryStore.getName(id) + ".html");
-      }
-      for(String id : attachmentIds) {
-        AttachmentEntry attachment = (AttachmentEntry) entryStore.getEntry(id);
-        String fullPath = path + getPath(attachment);
-        (new File(fullPath)).mkdirs();
-        String fileName = fullPath + attachment.getTitle().getPlainText();
-        downloadAttachment(attachment, fileName);
-      }
-      return true;
-    } catch(Exception e) {
-      e.printStackTrace();
     }
-    return false;
+    for(String id : pageIds) {
+      BaseContentEntry<?> entry = entryStore.getEntry(id);
+      String fullPath = path + getPath(entry);
+      new File(fullPath).mkdirs();
+      PageRenderer renderer = PageRendererFactory.getPageRenderer(entry, 
+          entryStore);
+      PageExporter exporter = new PageExporter(entry, renderer);
+      exporter.export(fullPath + entryStore.getName(id) + ".html");
+    }
+    for(String id : attachmentIds) {
+      AttachmentEntry attachment = (AttachmentEntry) entryStore.getEntry(id);
+      String fullPath = path + getPath(attachment);
+      new File(fullPath).mkdirs();
+      String fileName = fullPath + attachment.getTitle().getPlainText();
+      downloadAttachment(attachment, fileName);
+    }
   }
   
   private String getPath(BaseContentEntry<?> entry) {
-    Preconditions.checkNotNull(entry);
+    checkNotNull(entry);
 	Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
 	if (parentLink == null) {
 	  return "";
@@ -111,24 +108,35 @@ public final class SiteExporter {
     return getPath(parent) + entryStore.getName(parentId) + "/";
   }
   
-  private void downloadAttachment(AttachmentEntry attachment, String fileName) 
-      throws IOException {
-    OutputStream out = new FileOutputStream(new File(fileName));
-    URL url = new URL(attachment.getEnclosureLink().getHref());
-    InputStream in = url.openStream();
-    byte[] buf = new byte[4*1024];
-    int bytesRead;
-    while((bytesRead = in.read(buf)) != -1) {
-      out.write(buf, 0, bytesRead);
+  private void downloadAttachment(AttachmentEntry attachment, String fileName) {
+    try {
+      OutputStream out = new FileOutputStream(new File(fileName));
+      URL url = new URL(attachment.getEnclosureLink().getHref());
+      InputStream in = url.openStream();
+      byte[] buf = new byte[4*1024];
+      int bytesRead;
+      while((bytesRead = in.read(buf)) != -1) {
+        out.write(buf, 0, bytesRead);
+      }
+      out.close();
+    } catch(IOException e) {
+      System.err.println("Error reading from " + attachment.getEnclosureLink()
+          .getHref() + "and/or writing to " + fileName);
+      throw new RuntimeException(e);
     }
-    out.close();
   }
   
   public static void main(String[] args) throws MalformedURLException {
     URL feedUrl = new URL("http://bsimon-chi.chi.corp.google.com:7000/feeds/" +
-    		"content/site/test/");
+    	"content/site/test/");
     String path = "/home/bsimon/Desktop/test/";
-    SiteExporter exporter = new SiteExporter(feedUrl);
+    SitesService service = new SitesService("google-sites-liberation");
+    try {
+      //service.setUserCredentials("yourfriendben@gmail.com", "");
+    } catch(Exception e) {
+      e.printStackTrace();
+    }
+    SiteExporter exporter = new SiteExporter(service, feedUrl);
     exporter.export(path);
   }
 }

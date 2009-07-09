@@ -25,12 +25,12 @@
     </dependency>
     <dependency>
       <groupId>com.google.sites</groupId>
-      <artifactId>gdata-sites-api</artifactId>
+      <artifactId>gdata-sites</artifactId>
       <version>1.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.sites</groupId>
-      <artifactId>gdata-spreadsheet-api</artifactId>
+      <artifactId>gdata-spreadsheet</artifactId>
       <version>3.0</version>
     </dependency>
     <dependency>
@@ -45,11 +45,6 @@
     </dependency>
     <dependency>
     	<groupId>com.google.sites</groupId>
-    	<artifactId>gdata-base</artifactId>
-    	<version>1.0</version>
-    </dependency>
-    <dependency>
-    	<groupId>com.google.sites</groupId>
     	<artifactId>gdata-client</artifactId>
     	<version>1.0</version>
     </dependency>
@@ -57,6 +52,11 @@
 	<groupId>apache</groupId>
 	<artifactId>commons-lang</artifactId>
 	<version>2.1</version>
+    </dependency>
+    <dependency>
+	<groupId>joda.org</groupId>
+	<artifactId>joda-time</artifactId>
+	<version>1.6</version>
     </dependency>
   </dependencies>
 </project>

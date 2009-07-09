@@ -17,7 +17,9 @@
 package com.google.sites.liberation;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.sites.liberation.HAtomFactory.getEntryElement;
 
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.sites.liberation.renderers.PageRenderer;
 
 import java.io.BufferedWriter;
@@ -32,52 +34,62 @@ import java.io.IOException;
  */
 public final class PageExporter {
 
-  PageRenderer renderer;
-	
+  private final PageRenderer renderer;
+  private final BaseContentEntry<?> entry;
+  
   /**
-   * Constructs a new PageExporter from the given PageRenderer.
+   * Constructs a new PageExporter from the given PageRenderer and entry this
+   * page corresponds to.
    */
-  public PageExporter(PageRenderer renderer) {
+  public PageExporter(BaseContentEntry<?> entry, PageRenderer renderer) {
     this.renderer = checkNotNull(renderer);
+    this.entry = checkNotNull(entry);
   }
   
   /**
    * Exports this entry's page as XHTML to the given file name.
    */
-  public void export(String fileName) throws IOException {
+  public void export(String fileName) {
     XmlElement html = new XmlElement("html");
     XmlElement body = new XmlElement("body");
+    XmlElement mainDiv = getEntryElement(entry, "div");
     XmlElement parentLinks = renderer.renderParentLinks();
     if (parentLinks != null) {
-      body.addElement(parentLinks);
+      mainDiv.addElement(parentLinks);
     }
     XmlElement title = renderer.renderTitle();
     if (title != null) {
-      body.addElement(title);
+      mainDiv.addElement(title);
     }
-    XmlElement mainHtml = renderer.renderMainHtml();
-    if (mainHtml != null) {
-      body.addElement(mainHtml);
+    XmlElement content = renderer.renderMainContent();
+    if (content != null) {
+      mainDiv.addElement(content);
     }
-    XmlElement specialContent = renderer.renderSpecialContent();
+    XmlElement specialContent = renderer.renderAdditionalContent();
     if(specialContent != null) {
-      body.addElement(specialContent);
+      mainDiv.addElement(specialContent);
     }
     XmlElement subpageLinks = renderer.renderSubpageLinks();
     if (subpageLinks != null) {
-      body.addElement(subpageLinks);
+      mainDiv.addElement(subpageLinks);
     }
     XmlElement attachments = renderer.renderAttachments();
     if (attachments != null) {
-      body.addElement(attachments);
+      mainDiv.addElement(attachments);
     }
     XmlElement comments = renderer.renderComments();
     if (comments != null) {
-      body.addElement(comments);
+      mainDiv.addElement(comments);
     }
+    body.addElement(mainDiv);
     html.addElement(body);
-    BufferedWriter out = new BufferedWriter(new FileWriter(fileName));
-    html.appendTo(out);
-    out.close();
+    try {
+      BufferedWriter out = new BufferedWriter(new FileWriter(fileName));
+      html.appendTo(out);
+      out.close();
+    } catch (IOException e) {
+      System.err.println("Failed writing to file: " + fileName);
+      throw new RuntimeException(e);
+    }
   }
 }

@@ -59,8 +59,8 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
    * <p>This {@code ContinuousContentFeed} will contain all of the entries
    * in the feed at {@code feedUrl}.</p>
    */
-  public ContinuousContentFeed(URL feedUrl) {
-    this(new ContentQuery(feedUrl));
+  public ContinuousContentFeed(SitesService service, URL feedUrl) {
+    this(service, new ContentQuery(feedUrl));
   }
 
   /**
@@ -71,10 +71,10 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
    * in the feed for the given {@code query}. If the query contains a value for 
    * maxResults, then only that many entries will be present.
    */
-  public ContinuousContentFeed(ContentQuery query) {
+  public ContinuousContentFeed(SitesService service, ContentQuery query) {
     Preconditions.checkNotNull(query);
     this.query = query;
-    this.service = new SitesService("google-sites-export");
+    this.service = service;
     this.maxResults = query.getMaxResults();
     this.startIndex = query.getStartIndex();
   }
@@ -121,8 +121,12 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
         try {
           contentFeed = service.getFeed(query, ContentFeed.class);
         } catch(IOException e) {
+          System.err.println("Error retrieving response from query: " + 
+              query.getQueryUri());
           throw new RuntimeException(e);
         } catch(ServiceException e) {
+          System.err.println("Error retrieving response from query: " + 
+              query.getQueryUri());
           throw new RuntimeException(e);
         }
         currentItr = contentFeed.getEntries().iterator();

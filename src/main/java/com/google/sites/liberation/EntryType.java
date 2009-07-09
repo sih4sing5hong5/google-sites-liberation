@@ -17,13 +17,10 @@
 package com.google.sites.liberation;
 
 import com.google.gdata.data.sites.AnnouncementEntry;
-import com.google.gdata.data.sites.AnnouncementRevisionEntry;
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
 import com.google.gdata.data.sites.AttachmentEntry;
-import com.google.gdata.data.sites.AttachmentRevisionEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.CommentEntry;
-import com.google.gdata.data.sites.CommentRevisionEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.gdata.data.sites.ListItemEntry;
 import com.google.gdata.data.sites.ListPageEntry;
@@ -46,21 +43,36 @@ public enum EntryType {
   WEB_PAGE,
   OTHER;
   
+  @Override
+  public String toString() {
+    switch(this) {
+      case ANNOUNCEMENT: return "announcement";
+      case ANNOUNCEMENTS_PAGE: return "announcementsPage";
+      case ATTACHMENT: return "attachment";
+      case COMMENT: return "comment";
+      case FILE_CABINET_PAGE: return "fileCabinet";
+      case LIST_ITEM: return "listItem";
+      case LIST_PAGE: return "listPage";
+      case WEB_PAGE: return "webPage";
+      default: return "other";
+    }
+  }
+  
   /**
    * Returns the <code>EntryType</code> for the given entry.
    */
   public static EntryType getType(BaseContentEntry<?> entry) {
     Preconditions.checkNotNull(entry);
-    if (entry instanceof AnnouncementEntry || entry instanceof AnnouncementRevisionEntry) {
+    if (entry instanceof AnnouncementEntry) {
       return EntryType.ANNOUNCEMENT;
     }
     if (entry instanceof AnnouncementsPageEntry) {
       return EntryType.ANNOUNCEMENTS_PAGE;
     }
-    if (entry instanceof AttachmentEntry || entry instanceof AttachmentRevisionEntry) {
+    if (entry instanceof AttachmentEntry) {
       return EntryType.ATTACHMENT;
     }
-    if (entry instanceof CommentEntry || entry instanceof CommentRevisionEntry) {
+    if (entry instanceof CommentEntry) {
       return EntryType.COMMENT;
     }
     if (entry instanceof FileCabinetPageEntry) {

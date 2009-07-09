@@ -19,10 +19,10 @@ package com.google.sites.liberation;
 import static org.junit.Assert.*;
 
 import com.google.gdata.data.ILink;
+import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.SitesLink;
 import com.google.gdata.data.sites.WebPageEntry;
-import com.google.gdata.util.common.base.Nullable;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -48,9 +48,9 @@ public class InMemoryEntryStoreTest {
       thrown = true;
     }
     assertTrue(thrown);
-    entry1 = getEntry("entry1", null);
+    entry1 = getNewEntry("entry1");
     entryStore.addEntry(entry1);
-    BaseContentEntry<?> entry2 = getEntry("entry1", null);
+    BaseContentEntry<?> entry2 = getNewEntry("entry1");
     thrown = false;
     try {
       entryStore.addEntry(entry2);
@@ -65,9 +65,9 @@ public class InMemoryEntryStoreTest {
   @Test
   public void testGetEntry() {
     assertNull(entryStore.getEntry("entry1"));
-    BaseContentEntry<?> entry1 = getEntry("entry1", null);
-    BaseContentEntry<?> entry2 = getEntry("entry2", "entry1");
-    BaseContentEntry<?> entry3 = getEntry("entry3", "entry2");
+    BaseContentEntry<?> entry1 = getNewEntry("entry1");
+    BaseContentEntry<?> entry2 = getNewEntry("entry2", "entry1");
+    BaseContentEntry<?> entry3 = getNewEntry("entry3", "entry2");
     entryStore.addEntry(entry1);
     entryStore.addEntry(entry2);
     entryStore.addEntry(entry3);
@@ -80,10 +80,10 @@ public class InMemoryEntryStoreTest {
   @Test
   public void testGetChildren() {
     assertTrue(entryStore.getChildren("entry1").isEmpty());
-    BaseContentEntry<?> entry1 = getEntry("entry1", null);
-    BaseContentEntry<?> entry2 = getEntry("entry2", "entry1");
-    BaseContentEntry<?> entry3 = getEntry("entry3", "entry1");
-    BaseContentEntry<?> entry4 = getEntry("entry4", "entry2");
+    BaseContentEntry<?> entry1 = getNewEntry("entry1");
+    BaseContentEntry<?> entry2 = getNewEntry("entry2", "entry1");
+    BaseContentEntry<?> entry3 = getNewEntry("entry3", "entry1");
+    BaseContentEntry<?> entry4 = getNewEntry("entry4", "entry2");
     entryStore.addEntry(entry1);
     entryStore.addEntry(entry2);
     entryStore.addEntry(entry3);
@@ -99,11 +99,46 @@ public class InMemoryEntryStoreTest {
     assertTrue(entryStore.getChildren("entry4").isEmpty());
   }
   
-  private BaseContentEntry<?> getEntry(String id, @Nullable String parentId) {
+  @Test
+  public void testGetName() {
+    assertNull(entryStore.getName("entry1"));
+    entryStore.addEntry(getNewEntry("entry1"));
+    assertEquals("-", entryStore.getName("entry1"));
+    entryStore.addEntry(getNewEntry("entry2"));
+    assertEquals("-2", entryStore.getName("entry2"));
+    entryStore.addEntry(getNewEntry("entry3"));
+    assertEquals("-3", entryStore.getName("entry3"));
+    entryStore.addEntry(getNewEntry("entry4", "entry1"));
+    assertEquals("-", entryStore.getName("entry4"));
+    entryStore.addEntry(getNewEntry("entry5", "entry1"));
+    assertEquals("-2", entryStore.getName("entry5"));
+    entryStore.addEntry(getNewEntry("entry6", "entry1", "hey&*3_^^\"t"));
+    assertEquals("hey-3_-t", entryStore.getName("entry6"));
+    entryStore.addEntry(getNewEntry("entry7", "entry1", "hey-3_-t"));
+    assertEquals("hey-3_-t-2", entryStore.getName("entry7"));
+    entryStore.addEntry(getNewEntry("entry8", "entry1", "hey-3_-t-2"));
+    assertEquals("hey-3_-t-2-2", entryStore.getName("entry8"));
+    entryStore.addEntry(getNewEntry("entry9", "entry1", "hey-3_-t-1"));
+    assertEquals("hey-3_-t-1", entryStore.getName("entry9"));
+  }
+  
+  private BaseContentEntry<?> getNewEntry(String id) {
+    return getNewEntry(id, null, "");
+  }
+  
+  private BaseContentEntry<?> getNewEntry(String id, String parentId) {
+    return getNewEntry(id, parentId, "");
+  }
+  
+  private BaseContentEntry<?> getNewEntry(String id, String parentId,
+      String title) {
     WebPageEntry entry = new WebPageEntry();
     entry.setId(id);
     if (parentId != null) {
       entry.addLink(SitesLink.Rel.PARENT, ILink.Type.ATOM, parentId);
+    }
+    if (title != null) {
+      entry.setTitle(new PlainTextConstruct(title));
     }
     return entry;
   }

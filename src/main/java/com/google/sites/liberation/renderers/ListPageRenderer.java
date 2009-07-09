@@ -16,19 +16,17 @@
 
 package com.google.sites.liberation.renderers;
 
-import static com.google.sites.liberation.EntryType.ATTACHMENT;
-import static com.google.sites.liberation.EntryType.COMMENT;
-import static com.google.sites.liberation.EntryType.LIST_ITEM;
+import static com.google.sites.liberation.EntryType.getType;
+import static com.google.sites.liberation.EntryType.isPage;
+import static com.google.sites.liberation.HAtomFactory.getListHeaderElement;
+import static com.google.sites.liberation.HAtomFactory.getListItemElement;
 
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.CommentEntry;
 import com.google.gdata.data.sites.ListItemEntry;
 import com.google.gdata.data.sites.ListPageEntry;
-import com.google.gdata.data.spreadsheet.Column;
-import com.google.gdata.data.spreadsheet.Field;
 import com.google.sites.liberation.EntryStore;
-import com.google.sites.liberation.EntryType;
 import com.google.sites.liberation.XmlElement;
 
 import java.util.Collection;
@@ -49,29 +47,22 @@ class ListPageRenderer extends BasePageRenderer<ListPageEntry> {
   }
   
   /**
-   * Overrides initChildren from BasePageRenderer so that a collection of 
-   * ListItemEntry's for this page is initialized and populated in addition
-   * to subpages, attachments, and comments.
+   * Overrides addChild from BasePageRenderer so that listItems is populated 
+   * in addition to subpages, attachments, and comments.
    */
   @Override
-  void initChildren() {
-    subpages = new TreeSet<BaseContentEntry<?>>(new TitleComparator());
-    attachments = new TreeSet<AttachmentEntry>(new UpdatedComparator());
-    comments = new TreeSet<CommentEntry>(new UpdatedComparator());
-    listItems = new TreeSet<ListItemEntry>(new UpdatedComparator());
-    for(BaseContentEntry<?> child : entryStore.getChildren(entry.getId())) {
-      if (EntryType.isPage(child)) {
-        subpages.add(child);
-      }
-      else if (EntryType.getType(child) == ATTACHMENT) {
-        attachments.add((AttachmentEntry)child);
-      }
-      else if (EntryType.getType(child) == COMMENT) {
-        comments.add((CommentEntry)child);
-      }
-      else if (EntryType.getType(child) == LIST_ITEM) {
-        listItems.add((ListItemEntry)child);
-      }
+  protected void addChild(BaseContentEntry<?> child) {
+    if (listItems == null) { 
+      listItems = new TreeSet<ListItemEntry>(new UpdatedComparator());
+    }
+    switch(getType(child)) {
+      case ATTACHMENT: attachments.add((AttachmentEntry) child); break;
+      case COMMENT: comments.add((CommentEntry) child); break;
+      case LIST_ITEM: listItems.add((ListItemEntry) child); break;
+      default: 
+        if (isPage(child)) {
+          subpages.add(child);
+        }
     }
   }
   
@@ -79,24 +70,11 @@ class ListPageRenderer extends BasePageRenderer<ListPageEntry> {
    * Renders the list section in the page.
    */
   @Override
-  public XmlElement renderSpecialContent() {
+  public XmlElement renderAdditionalContent() {
     XmlElement table = new XmlElement("table");
-    XmlElement header = new XmlElement("tr");
-    for(Column col : entry.getData().getColumns()) {
-      XmlElement cell = new XmlElement("td");
-      XmlElement bold = new XmlElement("b");
-      header.addElement(cell.addElement(bold.addText(col.getName())));
-    }
-    table.addElement(header);
+    table.addElement(getListHeaderElement(entry));
     for(ListItemEntry item : listItems) {
-      XmlElement row = new XmlElement("tr");
-      for(Field col : item.getFields()) {
-        XmlElement cell = new XmlElement("td");
-        String val = col.getValue();
-        cell.addText((val == null) ? "" : val);
-        row.addElement(cell);
-      }
-      table.addElement(row);
+      table.addElement(getListItemElement(item));
     }
     return table;
   }

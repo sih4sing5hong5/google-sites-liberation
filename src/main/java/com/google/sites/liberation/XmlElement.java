@@ -16,12 +16,12 @@
 
 package com.google.sites.liberation;
 
+import com.google.gdata.util.common.base.Pair;
 import com.google.gdata.util.common.base.Preconditions;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,8 +36,7 @@ import java.util.TreeMap;
 public class XmlElement {
 	
   private final String elementType;
-  private final List<Object> children;
-  private final List<ChildType> types;
+  private final List<Pair<Object, ChildType>> children;
   private final Map<String, String> attributes;
 
   private static enum ChildType { ELEMENT, TEXT, XML }
@@ -50,8 +49,7 @@ public class XmlElement {
   public XmlElement(String elementType) {
     Preconditions.checkNotNull(elementType);
     this.elementType = elementType;
-    children = new LinkedList<Object>();
-    types = new LinkedList<ChildType>();
+    children = new LinkedList<Pair<Object, ChildType>>();
     attributes = new TreeMap<String, String>();
   }
 	
@@ -63,8 +61,7 @@ public class XmlElement {
    */
   public XmlElement addElement(XmlElement child) {
     Preconditions.checkNotNull(child);
-    children.add(child);
-    types.add(ChildType.ELEMENT);
+    children.add(new Pair<Object, ChildType>(child, ChildType.ELEMENT));
     return this;
   }
   
@@ -77,8 +74,8 @@ public class XmlElement {
    */
   public XmlElement addText(String text) {
     Preconditions.checkNotNull(text);
-    children.add(StringEscapeUtils.escapeXml(text));
-    types.add(ChildType.TEXT);
+    children.add(new Pair<Object, ChildType>(StringEscapeUtils.escapeXml(text),
+        ChildType.TEXT));
     return this;
   }
   
@@ -91,8 +88,7 @@ public class XmlElement {
    */
   public XmlElement addXml(String xml) {
     Preconditions.checkNotNull(xml);
-    children.add(xml);
-    types.add(ChildType.XML);
+    children.add(new Pair<Object, ChildType>(xml, ChildType.XML));
     return this;
   }
   
@@ -112,27 +108,25 @@ public class XmlElement {
    * Appends this XmlElement (and any children) to an Appendable.
    */
   public void appendTo(Appendable a) throws IOException {
-    a.append("<" + elementType);
+    a.append('<').append(elementType);
     for(Map.Entry<String, String> attribute : attributes.entrySet()) {
-      a.append(" ").append(attribute.getKey()).append("=\"")
+      a.append(' ').append(attribute.getKey()).append("=\"")
           .append(attribute.getValue()).append("\"");
     }
     if (children.isEmpty()) {
       a.append(" />");
-    }
-    else {
+    } else {
       a.append(">");
-      Iterator<ChildType> typeItr = types.iterator();
-      for(Object c : children) {
-        ChildType type = typeItr.next();
+      for(Pair<Object, ChildType> pair : children) {
+        Object child = pair.getFirst();
+        ChildType type = pair.getSecond();
         if(type == ChildType.ELEMENT) {
-          ((XmlElement)c).appendTo(a);
-        }
-        else {
-          a.append((String)c);
+          ((XmlElement)child).appendTo(a);
+        } else {
+          a.append((String)child);
         }
       }
-      a.append("</" + elementType + ">");
+      a.append("</").append(elementType).append('>');
     }
   }
   

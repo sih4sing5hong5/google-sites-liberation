@@ -59,31 +59,35 @@ final class InMemoryEntryStore implements EntryStore {
     String id = entry.getId();
     Preconditions.checkArgument(id != null && entries.get(id) == null,
         "All entries must have a unique non-null id!");
-    entries.put(entry.getId(), entry);
-    String name = getNiceTitle(entry);
-    int numSameName = 0;
+    entries.put(id, entry);
+    String niceTitle = getNiceTitle(entry);
+    String name = niceTitle;
     Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
+    Collection<BaseContentEntry<?>> siblings;
     if (parentLink == null) {
-      for(BaseContentEntry<?> sibling : topLevelEntries) {
-        if (names.get(sibling.getId()).startsWith(name)) {
-          numSameName++;
-        }
-      }
-      topLevelEntries.add(entry);
+      siblings = topLevelEntries;
+    } else {
+      siblings = children.get(parentLink.getHref());
     }
-    else {
-      String parentId = parentLink.getHref();
-      for(BaseContentEntry<?> sibling : children.get(parentId)) {
-        if (names.get(sibling.getId()).startsWith(name)) {
-          numSameName++;
-        }
-      }
-      children.put(parentId, entry);
+    Set<String> siblingNames = Sets.newHashSet();
+    for(BaseContentEntry<?> sibling : siblings) {
+      siblingNames.add(names.get(sibling.getId()));
     }
-    if (numSameName > 0) {
-      name += "-" + numSameName;
+    int num = 2;
+    while(siblingNames.contains(name)) {
+      name = niceTitle;
+      if (name.charAt(name.length() - 1) != '-') {
+        name += '-';
+      }
+      name += num;
+      num++;
     }
     names.put(id, name);
+    if (parentLink == null) {
+      topLevelEntries.add(entry);
+    } else {
+      children.put(parentLink.getHref(), entry);
+    }
   }
   
   @Override
