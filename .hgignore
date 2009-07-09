@@ -1,0 +1,8 @@
+syntax: glob
+
+*~
+.project
+.classpath
+target/*
+.settings/*
+.DS_Store
