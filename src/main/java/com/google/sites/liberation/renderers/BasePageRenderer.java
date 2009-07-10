@@ -165,7 +165,9 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
         currentChild = null;
       } else {
         currentChild = entryStore.getEntry(parentLink.getHref());
-        ancestors.add(currentChild);
+        if (currentChild != null) {
+          ancestors.add(currentChild);
+        }
       }
     }
     if (ancestors.size() == 0) {

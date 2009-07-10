@@ -31,6 +31,8 @@ import com.google.gdata.util.common.base.Preconditions;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class provides a continuous iterable of entries even if the results of 
@@ -47,6 +49,9 @@ import java.util.Iterator;
  */
 final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
 
+  private static final Logger logger = Logger.getLogger(
+      ContinuousContentFeed.class.getCanonicalName());
+  
   private final SitesService service;
   private ContentQuery query;
   private final int maxResults;
@@ -101,6 +106,7 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
     @SuppressWarnings("unchecked")
     Iterator<BaseEntry> currentItr;
     int index;
+    final static int RESUlTS_PER_REQUEST = 50;
 
     /**
      * Constructs a new iterator for this {@code ContinuousContentFeed}.
@@ -112,34 +118,68 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
 
     @Override
     public BaseContentEntry<?> computeNext() {
-      if ((maxResults != Query.UNDEFINED) && (maxResults < index)) {
+      int numResultsSoFar = (startIndex == Query.UNDEFINED) ? index : 
+          (index - startIndex);
+      if ((maxResults != Query.UNDEFINED) && (maxResults <= numResultsSoFar)) {
         return endOfData();
       }
       if (!currentItr.hasNext()) {
-        query.setStartIndex(index);
-        ContentFeed contentFeed = null;
-        try {
-          contentFeed = service.getFeed(query, ContentFeed.class);
-        } catch(IOException e) {
-          System.err.println("Error retrieving response from query: " + 
-              query.getQueryUri());
-          throw new RuntimeException(e);
-        } catch(ServiceException e) {
-          System.err.println("Error retrieving response from query: " + 
-              query.getQueryUri());
-          throw new RuntimeException(e);
-        }
-        currentItr = contentFeed.getEntries().iterator();
+        currentItr = getEntries(index, RESUlTS_PER_REQUEST);
         if (!currentItr.hasNext()) {
           return endOfData();
         }
       }
       BaseEntry<?> next = currentItr.next();
-      index++;
       try {
         return (BaseContentEntry<?>)next.getAdaptedEntry();
       } catch (AdaptorException e) {
         return (BaseContentEntry<?>)next;
+      }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private Iterator<BaseEntry> getEntries(int start, int num) {
+      try {
+        int numReturned = 0;
+        Iterator<BaseEntry> itr = Iterators.emptyIterator();
+        ContentFeed contentFeed;
+        do {
+          query.setStartIndex(start + numReturned);
+          query.setMaxResults(num - numReturned);
+          contentFeed = service.getFeed(query, ContentFeed.class);
+          numReturned += contentFeed.getEntries().size();
+          itr = Iterators.concat(itr, contentFeed.getEntries().iterator());
+        } while (numReturned < num && contentFeed.getEntries().size() > 0);
+        index += numReturned;
+        return itr;
+      } catch (IOException e) {
+        String message = "Error retrieving response from query: " + 
+            query.getUrl();
+        logger.log(Level.WARNING, message, e);
+        if (num == 1) {
+          index++;
+          return Iterators.emptyIterator();
+        } else {
+          int num1 = num/2;
+          int num2 = (num % 2 == 0) ? num1 : (num1 + 1);
+          Iterator<BaseEntry> itr1 = getEntries(start, num1);
+          Iterator<BaseEntry> itr2 = getEntries(start + num1, num2);
+          return Iterators.concat(itr1, itr2);
+        }
+      } catch (ServiceException e) {
+        String message = "Error retrieving response from query: " + 
+          query.getUrl();
+        logger.log(Level.WARNING, message, e);
+        if (num == 1) {
+          index++;
+          return Iterators.emptyIterator();
+        } else {
+          int num1 = num/2;
+          int num2 = (num % 2 == 0) ? num1 : (num1 + 1);
+          Iterator<BaseEntry> itr1 = getEntries(start, num1);
+          Iterator<BaseEntry> itr2 = getEntries(start + num1, num2);
+          return Iterators.concat(itr1, itr2);
+        }
       }
     }
   }

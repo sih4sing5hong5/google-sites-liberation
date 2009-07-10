@@ -78,21 +78,19 @@ public final class HAtomFactory {
     Preconditions.checkNotNull(entry, "entry");
     Preconditions.checkNotNull(elementType, "elementType");
     XmlElement element = new XmlElement(elementType);
-    element.setAttribute("class", "hentry");
     element.setAttribute("id", entry.getId());
-    String href = "http://schemas.google.com/sites/2008#";
+    String type = "";
     switch(getType(entry)) {
-      case ANNOUNCEMENT: href += "announcement"; break;
-      case ANNOUNCEMENTS_PAGE: href += "announcementspage"; break;
-      case ATTACHMENT: href += "attachment"; break;
-      case COMMENT: href += "comment"; break;
-      case FILE_CABINET_PAGE: href += "filecabinet"; break;
-      case LIST_ITEM: href += "listitem"; break;
-      case LIST_PAGE: href += "listpage"; break;
-      case WEB_PAGE: href += "webpage"; break;
+      case ANNOUNCEMENT: type = "announcement"; break;
+      case ANNOUNCEMENTS_PAGE: type = "announcementspage"; break;
+      case ATTACHMENT: type = "attachment"; break;
+      case COMMENT: type = "comment"; break;
+      case FILE_CABINET_PAGE: type = "filecabinet"; break;
+      case LIST_ITEM: type = "listitem"; break;
+      case LIST_PAGE: type = "listpage"; break;
+      case WEB_PAGE: type = "webpage"; break;
     }
-    XmlElement category = new HyperLink(href, "");
-    category.setAttribute("rel", "tag");
+    element.setAttribute("class", "hentry " + type);
     return element;
   }
   

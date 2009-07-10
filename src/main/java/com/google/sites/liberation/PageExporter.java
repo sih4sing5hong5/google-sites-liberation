@@ -25,6 +25,8 @@ import com.google.sites.liberation.renderers.PageRenderer;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class can be used to export a single page in a Site as
@@ -34,6 +36,9 @@ import java.io.IOException;
  */
 public final class PageExporter {
 
+  private static final Logger logger = Logger.getLogger(
+      PageExporter.class.getCanonicalName());
+  
   private final PageRenderer renderer;
   private final BaseContentEntry<?> entry;
   
@@ -88,8 +93,7 @@ public final class PageExporter {
       html.appendTo(out);
       out.close();
     } catch (IOException e) {
-      System.err.println("Failed writing to file: " + fileName);
-      throw new RuntimeException(e);
+      logger.log(Level.SEVERE, "Failed writing to file: " + fileName, e);
     }
   }
 }

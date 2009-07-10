@@ -41,6 +41,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class exports an entire site to a given root folder.
@@ -49,6 +51,9 @@ import java.util.Set;
  */
 public final class SiteExporter {
 
+  private static final Logger logger = Logger.getLogger(
+      SiteExporter.class.getCanonicalName());
+  
   private final SitesService service;
   private final URL feedUrl;
   private final EntryStore entryStore;
@@ -105,6 +110,9 @@ public final class SiteExporter {
 	}
 	String parentId = parentLink.getHref();
 	BaseContentEntry<?> parent = entryStore.getEntry(parentId);
+	if (parent == null) {
+	  return "";
+	}
     return getPath(parent) + entryStore.getName(parentId) + "/";
   }
   
@@ -120,22 +128,25 @@ public final class SiteExporter {
       }
       out.close();
     } catch(IOException e) {
-      System.err.println("Error reading from " + attachment.getEnclosureLink()
-          .getHref() + "and/or writing to " + fileName);
-      throw new RuntimeException(e);
+      String message = "Error reading from " + attachment.getEnclosureLink()
+          .getHref() + "and/or writing to " + fileName;
+      logger.log(Level.WARNING, message, e);
     }
   }
   
   public static void main(String[] args) throws MalformedURLException {
+    //URL feedUrl = new URL("http://sites.google.com/feeds/" +
+    //	"content/google.com/dataliberation");
     URL feedUrl = new URL("http://bsimon-chi.chi.corp.google.com:7000/feeds/" +
-    	"content/site/test/");
+    		"content/site/test");
     String path = "/home/bsimon/Desktop/test/";
     SitesService service = new SitesService("google-sites-liberation");
-    try {
-      //service.setUserCredentials("yourfriendben@gmail.com", "");
-    } catch(Exception e) {
-      e.printStackTrace();
-    }
+    //try {
+    //  service.setUserCredentials(args[0], args[1]);
+    //} catch(Exception e) {
+    //  logger.log(Level.SEVERE, "Invalid User Credentials!");
+    //  throw new RuntimeException(e);
+    //}
     SiteExporter exporter = new SiteExporter(service, feedUrl);
     exporter.export(path);
   }
