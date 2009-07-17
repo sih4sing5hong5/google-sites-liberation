@@ -32,24 +32,26 @@ public interface EntryStore {
   /**
    * Stores the given content entry.
    */
-  public void addEntry(BaseContentEntry<?> entry);
+  void addEntry(BaseContentEntry<?> entry);
   
   /**
    * Retrieves the entry with the given {@code id} or {@code null} if there is
    * no such entry.
    */
-  public BaseContentEntry<?> getEntry(String id);
+  BaseContentEntry<?> getEntry(String id);
   
   /**
    * Returns a collection containing all entries with parent specified by the 
    * given {@code id}.
    */
-  public Collection<BaseContentEntry<?>> getChildren(String id);
+  Collection<BaseContentEntry<?>> getChildren(String id);
   
   /**
    * Returns a name for the entry with the given id, unique amongst the entry's
    * siblings or {@code null} if there is no such entry.
+   * 
+   * @TODO(bsimon): Remove this method and replace with calls to getPageName()
+   * Greg approves my CL.
    */
-  public String getName(String id);
-  
+  String getName(String id);
 }

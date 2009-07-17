@@ -35,7 +35,7 @@ import java.util.Set;
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-final class InMemoryEntryStore implements EntryStore {
+public final class InMemoryEntryStore implements EntryStore {
 
   private final Map<String, BaseContentEntry<?>> entries;
   private final Set<BaseContentEntry<?>> topLevelEntries;
@@ -60,29 +60,31 @@ final class InMemoryEntryStore implements EntryStore {
     Preconditions.checkArgument(id != null && entries.get(id) == null,
         "All entries must have a unique non-null id!");
     entries.put(id, entry);
-    String niceTitle = getNiceTitle(entry);
-    String name = niceTitle;
     Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
-    Collection<BaseContentEntry<?>> siblings;
-    if (parentLink == null) {
-      siblings = topLevelEntries;
-    } else {
-      siblings = children.get(parentLink.getHref());
-    }
-    Set<String> siblingNames = Sets.newHashSet();
-    for(BaseContentEntry<?> sibling : siblings) {
-      siblingNames.add(names.get(sibling.getId()));
-    }
-    int num = 2;
-    while(siblingNames.contains(name)) {
-      name = niceTitle;
-      if (name.charAt(name.length() - 1) != '-') {
-        name += '-';
+    if (EntryType.isPage(entry)) {
+      String niceTitle = getNiceTitle(entry);
+      String name = niceTitle;
+      Collection<BaseContentEntry<?>> siblings;
+      if (parentLink == null) {
+        siblings = topLevelEntries;
+      } else {
+        siblings = children.get(parentLink.getHref());
       }
-      name += num;
-      num++;
+      Set<String> siblingNames = Sets.newHashSet();
+      for(BaseContentEntry<?> sibling : siblings) {
+        siblingNames.add(names.get(sibling.getId()));
+      }
+      int num = 2;
+      while(siblingNames.contains(name)) {
+        name = niceTitle;
+        if (name.charAt(name.length() - 1) != '-') {
+          name += '-';
+        }
+        name += num;
+        num++;
+      }
+      names.put(id, name);
     }
-    names.put(id, name);
     if (parentLink == null) {
       topLevelEntries.add(entry);
     } else {

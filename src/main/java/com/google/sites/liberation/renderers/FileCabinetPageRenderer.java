@@ -16,15 +16,16 @@
 
 package com.google.sites.liberation.renderers;
 
-import static com.google.sites.liberation.HAtomFactory.getAuthorElement;
-import static com.google.sites.liberation.HAtomFactory.getEntryElement;
-import static com.google.sites.liberation.HAtomFactory.getTitleElement;
-import static com.google.sites.liberation.HAtomFactory.getUpdatedElement;
+import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.sites.liberation.EntryStore;
-import com.google.sites.liberation.XmlElement;
+import com.google.sites.liberation.elements.AuthorElement;
+import com.google.sites.liberation.elements.EntryElement;
+import com.google.sites.liberation.elements.TitleElement;
+import com.google.sites.liberation.elements.UpdatedElement;
+import com.google.sites.liberation.elements.XmlElement;
 
 /**
  * This is an extension of BasePageRenderer which implements 
@@ -40,7 +41,7 @@ class FileCabinetPageRenderer extends BasePageRenderer<FileCabinetPageEntry> {
    * FileCabinetPageEntry and EntryStore.
    */
   FileCabinetPageRenderer(FileCabinetPageEntry entry, EntryStore entryStore) {
-    super(entry, entryStore);
+    super(checkNotNull(entry), checkNotNull(entryStore));
   }
   
   /**
@@ -48,15 +49,18 @@ class FileCabinetPageRenderer extends BasePageRenderer<FileCabinetPageEntry> {
    */
   @Override
   public XmlElement renderAdditionalContent() {
+    if (attachments == null || attachments.size() == 0) {
+      return null;
+    }
     XmlElement table = new XmlElement("table");
     for(AttachmentEntry attachment : attachments) {
-      XmlElement row = getEntryElement(attachment, "tr");
-      XmlElement titleCell = getTitleElement(attachment, "td");
+      XmlElement row = new EntryElement(attachment, "tr");
+      XmlElement titleCell = new TitleElement(attachment, "td");
       row.addElement(titleCell);
-      XmlElement updated = getUpdatedElement(attachment);
+      XmlElement updated = new UpdatedElement(attachment);
       XmlElement updatedCell = new XmlElement("td");
       row.addElement((new XmlElement("td")).addElement(updated));
-      XmlElement author = getAuthorElement(attachment);
+      XmlElement author = new AuthorElement(attachment);
       row.addElement((new XmlElement("td")).addElement(author));
       table.addElement(row);
     }

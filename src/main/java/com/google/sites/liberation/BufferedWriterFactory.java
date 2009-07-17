@@ -16,17 +16,26 @@
 
 package com.google.sites.liberation;
 
-import com.google.gdata.data.sites.BaseContentEntry;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 
 /**
- * This interface is used to export an entire Site to a given root folder.
+ * This class implements {@link AppendableFactory} to provide a 
+ * {@code BufferedWriter} for a given file name.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-public interface SiteExporter {
+public class BufferedWriterFactory implements AppendableFactory {
   
   /**
-   * Exports the site with the given entries to the given root folder.
+   * Returns an Appendable corresponding to the given file name.
    */
-  void exportSite(Iterable<BaseContentEntry<?>> entries, String folder);
+  @Override
+  public BufferedWriter getAppendable(String fileName) throws IOException {
+    checkNotNull(fileName);
+    return new BufferedWriter(new FileWriter(fileName));
+  }
 }

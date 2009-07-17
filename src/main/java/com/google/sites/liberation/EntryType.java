@@ -16,6 +16,8 @@
 
 package com.google.sites.liberation;
 
+import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
+
 import com.google.gdata.data.sites.AnnouncementEntry;
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
 import com.google.gdata.data.sites.AttachmentEntry;
@@ -25,7 +27,6 @@ import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.gdata.data.sites.ListItemEntry;
 import com.google.gdata.data.sites.ListPageEntry;
 import com.google.gdata.data.sites.WebPageEntry;
-import com.google.gdata.util.common.base.Preconditions;
 
 /**
  * An enumeration of the possible entry types.
@@ -59,10 +60,10 @@ public enum EntryType {
   }
   
   /**
-   * Returns the <code>EntryType</code> for the given entry.
+   * Returns the {@code EntryType} for the given entry.
    */
   public static EntryType getType(BaseContentEntry<?> entry) {
-    Preconditions.checkNotNull(entry);
+    checkNotNull(entry);
     if (entry instanceof AnnouncementEntry) {
       return EntryType.ANNOUNCEMENT;
     }
@@ -89,27 +90,22 @@ public enum EntryType {
     }
     return EntryType.OTHER;
   }
-
-  /**
-   * Returns whether or not this EntryType represents a page in a site.
-   */
-  public static boolean isPage(EntryType type) {
-  	Preconditions.checkNotNull(type);
-    switch(type) {
-  	  case ANNOUNCEMENT:
-  	  case ANNOUNCEMENTS_PAGE:
-  	  case FILE_CABINET_PAGE:
-  	  case LIST_PAGE:
-  	  case WEB_PAGE:
-  		return true;
-      default: return false;
-  	}
-  }
   
   /**
    * Returns whether or not this entry represents a page in a site.
+   * 
+   * TODO(bsimon): Replace with instanceof BasePageEntry once Greg approves my CL.
    */
   public static boolean isPage(BaseContentEntry<?> entry) {
-    return isPage(getType(entry));
+    checkNotNull(entry);
+    switch(getType(entry)) {
+      case ANNOUNCEMENT:
+      case ANNOUNCEMENTS_PAGE:
+      case FILE_CABINET_PAGE:
+      case LIST_PAGE:
+      case WEB_PAGE:
+        return true;
+      default: return false;
+    }
   }
 }

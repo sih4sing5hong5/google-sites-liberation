@@ -16,34 +16,38 @@
 
 package com.google.sites.liberation.renderers;
 
-import com.google.sites.liberation.XmlElement;
+import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.sites.liberation.elements.XmlElement;
 
 /**
  * This interface defines an object that can render the different components
- * of a page from a site as appropriate xhtml.
+ * of a page from a Site as appropriate xhtml.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
 public interface PageRenderer {
 
   /** Renders link(s) to the parent(s) of a page. */
-  public XmlElement renderParentLinks();
+  XmlElement renderParentLinks();
   
   /** Renders the title of a page. */
-  public XmlElement renderTitle();
+  XmlElement renderTitle();
   
   /** Renders the main html content of a page. */
-  public XmlElement renderMainContent();
+  XmlElement renderContent();
   
   /** Renders content that is specific to certain page types if it exists. */
-  public XmlElement renderAdditionalContent();
+  XmlElement renderAdditionalContent();
   
   /** Renders the links to the subpages of a page. */
-  public XmlElement renderSubpageLinks();
+  XmlElement renderSubpageLinks();
   
   /** Renders the attachment links of a page. */
-  public XmlElement renderAttachments();
+  XmlElement renderAttachments();
   
   /** Renders the comments of a page. */
-  public XmlElement renderComments(); 
+  XmlElement renderComments(); 
+  
+  /** Returns the entry this renderer represents. */
+  BaseContentEntry<?> getEntry();
 }

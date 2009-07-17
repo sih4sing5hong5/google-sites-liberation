@@ -16,34 +16,32 @@
 
 package com.google.sites.liberation;
 
+import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
+import static com.google.gdata.util.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.gdata.client.Query;
 import com.google.gdata.client.sites.ContentQuery;
 import com.google.gdata.client.sites.SitesService;
-import com.google.gdata.data.BaseEntry;
-import com.google.gdata.data.Kind.AdaptorException;
 import com.google.gdata.data.sites.BaseContentEntry;
-import com.google.gdata.data.sites.ContentFeed;
 import com.google.gdata.util.ServiceException;
-import com.google.gdata.util.common.base.Preconditions;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * This class provides a continuous iterable of entries even if the results of 
- * a query are split across multiple feeds, and also removes some of the 
- * boiler-plate code involved in retrieving the entries for a given query. 
+ * a query are split across multiple feeds. This class will also return all
+ * valid entries in a feed even if some entries in the feed cause exceptions
+ * to be thrown. 
  * 
  * This class can produce unexpected results if used on a feed other than the
  * content feed for a Google Site.
- * 
- * A RuntimeException is thrown if there are problems communicating with the 
- * server during iteration.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
@@ -52,36 +50,36 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
   private static final Logger logger = Logger.getLogger(
       ContinuousContentFeed.class.getCanonicalName());
   
-  private final SitesService service;
-  private ContentQuery query;
-  private final int maxResults;
-  private final int startIndex;
-
+  private final EntryProvider entryProvider;
+  private final URL feedUrl;
+  private final int resultsPerRequest;
+  
   /**
    * Creates a new instance of {@code ContinuousContentFeed} for the given
-   * {@code feedUrl}.
+   * entry provider, feed URL, and number of entries to request per query.
    * 
-   * <p>This {@code ContinuousContentFeed} will contain all of the entries
+   * <p>This {@code ContinuousContentFeed} will contain all of the valid entries
    * in the feed at {@code feedUrl}.</p>
    */
-  public ContinuousContentFeed(SitesService service, URL feedUrl) {
-    this(service, new ContentQuery(feedUrl));
+  ContinuousContentFeed(EntryProvider entryProvider, URL feedUrl,
+      int resultsPerRequest) {
+    this.entryProvider = checkNotNull(entryProvider);
+    this.feedUrl = checkNotNull(feedUrl);
+    checkArgument(resultsPerRequest > 0);
+    this.resultsPerRequest = resultsPerRequest;
   }
 
   /**
    * Creates a new instance of {@code ContinuousContentFeed} for the given
-   * {@code query}.
+   * sites service and feed URL.
    * 
-   * This {@code ContinuousContentFeed} will contain all of the entries
-   * in the feed for the given {@code query}. If the query contains a value for 
-   * maxResults, then only that many entries will be present.
+   * <p>This {@code ContinuousContentFeed} will contain all of the valid entries
+   * in the feed at {@code feedUrl}.</p>
    */
-  public ContinuousContentFeed(SitesService service, ContentQuery query) {
-    Preconditions.checkNotNull(query);
-    this.query = query;
-    this.service = service;
-    this.maxResults = query.getMaxResults();
-    this.startIndex = query.getStartIndex();
+  ContinuousContentFeed(SitesService service, URL feedUrl) {
+    this.entryProvider = new SitesServiceEntryProvider(checkNotNull(service));
+    this.feedUrl = checkNotNull(feedUrl);
+    this.resultsPerRequest = 100;
   }
   
   /**
@@ -103,53 +101,49 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
    */
   private class FeedIterator extends AbstractIterator<BaseContentEntry<?>> {
 
-    @SuppressWarnings("unchecked")
-    Iterator<BaseEntry> currentItr;
+    Iterator<BaseContentEntry<?>> currentItr;
     int index;
-    final static int RESUlTS_PER_REQUEST = 50;
 
     /**
      * Constructs a new iterator for this {@code ContinuousContentFeed}.
      */
     FeedIterator() {
       currentItr = Iterators.emptyIterator();
-      index = (startIndex == Query.UNDEFINED) ? 1 : startIndex;
+      index = 1;
     }
 
+    /**
+     * Returns the next element if it exists, otherwise calls endOfData() and
+     * returns null.
+     */
     @Override
     public BaseContentEntry<?> computeNext() {
-      int numResultsSoFar = (startIndex == Query.UNDEFINED) ? index : 
-          (index - startIndex);
-      if ((maxResults != Query.UNDEFINED) && (maxResults <= numResultsSoFar)) {
-        return endOfData();
-      }
       if (!currentItr.hasNext()) {
-        currentItr = getEntries(index, RESUlTS_PER_REQUEST);
+        currentItr = getEntries(index, resultsPerRequest);
         if (!currentItr.hasNext()) {
           return endOfData();
         }
       }
-      BaseEntry<?> next = currentItr.next();
-      try {
-        return (BaseContentEntry<?>)next.getAdaptedEntry();
-      } catch (AdaptorException e) {
-        return (BaseContentEntry<?>)next;
-      }
+      return currentItr.next();
     }
     
-    @SuppressWarnings("unchecked")
-    private Iterator<BaseEntry> getEntries(int start, int num) {
+    /**
+     * Returns an iterator containing the valid entries with indices between
+     * {@code start} and {@code start}+{@code num}-1. 
+     */
+    private Iterator<BaseContentEntry<?>> getEntries(int start, int num) {
+      Query query = new ContentQuery(feedUrl);
       try {
         int numReturned = 0;
-        Iterator<BaseEntry> itr = Iterators.emptyIterator();
-        ContentFeed contentFeed;
+        Iterator<BaseContentEntry<?>> itr = Iterators.emptyIterator();
+        List<BaseContentEntry<?>> entries;
         do {
           query.setStartIndex(start + numReturned);
           query.setMaxResults(num - numReturned);
-          contentFeed = service.getFeed(query, ContentFeed.class);
-          numReturned += contentFeed.getEntries().size();
-          itr = Iterators.concat(itr, contentFeed.getEntries().iterator());
-        } while (numReturned < num && contentFeed.getEntries().size() > 0);
+          entries = entryProvider.getEntries(query);
+          numReturned += entries.size();
+          itr = Iterators.concat(itr, entries.iterator());
+        } while (numReturned < num && entries.size() > 0);
         index += numReturned;
         return itr;
       } catch (IOException e) {
@@ -162,13 +156,13 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
         } else {
           int num1 = num/2;
           int num2 = (num % 2 == 0) ? num1 : (num1 + 1);
-          Iterator<BaseEntry> itr1 = getEntries(start, num1);
-          Iterator<BaseEntry> itr2 = getEntries(start + num1, num2);
+          Iterator<BaseContentEntry<?>> itr1 = getEntries(start, num1);
+          Iterator<BaseContentEntry<?>> itr2 = getEntries(start + num1, num2);
           return Iterators.concat(itr1, itr2);
         }
       } catch (ServiceException e) {
         String message = "Error retrieving response from query: " + 
-          query.getUrl();
+            query.getUrl();
         logger.log(Level.WARNING, message, e);
         if (num == 1) {
           index++;
@@ -176,8 +170,8 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
         } else {
           int num1 = num/2;
           int num2 = (num % 2 == 0) ? num1 : (num1 + 1);
-          Iterator<BaseEntry> itr1 = getEntries(start, num1);
-          Iterator<BaseEntry> itr2 = getEntries(start + num1, num2);
+          Iterator<BaseContentEntry<?>> itr1 = getEntries(start, num1);
+          Iterator<BaseContentEntry<?>> itr2 = getEntries(start + num1, num2);
           return Iterators.concat(itr1, itr2);
         }
       }

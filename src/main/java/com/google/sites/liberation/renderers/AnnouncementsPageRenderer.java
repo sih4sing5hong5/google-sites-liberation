@@ -16,12 +16,9 @@
 
 package com.google.sites.liberation.renderers;
 
+import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 import static com.google.sites.liberation.EntryType.getType;
 import static com.google.sites.liberation.EntryType.isPage;
-import static com.google.sites.liberation.HAtomFactory.getAuthorElement;
-import static com.google.sites.liberation.HAtomFactory.getEntryElement;
-import static com.google.sites.liberation.HAtomFactory.getContentElement;
-import static com.google.sites.liberation.HAtomFactory.getTitleElement;
 
 import com.google.gdata.data.sites.AnnouncementEntry;
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
@@ -29,7 +26,11 @@ import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.CommentEntry;
 import com.google.sites.liberation.EntryStore;
-import com.google.sites.liberation.XmlElement;
+import com.google.sites.liberation.elements.AuthorElement;
+import com.google.sites.liberation.elements.ContentElement;
+import com.google.sites.liberation.elements.EntryElement;
+import com.google.sites.liberation.elements.TitleElement;
+import com.google.sites.liberation.elements.XmlElement;
 
 import java.util.Collection;
 import java.util.TreeSet;
@@ -52,7 +53,7 @@ class AnnouncementsPageRenderer extends
    */
   AnnouncementsPageRenderer(AnnouncementsPageEntry entry, 
       EntryStore entryStore) {
-    super(entry, entryStore);
+    super(checkNotNull(entry), checkNotNull(entryStore));
   }
   
   /**
@@ -62,6 +63,7 @@ class AnnouncementsPageRenderer extends
    */
   @Override
   protected void addChild(BaseContentEntry<?> child) {
+    checkNotNull(child);
     if (announcements == null) {
       announcements = new TreeSet<AnnouncementEntry>(new UpdatedComparator());
     }
@@ -81,23 +83,23 @@ class AnnouncementsPageRenderer extends
    */
   @Override
   public XmlElement renderAdditionalContent() {
-    if (announcements.size() == 0) {
+    if (announcements == null || announcements.size() == 0) {
       return null;
     }  
     XmlElement div = new XmlElement("div");
     for(AnnouncementEntry announcement : announcements) {
-      XmlElement announceDiv = getEntryElement(announcement, "div");
+      XmlElement announceDiv = new EntryElement(announcement);
       XmlElement title = new XmlElement("h4");
       String href = entryStore.getName(entry.getId()) + "/" + 
           entryStore.getName(announcement.getId()) + ".html";
-      XmlElement titleLink = getTitleElement(announcement, "a");
+      XmlElement titleLink = new TitleElement(announcement, "a");
       titleLink.setAttribute("href", href);
       title.addElement(titleLink);
       announceDiv.addElement(title);
-      XmlElement author = getAuthorElement(announcement);
+      XmlElement author = new AuthorElement(announcement);
       announceDiv.addText("posted by ");
       announceDiv.addElement(author);
-      XmlElement mainHtml = getContentElement(announcement);
+      XmlElement mainHtml = new ContentElement(announcement);
       announceDiv.addElement(mainHtml);
       div.addElement(new XmlElement("hr"));
       div.addElement(announceDiv);

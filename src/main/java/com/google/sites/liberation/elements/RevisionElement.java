@@ -14,19 +14,31 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation;
+package com.google.sites.liberation.elements;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.gdata.data.sites.BaseContentEntry;
 
 /**
- * This interface is used to export an entire Site to a given root folder.
- * 
+ * This class extends XmlElement to allow the creation of a "sites:revision" 
+ * element in a single statement.
+ *
  * @author bsimon@google.com (Benjamin Simon)
  */
-public interface SiteExporter {
-  
+public class RevisionElement extends XmlElement {
+
   /**
-   * Exports the site with the given entries to the given root folder.
+   * Creates a new "sites:revision" for the given entry.
    */
-  void exportSite(Iterable<BaseContentEntry<?>> entries, String folder);
+  public RevisionElement(BaseContentEntry<?> entry) {
+    super("span");
+    checkNotNull(entry);
+    this.setAttribute("class", "sites:revision");
+    if (entry.getRevision() == null) {
+      this.addText("1");
+    } else {
+      this.addText(entry.getRevision().getValue().toString());
+    }
+  }  
 }

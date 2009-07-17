@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation;
+package com.google.sites.liberation.elements;
 
 import static org.junit.Assert.*;
 
@@ -24,6 +24,10 @@ public class XmlElementTest {
 
   @Test
   public void testConstructor() {
+    try {
+      new XmlElement(null);
+      fail("Should not accept null!");
+    } catch (NullPointerException e) {}
     XmlElement empty = new XmlElement("");
     assertEquals("< />", empty.toString());
     XmlElement div = new XmlElement("div");
@@ -57,6 +61,10 @@ public class XmlElementTest {
   @Test
   public void testAddText() {
     XmlElement div = new XmlElement("div");
+    try {
+      div.addText(null);
+      fail("Adding null text should throw exception");
+    } catch(NullPointerException e) {}
     div.addText("text");
     assertEquals("<div>text</div>", div.toString());
     div.addText("");
@@ -71,6 +79,10 @@ public class XmlElementTest {
   @Test
   public void testAddXml() {
     XmlElement div = new XmlElement("div");
+    try {
+      div.addXml(null);
+      fail("Adding null xml should throw exception");
+    } catch(NullPointerException e) {}
     div.addXml("");
     assertEquals("<div></div>", div.toString());
     div.addXml("<span class=\"class\"><hr />text</span>");
@@ -81,6 +93,14 @@ public class XmlElementTest {
   @Test
   public void testSetAttribute() {
     XmlElement div = new XmlElement("div");
+    try {
+      div.setAttribute(null, "value");
+      fail("Adding null name should throw exception");
+    } catch(NullPointerException e) {}
+    try {
+      div.setAttribute("name", null);
+      fail("Adding null value should throw exception");
+    } catch(NullPointerException e) {}
     div.setAttribute("href", "#");
     assertEquals("<div href=\"#\" />", div.toString());
     div.setAttribute("class", "main");

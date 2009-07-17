@@ -16,17 +16,24 @@
 
 package com.google.sites.liberation;
 
+import com.google.gdata.client.Query;
 import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.util.ServiceException;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
- * This interface is used to export an entire Site to a given root folder.
+ * This interface returns a list of {@code BaseContentEntry}'s for a given 
+ * query.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-public interface SiteExporter {
+public interface EntryProvider {
   
   /**
-   * Exports the site with the given entries to the given root folder.
+   * Returns list of entries for the given query.
    */
-  void exportSite(Iterable<BaseContentEntry<?>> entries, String folder);
+  @SuppressWarnings("unchecked")
+  List<BaseContentEntry<?>> getEntries(Query query) throws IOException, ServiceException;
 }

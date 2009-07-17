@@ -19,11 +19,6 @@ package com.google.sites.liberation.renderers;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.sites.liberation.EntryType.getType;
 import static com.google.sites.liberation.EntryType.isPage;
-import static com.google.sites.liberation.HAtomFactory.getAuthorElement;
-import static com.google.sites.liberation.HAtomFactory.getEntryElement;
-import static com.google.sites.liberation.HAtomFactory.getContentElement;
-import static com.google.sites.liberation.HAtomFactory.getTitleElement;
-import static com.google.sites.liberation.HAtomFactory.getUpdatedElement;
 
 import com.google.gdata.data.ILink;
 import com.google.gdata.data.Link;
@@ -32,8 +27,14 @@ import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.CommentEntry;
 import com.google.gdata.data.sites.SitesLink;
 import com.google.sites.liberation.EntryStore;
-import com.google.sites.liberation.HyperLink;
-import com.google.sites.liberation.XmlElement;
+import com.google.sites.liberation.elements.AuthorElement;
+import com.google.sites.liberation.elements.ContentElement;
+import com.google.sites.liberation.elements.EntryElement;
+import com.google.sites.liberation.elements.HyperLink;
+import com.google.sites.liberation.elements.RevisionElement;
+import com.google.sites.liberation.elements.TitleElement;
+import com.google.sites.liberation.elements.UpdatedElement;
+import com.google.sites.liberation.elements.XmlElement;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +49,9 @@ import java.util.TreeSet;
  * @author bsimon@google.com (Benjamin Simon)
  * 
  * @param <T> the type of entry being rendered
+ * 
+ * TODO(bsimon): Replace BaseContentEntry with BasePageRenderer once Greg 
+ * approves my CL.
  */
 class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
 
@@ -81,6 +85,7 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
    * additional child types. 
    */
   protected void addChild(BaseContentEntry<?> child) {
+    checkNotNull(child);
     switch(getType(child)) {
       case ATTACHMENT: attachments.add((AttachmentEntry) child); break;
       case COMMENT: comments.add((CommentEntry) child); break;
@@ -89,6 +94,11 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
           subpages.add(child);
         }
     }
+  }
+  
+  @Override
+  public T getEntry() {
+    return entry;
   }
   
   @Override
@@ -102,18 +112,18 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
     h4.addText("Attachments (" + attachments.size() + ")");
     div.addElement(h4);
     for(BaseContentEntry<?> attachment : attachments) {
-      XmlElement attachmentDiv = getEntryElement(attachment, "div");
-      XmlElement link = getTitleElement(attachment, "a");
+      XmlElement attachmentDiv = new EntryElement(attachment);
+      XmlElement link = new TitleElement(attachment, "a");
       String href = entryStore.getName(entry.getId()) + "/" + 
           attachment.getTitle().getPlainText();
       link.setAttribute("href", href);
-      XmlElement updated = getUpdatedElement(attachment);
-      XmlElement author = getAuthorElement(attachment);
+      XmlElement updated = new UpdatedElement(attachment);
+      XmlElement author = new AuthorElement(attachment);
+      XmlElement revision = new RevisionElement(attachment);
       attachmentDiv.addElement(link);
-      attachmentDiv.addText(" - on ");
-      attachmentDiv.addElement(updated);
-      attachmentDiv.addText(" by ");
-      attachmentDiv.addElement(author);
+      attachmentDiv.addText(" - on ").addElement(updated);
+      attachmentDiv.addText(" by ").addElement(author);
+      attachmentDiv.addText(" (Version ").addElement(revision).addText(")");
       div.addElement(attachmentDiv);
     }
     return div;
@@ -130,13 +140,13 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
     h4.addText("Comments (" + comments.size() + ")");
     div.addElement(h4);
     for(BaseContentEntry<?> comment : comments) {
-      XmlElement commentDiv = getEntryElement(comment, "div");
-      XmlElement author = getAuthorElement(comment);
-      XmlElement updated = getUpdatedElement(comment);
-      XmlElement content = getContentElement(comment);
-      commentDiv.addElement(author);
-      commentDiv.addText(" - ");
-      commentDiv.addElement(updated);
+      XmlElement commentDiv = new EntryElement(comment);
+      XmlElement author = new AuthorElement(comment);
+      XmlElement updated = new UpdatedElement(comment);
+      XmlElement revision = new RevisionElement(comment);
+      XmlElement content = new ContentElement(comment);
+      commentDiv.addElement(author).addText(" - ").addElement(updated);
+      commentDiv.addText(" (Version ").addElement(revision).addText(")");
       commentDiv.addElement(content);
       div.addElement(commentDiv);
     }
@@ -144,13 +154,13 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
   }
 
   @Override
-  public XmlElement renderMainContent() {
+  public XmlElement renderContent() {
     XmlElement div = new XmlElement("div");
     div.addText("Updated on ");
-    div.addElement(getUpdatedElement(entry));
+    div.addElement(new UpdatedElement(entry));
     div.addText(" by ");
-    div.addElement(getAuthorElement(entry));
-    div.addElement(getContentElement(entry));
+    div.addElement(new AuthorElement(entry));
+    div.addElement(new ContentElement(entry));
     return div;
   }
 
@@ -174,21 +184,17 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
       return null;
     }
     XmlElement div = new XmlElement("div");
-    HyperLink link = null;
-    BaseContentEntry<?> ancestor = null;
     for(int i = ancestors.size() - 1; i >= 0; i--) {
-      ancestor = ancestors.get(i);
+      BaseContentEntry<?> ancestor = ancestors.get(i);
       String path = "";
       for(int j = 0; j <= i; j++) {
         path += "../";
       }
-      link = new HyperLink(path + entryStore.getName(ancestor.getId()) 
+      HyperLink link = new HyperLink(path + entryStore.getName(ancestor.getId()) 
           + ".html", ancestor.getTitle().getPlainText());
       div.addElement(link);
       div.addText(" > ");
     }
-    link.setAttribute("rel", "up");
-    link.setAttribute("id", ancestor.getId());
     return div;
   }
 
@@ -220,7 +226,7 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
 
   @Override
   public XmlElement renderTitle() {
-    XmlElement title = getTitleElement(entry, "h3");
+    XmlElement title = new TitleElement(entry, "h3");
     return title;
   }
 }

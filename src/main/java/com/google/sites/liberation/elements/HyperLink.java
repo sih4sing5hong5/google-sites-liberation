@@ -14,19 +14,26 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation;
+package com.google.sites.liberation.elements;
 
-import com.google.gdata.data.sites.BaseContentEntry;
+import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 
 /**
- * This interface is used to export an entire Site to a given root folder.
- * 
+ * This class extends XmlElement to allow the creation of a hyper link
+ * in a single statement.
+ *
  * @author bsimon@google.com (Benjamin Simon)
  */
-public interface SiteExporter {
-  
+public class HyperLink extends XmlElement {
+
   /**
-   * Exports the site with the given entries to the given root folder.
+   * Creates a new HyperLink with the given href and display text.
    */
-  void exportSite(Iterable<BaseContentEntry<?>> entries, String folder);
+  public HyperLink(String href, String text) {
+    super("a");
+    checkNotNull(href, "href");
+    checkNotNull(text, "text");
+    this.setAttribute("href", href);
+    this.addText(text);
+  }  
 }

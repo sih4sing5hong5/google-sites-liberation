@@ -16,24 +16,20 @@
 
 package com.google.sites.liberation;
 
-import com.google.gdata.util.common.base.Preconditions;
+import com.google.gdata.data.sites.AttachmentEntry;
+
+import java.io.IOException;
 
 /**
- * This class extends XmlElement to allow the creation of a hyper link
- * in a single statement.
- *
+ * This interface is used to download an attachment to a given file.
+ * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-public class HyperLink extends XmlElement {
-
+public interface AttachmentDownloader {
+  
   /**
-   * Creates a new HyperLink with the given href and display text
+   * Downloads the given attachment to the given file name.
    */
-  public HyperLink(String href, String text) {
-    super("a");
-    Preconditions.checkNotNull(href, "href");
-    Preconditions.checkNotNull(text, "text");
-    this.setAttribute("href", href);
-    this.addText(text);
-  }  
+  void download(AttachmentEntry attachment, String fileName)
+      throws IOException;
 }

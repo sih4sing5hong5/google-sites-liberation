@@ -16,18 +16,17 @@
 
 package com.google.sites.liberation;
 
-import static org.junit.Assert.*;
+import java.io.IOException;
 
-import org.junit.Test;
-
-public class HyperLinkTest {
-
-  @Test
-  public void testConstructor() {
-    HyperLink link = new HyperLink("http://test.html", "test");
-    assertEquals("<a href=\"http://test.html\">\ntest\n</a>\n", link.toString());
-    link = new HyperLink("", "");
-    assertEquals("<a href=\"\">\n\n</a>\n", link.toString());
-  }
+/**
+ * This interface is used to retrieve an Appendable for a given file name.
+ * 
+ * @author bsimon@google.com (Benjamin Simon)
+ */
+public interface AppendableFactory {
   
+  /**
+   * Returns an Appendable corresponding to the given file name.
+   */
+  Appendable getAppendable(String fileName) throws IOException;
 }

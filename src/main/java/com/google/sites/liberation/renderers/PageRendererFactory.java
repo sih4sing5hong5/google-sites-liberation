@@ -16,40 +16,19 @@
 
 package com.google.sites.liberation.renderers;
 
-import static com.google.sites.liberation.EntryType.getType;
-
-import com.google.gdata.data.sites.AnnouncementsPageEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
-import com.google.gdata.data.sites.FileCabinetPageEntry;
-import com.google.gdata.data.sites.ListPageEntry;
 import com.google.sites.liberation.EntryStore;
 
 /**
- * This class creates appropriate implementations of PageRenderer.
+ * This interface is used to create appropriate implementations of PageRenderer.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-public class PageRendererFactory {
+public interface PageRendererFactory {
 
   /**
    * Returns an appropriate implementation of PageRenderer for the given
    * BaseContentEntry and EntryStore.
    */
-  public static PageRenderer getPageRenderer(BaseContentEntry<?> entry,
-      EntryStore entryStore) {
-    switch(getType(entry)) {
-      case ANNOUNCEMENT:
-      case WEB_PAGE:
-        return new BasePageRenderer<BaseContentEntry<?>>(entry, entryStore);
-      case ANNOUNCEMENTS_PAGE:
-        return new AnnouncementsPageRenderer((AnnouncementsPageEntry)entry, 
-            entryStore);
-      case FILE_CABINET_PAGE:
-        return new FileCabinetPageRenderer((FileCabinetPageEntry)entry, 
-            entryStore);
-      case LIST_PAGE:
-        return new ListPageRenderer((ListPageEntry)entry, entryStore);
-      default: throw new IllegalArgumentException("Invalid entry type!");      
-    }
-  }
+  PageRenderer getPageRenderer(BaseContentEntry<?> entry, EntryStore entryStore);
 }

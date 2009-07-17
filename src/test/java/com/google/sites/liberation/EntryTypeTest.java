@@ -57,15 +57,14 @@ public class EntryTypeTest {
   
   @Test
   public void testIsPage() {
-    assertTrue(EntryType.isPage(EntryType.ANNOUNCEMENT));
-    assertTrue(EntryType.isPage(EntryType.ANNOUNCEMENTS_PAGE));
-    assertTrue(EntryType.isPage(EntryType.FILE_CABINET_PAGE));
-    assertTrue(EntryType.isPage(EntryType.LIST_PAGE));
-    assertTrue(EntryType.isPage(EntryType.WEB_PAGE));
-    assertFalse(EntryType.isPage(EntryType.ATTACHMENT));
-    assertFalse(EntryType.isPage(EntryType.COMMENT));
-    assertFalse(EntryType.isPage(EntryType.LIST_ITEM));
-    assertFalse(EntryType.isPage(EntryType.OTHER));
+    assertTrue(EntryType.isPage(new AnnouncementEntry()));
+    assertTrue(EntryType.isPage(new AnnouncementsPageEntry()));
+    assertTrue(EntryType.isPage(new FileCabinetPageEntry()));
+    assertTrue(EntryType.isPage(new ListPageEntry()));
+    assertTrue(EntryType.isPage(new WebPageEntry()));
+    assertFalse(EntryType.isPage(new AttachmentEntry()));
+    assertFalse(EntryType.isPage(new CommentEntry()));
+    assertFalse(EntryType.isPage(new ListItemEntry()));
   }
   
 }

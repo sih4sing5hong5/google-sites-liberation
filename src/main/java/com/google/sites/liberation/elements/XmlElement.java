@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation;
+package com.google.sites.liberation.elements;
 
 import com.google.gdata.util.common.base.Pair;
 import com.google.gdata.util.common.base.Preconditions;
@@ -142,5 +142,13 @@ public class XmlElement {
       throw new RuntimeException(e);
     }
     return builder.toString();
+  }
+  
+  @Override
+  public boolean equals(Object other) {
+    if (other instanceof XmlElement) {
+      return toString().equals(other.toString());
+    }
+    return false;
   }
 }
