@@ -27,7 +27,7 @@ import java.io.IOException;
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(PageExporter.class)
+@ImplementedBy(PageExporterImpl.class)
 public interface PageExporter {
 
   /** 

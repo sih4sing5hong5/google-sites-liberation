@@ -16,6 +16,7 @@
 
 package com.google.sites.liberation;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -26,7 +27,7 @@ import java.io.IOException;
 public interface AppendableFactory {
   
   /**
-   * Returns an Appendable corresponding to the given file name.
+   * Returns an Appendable corresponding to the given file.
    */
-  Appendable getAppendable(String fileName) throws IOException;
+  Appendable getAppendable(File file) throws IOException;
 }

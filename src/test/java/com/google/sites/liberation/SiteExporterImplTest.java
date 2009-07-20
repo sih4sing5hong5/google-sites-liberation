@@ -40,6 +40,7 @@ import org.jmock.integration.junit4.JMock;
 import org.jmock.integration.junit4.JUnit4Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
@@ -58,7 +59,7 @@ public class SiteExporterImplTest {
   private PageRendererFactory pageRendererFactory;
   private SiteExporter siteExporter;
   private Collection<BaseContentEntry<?>> entries;
-  private Map<AttachmentEntry, String> downloaded;
+  private Map<AttachmentEntry, File> downloaded;
   
   @Before
   public void before() {
@@ -77,7 +78,7 @@ public class SiteExporterImplTest {
   
   public void testNull() {
     try {
-      siteExporter.exportSite(null, "path");
+      siteExporter.exportSite(null, new File("path"));
       fail("Should throw NullPointerException!");
     } catch (NullPointerException e) {}
     try {
@@ -88,7 +89,7 @@ public class SiteExporterImplTest {
   
   @Test
   public void testEmptyExport() {
-    siteExporter.exportSite(entries, "path");
+    siteExporter.exportSite(entries, new File("path"));
   }
   
   @Test
@@ -106,12 +107,12 @@ public class SiteExporterImplTest {
       oneOf (entryStore).addEntry(page);
       oneOf (pageRendererFactory).getPageRenderer(page, entryStore); 
           will(returnValue(pageRenderer));
-      oneOf (appendableFactory).getAppendable("path/Page-1.html");
+      oneOf (appendableFactory).getAppendable(new File("path/Page-1.html"));
           will(returnValue(out));
       oneOf (pageExporter).exportPage(pageRenderer, out);
     }});
     
-    siteExporter.exportSite(entries, "path/");
+    siteExporter.exportSite(entries, new File("path"));
   }
   
   @Test
@@ -136,13 +137,14 @@ public class SiteExporterImplTest {
       oneOf (entryStore).addEntry(attachment);
       oneOf (pageRendererFactory).getPageRenderer(page, entryStore); 
           will(returnValue(pageRenderer));
-      oneOf (appendableFactory).getAppendable("path/Page-1.html");
+      oneOf (appendableFactory).getAppendable(new File("path/Page-1.html"));
           will(returnValue(out));
       oneOf (pageExporter).exportPage(pageRenderer, out);
     }});
     
-    siteExporter.exportSite(entries, "path/");
-    assertTrue(downloaded.get(attachment).equals("path/Page-1/attach this.wow"));
+    siteExporter.exportSite(entries, new File("path"));
+    assertTrue(downloaded.get(attachment).equals(
+        new File("path/Page-1/attach this.wow")));
   }
   
   @Test
@@ -197,18 +199,22 @@ public class SiteExporterImplTest {
           will(returnValue(pageRenderer1));
       oneOf (pageRendererFactory).getPageRenderer(page2, entryStore); 
           will(returnValue(pageRenderer2));
-      oneOf (appendableFactory).getAppendable("path/Page-1.html");
+      oneOf (appendableFactory).getAppendable(new File("path/Page-1.html"));
           will(returnValue(out1));
-      oneOf (appendableFactory).getAppendable("path/Page-1/Page-2.html");
+      oneOf (appendableFactory).getAppendable(
+          new File("path/Page-1/Page-2.html"));
           will(returnValue(out2));
       oneOf (pageExporter).exportPage(pageRenderer1, out1);
       oneOf (pageExporter).exportPage(pageRenderer2, out2);
     }});
     
-    siteExporter.exportSite(entries, "path/");
-    assertTrue(downloaded.get(attachment1).equals("path/Page-1/attach this.wow"));
-    assertTrue(downloaded.get(attachment2).equals("path/Page-1/picture.png"));
-    assertTrue(downloaded.get(attachment3).equals("path/Page-1/Page-2/document.doc"));
+    siteExporter.exportSite(entries, new File("path"));
+    assertTrue(downloaded.get(attachment1).equals(
+        new File("path/Page-1/attach this.wow")));
+    assertTrue(downloaded.get(attachment2).equals(
+        new File("path/Page-1/picture.png")));
+    assertTrue(downloaded.get(attachment3).equals(
+        new File("path/Page-1/Page-2/document.doc")));
   }
   
   /**
@@ -222,8 +228,8 @@ public class SiteExporterImplTest {
     }
     
     @Override
-    public void download(AttachmentEntry attachment, String fileName) {
-      downloaded.put(attachment, fileName);
+    public void download(AttachmentEntry attachment, File file) {
+      downloaded.put(attachment, file);
     }
   }
 }

@@ -73,66 +73,68 @@ final class SiteExporterImpl implements SiteExporter {
   }
   
   @Override
-  public void exportSite(Iterable<BaseContentEntry<?>> entries, String folder) {
+  public void exportSite(Iterable<BaseContentEntry<?>> entries, File root) {
     checkNotNull(entries, "entries");
-    checkNotNull(folder, "folder");
+    checkNotNull(root, "root");
     Set<String> pageIds = Sets.newHashSet();
     Set<String> attachmentIds = Sets.newHashSet();
     for(BaseContentEntry<?> entry : entries) {
       entryStore.addEntry(entry);
       if (isPage(entry)) {
         pageIds.add(entry.getId());
-      } else if(getType(entry) == ATTACHMENT) {
+      } else if (getType(entry) == ATTACHMENT) {
         attachmentIds.add(entry.getId());
       }
     }
     for(String id : pageIds) {
-      exportPage(id, folder);
+      exportPage(id, root);
     }
     for(String id : attachmentIds) {
-      downloadAttachment(id, folder);
+      downloadAttachment(id, root);
     }
   }
   
-  private void exportPage(String id, String rootFolder) {
+  private void exportPage(String id, File root) {
     BaseContentEntry<?> entry = entryStore.getEntry(id);
-    String folderPath = getPath(entry);
-    if (folderPath != null) {
-      folderPath = rootFolder + folderPath;
-      new File(folderPath).mkdirs();
+    File relativePath = getPath(entry);
+    if (relativePath != null) {
+      File folder = new File(root.getPath() + "/" + relativePath.getPath());
+      folder.mkdirs();
       PageRenderer renderer = pageRendererFactory.getPageRenderer(entry, 
           entryStore);
-      String fileName = folderPath + entryStore.getName(id) + ".html";
+      File file = new File(folder.getPath() + "/" + 
+          entryStore.getName(id) + ".html");
       Appendable out = null;
       try {
-        out = appendableFactory.getAppendable(fileName);
+        out = appendableFactory.getAppendable(file);
         pageExporter.exportPage(renderer, out);
       } catch (IOException e) {
-        logger.log(Level.SEVERE, "Failed writing to file: " + fileName, e);
+        logger.log(Level.SEVERE, "Failed writing to file: " + file.getPath(), e);
       } finally {
         if (out instanceof Closeable) {
           try {
             ((Closeable) out).close();
           } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed closing file: " + fileName, e);
+            logger.log(Level.SEVERE, "Failed closing file: " + file.getPath(), e);
           }
         }
       }
     }
   }
   
-  private void downloadAttachment(String id, String rootFolder) {
+  private void downloadAttachment(String id, File root) {
     AttachmentEntry attachment = (AttachmentEntry) entryStore.getEntry(id);
-    String folderPath = getPath(attachment);
-    if (folderPath != null) {
-      folderPath = rootFolder + folderPath;
-      new File(folderPath).mkdirs();
-      String fileName = folderPath + attachment.getTitle().getPlainText();
+    File relativePath = getPath(attachment);
+    if (relativePath != null) {
+      File folder = new File(root.getPath() + "/" + relativePath.getPath());
+      folder.mkdirs();
+      File file = new File(folder.getPath() + "/" +
+          attachment.getTitle().getPlainText());
       try {
-        attachmentDownloader.download(attachment, fileName);
+        attachmentDownloader.download(attachment, file);
       } catch (IOException e) {
         String message = "Error reading from " + attachment.getEnclosureLink()
-            .getHref() + "and/or writing to " + fileName;
+            .getHref() + "and/or writing to " + file.getPath();
         logger.log(Level.WARNING, message, e);
       }
     }
@@ -143,16 +145,17 @@ final class SiteExporterImpl implements SiteExporter {
    * if any of this entry's ancestors are missing. The empty string is returned
    * if the given entry has no parent.
    */
-  private String getPath(BaseContentEntry<?> entry) {
+  private File getPath(BaseContentEntry<?> entry) {
     Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
     if (parentLink == null) {
-      return "";
+      return new File("");
     }
     String parentId = parentLink.getHref();
     BaseContentEntry<?> parent = entryStore.getEntry(parentId);
     if (parent == null) {
       return null;
     }
-    return getPath(parent) + entryStore.getName(parentId) + "/";
+    return new File(getPath(parent).getPath() + "/" + 
+        entryStore.getName(parentId));
   }
 }

@@ -19,6 +19,8 @@ package com.google.sites.liberation;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.inject.ImplementedBy;
 
+import java.io.File;
+
 /**
  * Used to export an entire Site to a given root folder.
  * 
@@ -30,5 +32,5 @@ public interface SiteExporter {
   /**
    * Exports the site with the given entries to the given root folder.
    */
-  void exportSite(Iterable<BaseContentEntry<?>> entries, String folder);
+  void exportSite(Iterable<BaseContentEntry<?>> entries, File folder);
 }

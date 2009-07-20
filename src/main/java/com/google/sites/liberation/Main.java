@@ -26,6 +26,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -45,7 +46,7 @@ public class Main {
   @Option(name="-u", usage="username with which to authenticate")
   private String username = null;
   
-  @Option(name="-p", usage="password with which to authentivate")
+  @Option(name="-p", usage="password with which to authenticate")
   private String password = null;
   
   @Option(name="-d", usage="domain of site")
@@ -55,7 +56,7 @@ public class Main {
   private String name = null;
   
   @Option(name="-f", usage="directory in which to export")
-  private String path = "./";
+  private String path = "";
   
   // TODO(bsimon): Remove once no longer testing locally.
   @Option(name="-s", usage="server")
@@ -74,21 +75,19 @@ public class Main {
       if (username != null && password != null) {
         service.setUserCredentials(username, password);
       }
-      String feedUrl = "http://" + server + "/feeds/content/" + domain + '/' + name;
+      String feedUrl = "http://" + server + "/feeds/content/" + 
+          domain + '/' + name;
       Iterable<BaseContentEntry<?>> entries = 
         new ContinuousContentFeed(service, new URL(feedUrl));
-      if (path.charAt(path.length() - 1) != '/') {
-        path += '/';
-      }
-      siteExporter.exportSite(entries, path);
-    } catch(MalformedURLException e) {
+      siteExporter.exportSite(entries, new File(path));
+    } catch (MalformedURLException e) {
       logger.log(Level.SEVERE, e.getMessage());
       throw new RuntimeException(e);
     } catch (CmdLineException e) {
       logger.log(Level.SEVERE, e.getMessage());
       parser.printUsage(System.err);
       return;
-    } catch(ServiceException e) {
+    } catch (ServiceException e) {
       logger.log(Level.SEVERE, "Invalid User Credentials!");
       throw new RuntimeException(e);
     }

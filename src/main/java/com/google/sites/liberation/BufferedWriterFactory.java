@@ -19,6 +19,7 @@ package com.google.sites.liberation;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -34,8 +35,8 @@ public class BufferedWriterFactory implements AppendableFactory {
    * Returns an Appendable corresponding to the given file name.
    */
   @Override
-  public Appendable getAppendable(String fileName) throws IOException {
-    checkNotNull(fileName);
-    return new BufferedWriter(new FileWriter(fileName));
+  public Appendable getAppendable(File file) throws IOException {
+    checkNotNull(file);
+    return new BufferedWriter(new FileWriter(file));
   }
 }

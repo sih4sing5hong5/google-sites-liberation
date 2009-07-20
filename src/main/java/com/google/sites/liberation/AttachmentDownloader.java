@@ -19,6 +19,7 @@ package com.google.sites.liberation;
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.inject.ImplementedBy;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -32,6 +33,6 @@ public interface AttachmentDownloader {
   /**
    * Downloads the given attachment to the given file name.
    */
-  void download(AttachmentEntry attachment, String fileName)
+  void download(AttachmentEntry attachment, File file)
       throws IOException;
 }

@@ -39,13 +39,13 @@ public class AttachmentDownloaderImpl implements AttachmentDownloader {
    * Downloads the given attachment to the given file name.
    */
   @Override
-  public void download(AttachmentEntry attachment, String fileName)
+  public void download(AttachmentEntry attachment, File file)
       throws IOException {
     checkNotNull(attachment);
-    checkNotNull(fileName);
+    checkNotNull(file);
     URL url = new URL(attachment.getEnclosureLink().getHref());
     InputStream in = url.openStream();
-    OutputStream out = new FileOutputStream(new File(fileName));
+    OutputStream out = new FileOutputStream(file);
     byte[] buf = new byte[4*1024];
     int bytesRead;
     while((bytesRead = in.read(buf)) != -1) {
