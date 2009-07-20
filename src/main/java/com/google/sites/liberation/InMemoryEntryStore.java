@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * This class is an in-memory implementation of {@link EntryStore}.
+ * An in-memory implementation of {@link EntryStore}.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */

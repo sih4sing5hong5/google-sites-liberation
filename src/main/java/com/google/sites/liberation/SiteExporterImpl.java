@@ -39,7 +39,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This class implements {@link SiteExporter} to export an entire Site 
+ * Implements {@link SiteExporter} to export an entire Site 
  * to a given root folder.
  * 
  * @author bsimon@google.com (Benjamin Simon)
@@ -140,7 +140,8 @@ final class SiteExporterImpl implements SiteExporter {
   
   /**
    * Returns the site-relative path to the given entry, or {@code null} if
-   * if any of this entry's ancestors are missing.
+   * if any of this entry's ancestors are missing. The empty string is returned
+   * if the given entry has no parent.
    */
   private String getPath(BaseContentEntry<?> entry) {
     Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);

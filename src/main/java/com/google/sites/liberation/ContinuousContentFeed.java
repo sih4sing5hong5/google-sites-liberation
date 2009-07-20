@@ -35,7 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This class provides a continuous iterable of entries even if the results of 
+ * Provides a continuous iterable of entries even if the results of 
  * a query are split across multiple feeds. This class will also return all
  * valid entries in a feed even if some entries in the feed cause exceptions
  * to be thrown. 

@@ -21,8 +21,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 /**
- * Test for {@link HyperLink}.
- * 
  * @author bsimon@google.com (Benjamin Simon)
  */
 public class HyperLinkTest {

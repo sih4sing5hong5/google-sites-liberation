@@ -27,8 +27,6 @@ import com.google.gdata.util.XmlBlob;
 import org.junit.Test;
 
 /**
- * Test for {@link ContentElement}.
- * 
  * @author bsimon@google.com (Your Name Here)
  */
 public class ContentElementTest {
@@ -49,7 +47,7 @@ public class ContentElementTest {
     BaseContentEntry<?> entry = new WebPageEntry();
     entry.setContent(new XhtmlTextConstruct(blob));
     XmlElement element = new ContentElement(entry);
-    assertEquals("<div class=\"entry-content\">"+xhtml+"</div>", 
+    assertEquals("<div class=\"entry-content\">" + xhtml + "</div>", 
         element.toString());
   }
   

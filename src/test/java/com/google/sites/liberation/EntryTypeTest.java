@@ -29,8 +29,6 @@ import com.google.gdata.data.sites.WebPageEntry;
 import org.junit.Test;
 
 /**
- * Test for {@link EntryType}
- * 
  * @author bsimon@google.com (Ben Simon)
  */
 public class EntryTypeTest {

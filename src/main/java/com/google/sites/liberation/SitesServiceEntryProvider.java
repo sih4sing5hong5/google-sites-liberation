@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * This class implements {@link EntryProvider} to provide entries for a given
+ * Implements {@link EntryProvider} to provide entries for a given
  * query using a SitesService.
  * 
  * @author bsimon@google.com (Benjamin Simon)

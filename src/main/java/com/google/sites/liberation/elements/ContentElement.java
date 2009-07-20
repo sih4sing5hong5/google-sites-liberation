@@ -25,7 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This class extends XmlElement to allow the creation of an hAtom 
+ * Extends XmlElement to allow the creation of an hAtom 
  * "entry-content" element in a single statement.
  *
  * @author bsimon@google.com (Benjamin Simon)

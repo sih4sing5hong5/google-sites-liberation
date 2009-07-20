@@ -33,8 +33,6 @@ import org.jmock.integration.junit4.JUnit4Mockery;
 import java.io.IOException;
 
 /**
- * Test for {@link PageExporterImpl}
- * 
  * @author bsimon@google.com (Ben Simon)
  */
 public class PageExporterImplTest {
@@ -76,6 +74,7 @@ public class PageExporterImplTest {
     final XmlElement subpages = new XmlElement("span").addText("sub");
     final XmlElement attachments = new XmlElement("hr");
     final XmlElement comments = new XmlElement("I like it!");
+    
     context.checking(new Expectations() {{
       oneOf (renderer).getEntry(); will(returnValue(entry));
       oneOf (renderer).renderParentLinks(); will(returnValue(parentLinks));
@@ -86,15 +85,12 @@ public class PageExporterImplTest {
       oneOf (renderer).renderAttachments(); will(returnValue(attachments));
       oneOf (renderer).renderComments(); will(returnValue(comments));
     }});
+    
     exporter.exportPage(renderer, out);
     XmlElement wrapper = new EntryElement(entry);
     wrapper.addElement(parentLinks);
-    wrapper.addElement(title);
-    wrapper.addElement(content);
-    wrapper.addElement(additional);
-    wrapper.addElement(subpages);
-    wrapper.addElement(attachments);
-    wrapper.addElement(comments);
+    wrapper.addElement(title).addElement(content).addElement(additional)
+        .addElement(subpages).addElement(attachments).addElement(comments);
     XmlElement document = new XmlElement("html");
     document.addElement(new XmlElement("body").addElement(wrapper));
     assertEquals(document.toString(), out.toString());
@@ -111,6 +107,7 @@ public class PageExporterImplTest {
     final XmlElement subpages = null;
     final XmlElement attachments = null;
     final XmlElement comments = null;
+    
     context.checking(new Expectations() {{
       oneOf (renderer).getEntry(); will(returnValue(entry));
       oneOf (renderer).renderParentLinks(); will(returnValue(parentLinks));
@@ -121,6 +118,7 @@ public class PageExporterImplTest {
       oneOf (renderer).renderAttachments(); will(returnValue(attachments));
       oneOf (renderer).renderComments(); will(returnValue(comments));
     }});
+    
     exporter.exportPage(renderer, out);
     XmlElement wrapper = new EntryElement(entry);
     wrapper.addElement(title);

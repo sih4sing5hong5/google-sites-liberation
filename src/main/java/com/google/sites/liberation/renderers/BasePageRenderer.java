@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 /**
- * This is a basic implementation of PageRender that uses a 
+ * A basic implementation of PageRender that uses a 
  * {@code BaseContentEntry} and an {@code EntryStore} to render a basic web 
  * page from a site.
  * 

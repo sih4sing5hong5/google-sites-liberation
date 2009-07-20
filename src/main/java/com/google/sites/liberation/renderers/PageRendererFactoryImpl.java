@@ -26,7 +26,7 @@ import com.google.gdata.data.sites.ListPageEntry;
 import com.google.sites.liberation.EntryStore;
 
 /**
- * This class implements {@link PageRendererFactory} to create appropriate 
+ * Implements {@link PageRendererFactory} to create appropriate 
  * implementations of PageRenderer.
  * 
  * @author bsimon@google.com (Benjamin Simon)

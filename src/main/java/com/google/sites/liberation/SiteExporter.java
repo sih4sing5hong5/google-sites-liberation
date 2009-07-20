@@ -17,12 +17,14 @@
 package com.google.sites.liberation;
 
 import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.inject.ImplementedBy;
 
 /**
- * This interface is used to export an entire Site to a given root folder.
+ * Used to export an entire Site to a given root folder.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
+@ImplementedBy(SiteExporterImpl.class)
 public interface SiteExporter {
   
   /**

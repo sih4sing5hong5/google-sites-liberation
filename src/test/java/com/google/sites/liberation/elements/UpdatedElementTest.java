@@ -25,7 +25,7 @@ import com.google.gdata.data.sites.WebPageEntry;
 import org.junit.Test;
 
 /**
- * Test for {@link UpdatedElement}.
+ * @author bsimon@google.com (Benjamin Simon)
  */
 public class UpdatedElementTest {
 
@@ -45,12 +45,12 @@ public class UpdatedElementTest {
   public void testConstructor() {
     String date = "2009-07-02T21:46:23.133Z";
     XmlElement element = new UpdatedElement(getEntry(date));
-    assertEquals("<abbr class=\"updated\" title=\""+date+"\">Jul 2, 2009</abbr>",
-        element.toString());
+    assertEquals("<abbr class=\"updated\" title=\"" + date + 
+        "\">Jul 2, 2009</abbr>", element.toString());
     date = "2598-11-25T23:41:10.256Z";
     element = new UpdatedElement(getEntry(date));
-    assertEquals("<abbr class=\"updated\" title=\""+date+"\">Nov 25, 2598</abbr>",
-        element.toString());
+    assertEquals("<abbr class=\"updated\" title=\"" + date + 
+    	"\">Nov 25, 2598</abbr>", element.toString());
   }
   
   private BaseContentEntry<?> getEntry(String dateTime) {

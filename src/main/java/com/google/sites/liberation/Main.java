@@ -32,7 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This class processes command line arguments for exporting a site and then
+ * Processes command line arguments for exporting a site and then
  * calls SiteExporter accordingly.
  * 
  * @author bsimon@google.com (Benjamin Simon)

@@ -30,8 +30,6 @@ import org.junit.Test;
 import java.util.Collection;
 
 /**
- * Test for {@link InMemoryEntryStore}.
- * 
  * @author bsimon@google.com (Benjamin Simon)
  */
 public class InMemoryEntryStoreTest {

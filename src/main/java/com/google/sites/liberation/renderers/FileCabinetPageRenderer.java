@@ -28,7 +28,7 @@ import com.google.sites.liberation.elements.UpdatedElement;
 import com.google.sites.liberation.elements.XmlElement;
 
 /**
- * This is an extension of BasePageRenderer which implements 
+ * An extension of BasePageRenderer which implements 
  * PageRenderer.renderSpecialContent to render the file cabinet section in a 
  * File Cabinet Page.
  * 

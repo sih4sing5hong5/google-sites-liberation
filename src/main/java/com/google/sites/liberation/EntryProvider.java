@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * This interface returns a list of {@code BaseContentEntry}'s for a given 
+ * Returns a list of {@code BaseContentEntry}'s for a given 
  * query.
  * 
  * @author bsimon@google.com (Benjamin Simon)

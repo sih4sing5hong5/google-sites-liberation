@@ -38,7 +38,7 @@ import java.util.Collection;
 import java.util.TreeSet;
 
 /**
- * This is an extension of BasePageRenderer which implements 
+ * An extension of BasePageRenderer which implements 
  * PageRenderer.renderSpecialContent to render the list section in a List Page.
  * 
  * @author bsimon@google.com (Benjamin Simon)

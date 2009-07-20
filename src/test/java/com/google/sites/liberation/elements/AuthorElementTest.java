@@ -25,7 +25,7 @@ import com.google.gdata.data.sites.WebPageEntry;
 import org.junit.Test;
 
 /**
- * Test for {@link AuthorElement}.
+ * @author bsimon@google.com (Benjamin Simon)
  */
 public class AuthorElementTest {
 
@@ -39,7 +39,7 @@ public class AuthorElementTest {
   
   @Test
   public void testNoName() {
-    String email = "bsimon@google.com";
+    String email = "me@company.com";
     XmlElement element = new AuthorElement(getEntry(null, email));
     assertEquals("<span class=\"vcard\"><a class=\"email\" href=\"mailto:" + email 
         + "\">" + email + "</a></span>", element.toString());
@@ -48,7 +48,7 @@ public class AuthorElementTest {
   @Test
   public void testWithName() {
     String name = "Ben Simon";
-    String email = "bsimon@google.com";
+    String email = "me@company.com";
     XmlElement element = new AuthorElement(getEntry(name, email));
     assertEquals("<span class=\"vcard\"><a class=\"fn\" href=\"mailto:" + email 
         + "\">" + name + "</a></span>", element.toString());

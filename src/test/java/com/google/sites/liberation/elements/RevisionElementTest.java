@@ -25,7 +25,7 @@ import com.google.gdata.data.sites.WebPageEntry;
 import org.junit.Test;
 
 /**
- * Test for {@link RevisionElement}.
+ * @author bsimon@google.com (Benjamin Simon)
  */
 public class RevisionElementTest {
 

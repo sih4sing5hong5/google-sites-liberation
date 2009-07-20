@@ -28,7 +28,7 @@ import java.io.OutputStream;
 import java.net.URL;
 
 /**
- * This class implements {@link AttachmentDownloader} to download an attachment
+ * Implements {@link AttachmentDownloader} to download an attachment
  * to a specified file.
  * 
  * @author bsimon@google.com (Benjamin Simon)

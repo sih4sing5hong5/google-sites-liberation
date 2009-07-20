@@ -19,7 +19,7 @@ package com.google.sites.liberation.elements;
 import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 
 /**
- * This class extends XmlElement to allow the creation of a hyper link
+ * Extends XmlElement to allow the creation of a hyper link
  * in a single statement.
  *
  * @author bsimon@google.com (Benjamin Simon)

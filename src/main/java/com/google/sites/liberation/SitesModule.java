@@ -17,11 +17,9 @@
 package com.google.sites.liberation;
 
 import com.google.inject.AbstractModule;
-import com.google.sites.liberation.renderers.PageRendererFactory;
-import com.google.sites.liberation.renderers.PageRendererFactoryImpl;
 
 /**
- * This class is a GUICE module defining default bindings.
+ * GUICE module defining default bindings.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
@@ -29,11 +27,7 @@ public class SitesModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    bind(SiteExporter.class).to(SiteExporterImpl.class);
-    bind(PageExporter.class).to(PageExporterImpl.class);
     bind(EntryStore.class).to(InMemoryEntryStore.class);
     bind(AppendableFactory.class).to(BufferedWriterFactory.class);
-    bind(AttachmentDownloader.class).to(AttachmentDownloaderImpl.class);
-    bind(PageRendererFactory.class).to(PageRendererFactoryImpl.class);
   }
 }

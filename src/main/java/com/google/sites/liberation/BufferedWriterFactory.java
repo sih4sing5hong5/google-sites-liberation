@@ -23,7 +23,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 /**
- * This class implements {@link AppendableFactory} to provide a 
+ * Implements {@link AppendableFactory} to provide a 
  * {@code BufferedWriter} for a given file name.
  * 
  * @author bsimon@google.com (Benjamin Simon)
@@ -34,7 +34,7 @@ public class BufferedWriterFactory implements AppendableFactory {
    * Returns an Appendable corresponding to the given file name.
    */
   @Override
-  public BufferedWriter getAppendable(String fileName) throws IOException {
+  public Appendable getAppendable(String fileName) throws IOException {
     checkNotNull(fileName);
     return new BufferedWriter(new FileWriter(fileName));
   }

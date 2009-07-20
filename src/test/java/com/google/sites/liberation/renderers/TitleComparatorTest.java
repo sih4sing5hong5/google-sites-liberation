@@ -27,8 +27,6 @@ import org.junit.Test;
 import java.util.Comparator;
 
 /**
- * Test for {@link TitleComparator}.
- * 
  * @author bsimon@google.com (Benjamin Simon)
  */
 public class TitleComparatorTest {

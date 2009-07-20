@@ -21,7 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.gdata.data.sites.BaseContentEntry;
 
 /**
- * This class extends XmlElement to allow the creation of a "sites:revision" 
+ * Extends XmlElement to allow the creation of a "sites:revision" 
  * element in a single statement.
  *
  * @author bsimon@google.com (Benjamin Simon)

@@ -20,6 +20,9 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+/**
+ * @author bsimon@google.com (Benjamin Simon)
+ */
 public class XmlElementTest {
 
   @Test

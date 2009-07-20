@@ -19,7 +19,7 @@ package com.google.sites.liberation;
 import java.io.IOException;
 
 /**
- * This interface is used to retrieve an Appendable for a given file name.
+ * Used to retrieve an Appendable for a given file name.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */

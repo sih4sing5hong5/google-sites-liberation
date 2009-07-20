@@ -23,7 +23,7 @@ import com.google.gdata.data.sites.BaseContentEntry;
 import org.joda.time.DateTime;
 
 /**
- * This class extends XmlElement to allow the creation of an hAtom "updated"
+ * Extends XmlElement to allow the creation of an hAtom "updated"
  * element in a single statement.
  *
  * @author bsimon@google.com (Benjamin Simon)

@@ -16,16 +16,18 @@
 
 package com.google.sites.liberation;
 
+import com.google.inject.ImplementedBy;
 import com.google.sites.liberation.renderers.PageRenderer;
 
 import java.io.IOException;
 
 /**
- * This interface can be used to export a single page in a Site to a given
+ * Used to export a single page in a Site to a given
  * {@code Appendable}.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
+@ImplementedBy(PageExporter.class)
 public interface PageExporter {
 
   /** 

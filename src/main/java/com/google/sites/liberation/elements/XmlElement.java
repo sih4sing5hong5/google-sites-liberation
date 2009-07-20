@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * This is a very simple implementation of an xml element to aid
+ * A very simple implementation of an xml element to aid
  * in generating well formed xhtml pages.
  * 
  * @author bsimon@google.com (Benjamin Simon)

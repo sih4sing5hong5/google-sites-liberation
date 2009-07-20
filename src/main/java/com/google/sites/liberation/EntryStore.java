@@ -21,7 +21,7 @@ import com.google.gdata.data.sites.BaseContentEntry;
 import java.util.Collection;
 
 /**
- * This interface defines a data structure that can be used to store the
+ * Defines a data structure that can be used to store the
  * entries of a content feed so that the entries can be later fetched 
  * by id or parent id.
  * 

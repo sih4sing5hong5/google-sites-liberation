@@ -20,7 +20,7 @@ import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.sites.liberation.elements.XmlElement;
 
 /**
- * This interface defines an object that can render the different components
+ * Defines an object that can render the different components
  * of a page from a Site as appropriate xhtml.
  * 
  * @author bsimon@google.com (Benjamin Simon)

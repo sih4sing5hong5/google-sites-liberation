@@ -17,13 +17,15 @@
 package com.google.sites.liberation.renderers;
 
 import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.inject.ImplementedBy;
 import com.google.sites.liberation.EntryStore;
 
 /**
- * This interface is used to create appropriate implementations of PageRenderer.
+ * Used to create appropriate implementations of PageRenderer.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
+@ImplementedBy(PageRendererFactoryImpl.class)
 public interface PageRendererFactory {
 
   /**

@@ -22,7 +22,7 @@ import static com.google.sites.liberation.EntryType.getType;
 import com.google.gdata.data.sites.BaseContentEntry;
 
 /**
- * This class extends XmlElement to allow the creation of an hAtom 
+ * Extends XmlElement to allow the creation of an hAtom 
  * "hentry" element in a single statement.
  *
  * @author bsimon@google.com (Benjamin Simon)

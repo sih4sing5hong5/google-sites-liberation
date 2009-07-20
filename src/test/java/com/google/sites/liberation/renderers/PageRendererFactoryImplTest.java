@@ -33,8 +33,6 @@ import org.jmock.Mockery;
 import org.jmock.integration.junit4.JUnit4Mockery;
 
 /**
- * Test for {@link PageRendererFactory}.
- * 
  * @author bsimon@google.com (Benjamin Simon)
  */
 public class PageRendererFactoryImplTest {
@@ -59,6 +57,7 @@ public class PageRendererFactoryImplTest {
       oneOf (entryStore).getChildren(null); will(returnValue(Lists.newArrayList()));
       oneOf (entryStore).getChildren(null); will(returnValue(Lists.newArrayList()));
     }});
+    
     assertTrue(rendererFactory.getPageRenderer(new AnnouncementEntry(), 
         entryStore) instanceof BasePageRenderer);
     assertTrue(rendererFactory.getPageRenderer(new AnnouncementsPageEntry(), 

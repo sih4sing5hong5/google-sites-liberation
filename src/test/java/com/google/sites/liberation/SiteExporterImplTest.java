@@ -45,8 +45,6 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * Test for {@link SiteExporterImpl}
- * 
  * @author bsimon@google.com (Ben Simon)
  */
 @RunWith(JMock.class)
@@ -101,6 +99,7 @@ public class SiteExporterImplTest {
     entries.add(page);
     final PageRenderer pageRenderer = context.mock(PageRenderer.class);
     final Appendable out = context.mock(Appendable.class);
+    
     context.checking(new Expectations() {{
       allowing (entryStore).getEntry("1"); will(returnValue(page));
       allowing (entryStore).getName("1"); will(returnValue("Page-1"));
@@ -111,6 +110,7 @@ public class SiteExporterImplTest {
           will(returnValue(out));
       oneOf (pageExporter).exportPage(pageRenderer, out);
     }});
+    
     siteExporter.exportSite(entries, "path/");
   }
   
@@ -127,6 +127,7 @@ public class SiteExporterImplTest {
     entries.add(attachment);
     final PageRenderer pageRenderer = context.mock(PageRenderer.class);
     final Appendable out = context.mock(Appendable.class);
+    
     context.checking(new Expectations() {{
       allowing (entryStore).getEntry("1"); will(returnValue(page));
       allowing (entryStore).getEntry("2"); will(returnValue(attachment));
@@ -139,6 +140,7 @@ public class SiteExporterImplTest {
           will(returnValue(out));
       oneOf (pageExporter).exportPage(pageRenderer, out);
     }});
+    
     siteExporter.exportSite(entries, "path/");
     assertTrue(downloaded.get(attachment).equals("path/Page-1/attach this.wow"));
   }
@@ -177,6 +179,7 @@ public class SiteExporterImplTest {
         "pageRenderer2");
     final Appendable out2 = context.mock(Appendable.class,
         "out2");
+    
     context.checking(new Expectations() {{
       allowing (entryStore).getEntry("1"); will(returnValue(page1));
       allowing (entryStore).getEntry("2"); will(returnValue(attachment1));
@@ -201,6 +204,7 @@ public class SiteExporterImplTest {
       oneOf (pageExporter).exportPage(pageRenderer1, out1);
       oneOf (pageExporter).exportPage(pageRenderer2, out2);
     }});
+    
     siteExporter.exportSite(entries, "path/");
     assertTrue(downloaded.get(attachment1).equals("path/Page-1/attach this.wow"));
     assertTrue(downloaded.get(attachment2).equals("path/Page-1/picture.png"));

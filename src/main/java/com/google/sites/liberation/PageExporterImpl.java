@@ -25,7 +25,7 @@ import com.google.sites.liberation.renderers.PageRenderer;
 import java.io.IOException;
 
 /**
- * This class can implements {@link PageExporter} to export a single page in a 
+ * Implements {@link PageExporter} to export a single page in a 
  * Site as to a given {@code Appendable}. 
  * 
  * @author bsimon@google.com (Benjamin Simon)

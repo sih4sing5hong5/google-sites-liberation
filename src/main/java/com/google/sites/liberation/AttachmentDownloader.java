@@ -17,14 +17,16 @@
 package com.google.sites.liberation;
 
 import com.google.gdata.data.sites.AttachmentEntry;
+import com.google.inject.ImplementedBy;
 
 import java.io.IOException;
 
 /**
- * This interface is used to download an attachment to a given file.
+ * Used to download an attachment to a given file.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
+@ImplementedBy(AttachmentDownloaderImpl.class)
 public interface AttachmentDownloader {
   
   /**

@@ -21,7 +21,7 @@ import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 import com.google.gdata.data.sites.BaseContentEntry;
 
 /**
- * This class extends XmlElement to allow the creation of an hAtom "entry-title"
+ * Extends XmlElement to allow the creation of an hAtom "entry-title"
  * element in a single statement.
  *
  * @author bsimon@google.com (Benjamin Simon)

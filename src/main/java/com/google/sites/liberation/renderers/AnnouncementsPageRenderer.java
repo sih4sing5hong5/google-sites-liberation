@@ -36,7 +36,7 @@ import java.util.Collection;
 import java.util.TreeSet;
 
 /**
- * This is an extension of BasePageRenderer which implements 
+ * An extension of BasePageRenderer which implements 
  * PageRenderer.renderSpecialContent to render the announcements in an 
  * Announcements Page.
  * 

@@ -34,8 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Test for {@link ContinuousContentFeed}
- * 
  * @author bsimon@google.com (Ben Simon)
  */
 public class ContinuousContentFeedTest {
@@ -51,7 +49,7 @@ public class ContinuousContentFeedTest {
   
   @Test
   public void testArguments() {
-    EntryProvider entryProvider = new MockEntryProvider(
+    EntryProvider entryProvider = new FakeEntryProvider(
         new ArrayList<BaseContentEntry<?>>(), 5);
     try {
       new ContinuousContentFeed(null, url, 5);
@@ -73,7 +71,7 @@ public class ContinuousContentFeedTest {
   
   @Test
   public void testEmptyFeed() {
-    EntryProvider entryProvider = new MockEntryProvider(
+    EntryProvider entryProvider = new FakeEntryProvider(
         new ArrayList<BaseContentEntry<?>>(), 5);
     ContinuousContentFeed feed = new ContinuousContentFeed(
         entryProvider, url, 3);
@@ -86,7 +84,7 @@ public class ContinuousContentFeedTest {
   public void testClientLimitsNumPerRequest() {
     List<BaseContentEntry<?>> entries = Lists.newArrayList();
     addNormalEntries(entries, 32);
-    EntryProvider entryProvider = new MockEntryProvider(entries, 5);
+    EntryProvider entryProvider = new FakeEntryProvider(entries, 5);
     ContinuousContentFeed feed = new ContinuousContentFeed(
         entryProvider, url, 3);
     List<BaseContentEntry<?>> newEntries = Lists.newArrayList(feed);
@@ -102,7 +100,7 @@ public class ContinuousContentFeedTest {
     addIoExceptions(entries, 1);
     addNormalEntries(entries, 4);
     addIoExceptions(entries, 3);
-    EntryProvider entryProvider = new MockEntryProvider(entries, 5);
+    EntryProvider entryProvider = new FakeEntryProvider(entries, 5);
     ContinuousContentFeed feed = new ContinuousContentFeed(
         entryProvider, url, 4);
     List<BaseContentEntry<?>> newEntries = Lists.newArrayList(feed);
@@ -115,7 +113,7 @@ public class ContinuousContentFeedTest {
   public void testServerLimitsNumPerRequest() {
     List<BaseContentEntry<?>> entries = Lists.newArrayList();
     addNormalEntries(entries, 45);
-    EntryProvider entryProvider = new MockEntryProvider(entries, 5);
+    EntryProvider entryProvider = new FakeEntryProvider(entries, 5);
     ContinuousContentFeed feed = new ContinuousContentFeed(
         entryProvider, url, 7);
     List<BaseContentEntry<?>> newEntries = Lists.newArrayList(feed);
@@ -132,7 +130,7 @@ public class ContinuousContentFeedTest {
     addIoExceptions(entries, 3);
     addServiceExceptions(entries, 1);
     addNormalEntries(entries, 20);
-    EntryProvider entryProvider = new MockEntryProvider(entries, 5);
+    EntryProvider entryProvider = new FakeEntryProvider(entries, 5);
     ContinuousContentFeed feed = new ContinuousContentFeed(
         entryProvider, url, 8);
     List<BaseContentEntry<?>> newEntries = Lists.newArrayList(feed);
@@ -145,7 +143,7 @@ public class ContinuousContentFeedTest {
   public void testNothingLimitsNumPerRequest() {
     List<BaseContentEntry<?>> entries = Lists.newArrayList();
     addNormalEntries(entries, 28);
-    EntryProvider entryProvider = new MockEntryProvider(entries, 100);
+    EntryProvider entryProvider = new FakeEntryProvider(entries, 100);
     ContinuousContentFeed feed = new ContinuousContentFeed(
         entryProvider, url, 100);
     List<BaseContentEntry<?>> newEntries = Lists.newArrayList(feed);
@@ -161,7 +159,7 @@ public class ContinuousContentFeedTest {
     addNormalEntries(entries, 20);
     addServiceExceptions(entries, 4);
     addNormalEntries(entries, 1);
-    EntryProvider entryProvider = new MockEntryProvider(entries, 100);
+    EntryProvider entryProvider = new FakeEntryProvider(entries, 100);
     ContinuousContentFeed feed = new ContinuousContentFeed(
         entryProvider, url, 100);
     List<BaseContentEntry<?>> newEntries = Lists.newArrayList(feed);
@@ -188,12 +186,12 @@ public class ContinuousContentFeedTest {
     }
   }
   
-  private class MockEntryProvider implements EntryProvider {
+  private class FakeEntryProvider implements EntryProvider {
     
-    private int maxResultsPerRequest;
-    private List<BaseContentEntry<?>> entries;
+    private final int maxResultsPerRequest;
+    private final List<BaseContentEntry<?>> entries;
     
-    MockEntryProvider(List<BaseContentEntry<?>> entries, int maxResultsPerRequest) {
+    FakeEntryProvider(List<BaseContentEntry<?>> entries, int maxResultsPerRequest) {
       this.maxResultsPerRequest = maxResultsPerRequest;
       this.entries = entries;
     }
