@@ -23,6 +23,7 @@ import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.sites.liberation.EntryStore;
 import com.google.sites.liberation.elements.AuthorElement;
 import com.google.sites.liberation.elements.EntryElement;
+import com.google.sites.liberation.elements.RevisionElement;
 import com.google.sites.liberation.elements.TitleElement;
 import com.google.sites.liberation.elements.UpdatedElement;
 import com.google.sites.liberation.elements.XmlElement;
@@ -62,6 +63,9 @@ class FileCabinetPageRenderer extends BasePageRenderer<FileCabinetPageEntry> {
       row.addElement((new XmlElement("td")).addElement(updated));
       XmlElement author = new AuthorElement(attachment);
       row.addElement((new XmlElement("td")).addElement(author));
+      XmlElement revision = new RevisionElement(attachment);
+      row.addElement((new XmlElement("td")).addText("(Version ")
+          .addElement(revision).addText(")"));
       table.addElement(row);
     }
     return table;

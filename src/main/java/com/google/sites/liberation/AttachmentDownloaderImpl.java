@@ -18,7 +18,9 @@ package com.google.sites.liberation;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.gdata.data.ILink;
 import com.google.gdata.data.sites.AttachmentEntry;
+import com.google.gdata.data.sites.SitesLink;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,6 +28,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Implements {@link AttachmentDownloader} to download an attachment
@@ -35,6 +39,9 @@ import java.net.URL;
  */
 public class AttachmentDownloaderImpl implements AttachmentDownloader {
   
+  private static final Logger logger = Logger.getLogger(
+      AttachmentDownloaderImpl.class.getCanonicalName());
+  
   /**
    * Downloads the given attachment to the given file name.
    */
@@ -43,6 +50,9 @@ public class AttachmentDownloaderImpl implements AttachmentDownloader {
       throws IOException {
     checkNotNull(attachment);
     checkNotNull(file);
+    logger.log(Level.WARNING, 
+        "Attachment downloads are not supported at this time.");
+    /* TODO(bsimon): Add back in when attachments are working.
     URL url = new URL(attachment.getEnclosureLink().getHref());
     InputStream in = url.openStream();
     OutputStream out = new FileOutputStream(file);
@@ -53,5 +63,6 @@ public class AttachmentDownloaderImpl implements AttachmentDownloader {
     }
     in.close();
     out.close();
+    */
   }
 }

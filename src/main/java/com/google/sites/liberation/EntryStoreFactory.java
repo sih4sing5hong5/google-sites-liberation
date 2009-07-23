@@ -16,18 +16,15 @@
 
 package com.google.sites.liberation;
 
-import com.google.inject.AbstractModule;
-
 /**
- * GUICE module defining default bindings.
+ * Provides new EntryStore's.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-public class SitesModule extends AbstractModule {
+public interface EntryStoreFactory {
 
-  @Override
-  protected void configure() {
-    bind(EntryStoreFactory.class).to(InMemoryEntryStoreFactory.class);
-    bind(AppendableFactory.class).to(BufferedWriterFactory.class);
-  }
+  /**
+   * Returns a new EntryStore.
+   */
+  EntryStore getEntryStore();
 }

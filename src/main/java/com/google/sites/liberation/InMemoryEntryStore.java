@@ -35,7 +35,7 @@ import java.util.Set;
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-public final class InMemoryEntryStore implements EntryStore {
+final class InMemoryEntryStore implements EntryStore {
 
   private final Map<String, BaseContentEntry<?>> entries;
   private final Set<BaseContentEntry<?>> topLevelEntries;
@@ -46,7 +46,7 @@ public final class InMemoryEntryStore implements EntryStore {
    * Creates a new InMemoryEntryStore which provides constant time storage 
    * and retrieval of entries by id or parent id.
    */
-  public InMemoryEntryStore() {
+  InMemoryEntryStore() {
     entries = Maps.newHashMap();
     topLevelEntries = Sets.newHashSet();
     children = HashMultimap.create();

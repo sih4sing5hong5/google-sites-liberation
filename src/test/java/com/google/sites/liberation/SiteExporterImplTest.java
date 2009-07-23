@@ -55,6 +55,7 @@ public class SiteExporterImplTest {
   private AppendableFactory appendableFactory;
   private AttachmentDownloader attachmentDownloader;
   private EntryStore entryStore;
+  private EntryStoreFactory entryStoreFactory;
   private PageExporter pageExporter;
   private PageRendererFactory pageRendererFactory;
   private SiteExporter siteExporter;
@@ -69,10 +70,11 @@ public class SiteExporterImplTest {
     appendableFactory = context.mock(AppendableFactory.class);
     attachmentDownloader = new MockDownloader();
     entryStore = context.mock(EntryStore.class);
+    entryStoreFactory = context.mock(EntryStoreFactory.class);
     pageExporter = context.mock(PageExporter.class);
     pageRendererFactory = context.mock(PageRendererFactory.class);
     siteExporter = new SiteExporterImpl(appendableFactory, attachmentDownloader,
-        entryStore, pageExporter, pageRendererFactory);
+        entryStoreFactory, pageExporter, pageRendererFactory);
     entries = Sets.newHashSet();
   }
   
@@ -89,6 +91,11 @@ public class SiteExporterImplTest {
   
   @Test
   public void testEmptyExport() {
+    context.checking(new Expectations() {{
+      allowing (entryStoreFactory).getEntryStore(); 
+          will(returnValue(entryStore));
+    }});
+    
     siteExporter.exportSite(entries, new File("path"));
   }
   
@@ -102,6 +109,8 @@ public class SiteExporterImplTest {
     final Appendable out = context.mock(Appendable.class);
     
     context.checking(new Expectations() {{
+      allowing (entryStoreFactory).getEntryStore(); 
+          will(returnValue(entryStore));
       allowing (entryStore).getEntry("1"); will(returnValue(page));
       allowing (entryStore).getName("1"); will(returnValue("Page-1"));
       oneOf (entryStore).addEntry(page);
@@ -130,6 +139,8 @@ public class SiteExporterImplTest {
     final Appendable out = context.mock(Appendable.class);
     
     context.checking(new Expectations() {{
+      allowing (entryStoreFactory).getEntryStore(); 
+          will(returnValue(entryStore));
       allowing (entryStore).getEntry("1"); will(returnValue(page));
       allowing (entryStore).getEntry("2"); will(returnValue(attachment));
       allowing (entryStore).getName("1"); will(returnValue("Page-1"));
@@ -183,6 +194,8 @@ public class SiteExporterImplTest {
         "out2");
     
     context.checking(new Expectations() {{
+      allowing (entryStoreFactory).getEntryStore(); 
+          will(returnValue(entryStore));
       allowing (entryStore).getEntry("1"); will(returnValue(page1));
       allowing (entryStore).getEntry("2"); will(returnValue(attachment1));
       allowing (entryStore).getEntry("3"); will(returnValue(page2));

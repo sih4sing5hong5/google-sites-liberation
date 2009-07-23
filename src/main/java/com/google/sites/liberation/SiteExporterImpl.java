@@ -47,63 +47,71 @@ import java.util.logging.Logger;
 final class SiteExporterImpl implements SiteExporter {
   
   private static final Logger logger = Logger.getLogger(
-      PageExporterImpl.class.getCanonicalName());
+      SiteExporterImpl.class.getCanonicalName());
   
   private final AppendableFactory appendableFactory;
   private final AttachmentDownloader attachmentDownloader;
-  private final EntryStore entryStore;
+  private final EntryStoreFactory entryStoreFactory;
   private final PageExporter pageExporter;
   private final PageRendererFactory pageRendererFactory;
   
   /**
    * Creates a new SiteExporter for the given AppendableFactory,
-   * AttachmentDownloader, EntryStore, PageExporter, and PageRendererFactory.
+   * AttachmentDownloader, EntryStoreFactory, PageExporter, and 
+   * PageRendererFactory.
    */
   @Inject
   SiteExporterImpl(AppendableFactory appendableFactory,
       AttachmentDownloader attachmentDownloader,
-      EntryStore entryStore,
+      EntryStoreFactory entryStoreFactory,
       PageExporter pageExporter,
       PageRendererFactory pageRendererFactory) {
     this.appendableFactory = checkNotNull(appendableFactory);
     this.attachmentDownloader = checkNotNull(attachmentDownloader);
-    this.entryStore = checkNotNull(entryStore);
+    this.entryStoreFactory = checkNotNull(entryStoreFactory);
     this.pageExporter = checkNotNull(pageExporter);
     this.pageRendererFactory = checkNotNull(pageRendererFactory);
   }
   
   @Override
-  public void exportSite(Iterable<BaseContentEntry<?>> entries, File root) {
+  public void exportSite(Iterable<BaseContentEntry<?>> entries, 
+      File rootDirectory) {
     checkNotNull(entries, "entries");
-    checkNotNull(root, "root");
+    checkNotNull(rootDirectory, "rootDirectory");
+    boolean someEntries = false;
     Set<String> pageIds = Sets.newHashSet();
     Set<String> attachmentIds = Sets.newHashSet();
+    EntryStore entryStore = entryStoreFactory.getEntryStore();
     for(BaseContentEntry<?> entry : entries) {
       entryStore.addEntry(entry);
+      someEntries = true;
       if (isPage(entry)) {
         pageIds.add(entry.getId());
       } else if (getType(entry) == ATTACHMENT) {
         attachmentIds.add(entry.getId());
       }
     }
+    if (!someEntries) {
+      logger.log(Level.WARNING, "No data returned. You may need to provide " +
+          "user credentials.");
+    }
     for(String id : pageIds) {
-      exportPage(id, root);
+      exportPage(id, rootDirectory, entryStore);
     }
     for(String id : attachmentIds) {
-      downloadAttachment(id, root);
+      downloadAttachment(id, rootDirectory, entryStore);
     }
   }
   
-  private void exportPage(String id, File root) {
+  private void exportPage(String id, File rootDirectory, EntryStore entryStore) {
     BaseContentEntry<?> entry = entryStore.getEntry(id);
-    File relativePath = getPath(entry);
+    File relativePath = getPath(entry, entryStore);
     if (relativePath != null) {
-      File folder = new File(root.getPath() + "/" + relativePath.getPath());
+      File folder = new File(rootDirectory, relativePath.getPath());
       folder.mkdirs();
       PageRenderer renderer = pageRendererFactory.getPageRenderer(entry, 
           entryStore);
-      File file = new File(folder.getPath() + "/" + 
-          entryStore.getName(id) + ".html");
+      File file = new File(folder, entryStore.getName(id) + ".html");
       Appendable out = null;
       try {
         out = appendableFactory.getAppendable(file);
@@ -122,14 +130,14 @@ final class SiteExporterImpl implements SiteExporter {
     }
   }
   
-  private void downloadAttachment(String id, File root) {
+  private void downloadAttachment(String id, File rootDirectory, 
+      EntryStore entryStore) {
     AttachmentEntry attachment = (AttachmentEntry) entryStore.getEntry(id);
-    File relativePath = getPath(attachment);
+    File relativePath = getPath(attachment, entryStore);
     if (relativePath != null) {
-      File folder = new File(root.getPath() + "/" + relativePath.getPath());
+      File folder = new File(rootDirectory, relativePath.getPath());
       folder.mkdirs();
-      File file = new File(folder.getPath() + "/" +
-          attachment.getTitle().getPlainText());
+      File file = new File(folder, attachment.getTitle().getPlainText());
       try {
         attachmentDownloader.download(attachment, file);
       } catch (IOException e) {
@@ -145,7 +153,7 @@ final class SiteExporterImpl implements SiteExporter {
    * if any of this entry's ancestors are missing. The empty string is returned
    * if the given entry has no parent.
    */
-  private File getPath(BaseContentEntry<?> entry) {
+  private File getPath(BaseContentEntry<?> entry, EntryStore entryStore) {
     Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
     if (parentLink == null) {
       return new File("");
@@ -155,7 +163,6 @@ final class SiteExporterImpl implements SiteExporter {
     if (parent == null) {
       return null;
     }
-    return new File(getPath(parent).getPath() + "/" + 
-        entryStore.getName(parentId));
+    return new File(getPath(parent, entryStore), entryStore.getName(parentId));
   }
 }

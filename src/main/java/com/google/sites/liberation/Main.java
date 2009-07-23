@@ -56,7 +56,7 @@ public class Main {
   private String name = null;
   
   @Option(name="-f", usage="directory in which to export")
-  private String path = "";
+  private String rootDirectory = "";
   
   // TODO(bsimon): Remove once no longer testing locally.
   @Option(name="-s", usage="server")
@@ -79,7 +79,7 @@ public class Main {
           domain + '/' + name;
       Iterable<BaseContentEntry<?>> entries = 
         new ContinuousContentFeed(service, new URL(feedUrl));
-      siteExporter.exportSite(entries, new File(path));
+      siteExporter.exportSite(entries, new File(rootDirectory));
     } catch (MalformedURLException e) {
       logger.log(Level.SEVERE, e.getMessage());
       throw new RuntimeException(e);
