@@ -17,6 +17,6 @@ class UpdatedComparator implements Comparator<BaseContentEntry<?>> {
    */
   @Override
   public int compare(BaseContentEntry<?> e1, BaseContentEntry<?> e2) {
-    return e1.getUpdated().compareTo(e2.getUpdated());
+    return e2.getUpdated().compareTo(e1.getUpdated());
   }
 }

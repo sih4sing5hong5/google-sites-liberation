@@ -20,7 +20,7 @@ import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 import static com.google.sites.liberation.EntryType.getType;
 
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
-import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.gdata.data.sites.ListPageEntry;
 import com.google.sites.liberation.EntryStore;
@@ -34,14 +34,14 @@ import com.google.sites.liberation.EntryStore;
 public class PageRendererFactoryImpl implements PageRendererFactory {
 
   @Override
-  public PageRenderer getPageRenderer(BaseContentEntry<?> entry,
+  public PageRenderer getPageRenderer(BasePageEntry<?> entry,
       EntryStore entryStore) {
     checkNotNull(entry, "entry");
     checkNotNull(entryStore, "entryStore");
     switch(getType(entry)) {
       case ANNOUNCEMENT:
       case WEB_PAGE:
-        return new BasePageRenderer<BaseContentEntry<?>>(entry, entryStore);
+        return new BasePageRenderer<BasePageEntry<?>>(entry, entryStore);
       case ANNOUNCEMENTS_PAGE:
         return new AnnouncementsPageRenderer((AnnouncementsPageEntry)entry, 
             entryStore);

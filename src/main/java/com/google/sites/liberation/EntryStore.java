@@ -17,6 +17,7 @@
 package com.google.sites.liberation;
 
 import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.BasePageEntry;
 
 import java.util.Collection;
 
@@ -41,17 +42,14 @@ public interface EntryStore {
   BaseContentEntry<?> getEntry(String id);
   
   /**
+   * Retrieves the parent of the entry with the given {@code id} or {@code null}
+   * if there is no such entry.
+   */
+  BasePageEntry<?> getParent(String id);
+  
+  /**
    * Returns a collection containing all entries with parent specified by the 
    * given {@code id}.
    */
   Collection<BaseContentEntry<?>> getChildren(String id);
-  
-  /**
-   * Returns a name for the entry with the given id, unique amongst the entry's
-   * siblings or {@code null} if there is no such entry.
-   * 
-   * @TODO(bsimon): Remove this method and replace with calls to getPageName()
-   * Greg approves my CL.
-   */
-  String getName(String id);
 }

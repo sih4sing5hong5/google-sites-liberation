@@ -20,10 +20,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.sites.liberation.EntryType.getType;
 import static com.google.sites.liberation.EntryType.isPage;
 
+import com.google.common.collect.Sets;
 import com.google.gdata.data.ILink;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.data.sites.CommentEntry;
 import com.google.gdata.data.sites.SitesLink;
 import com.google.sites.liberation.EntryStore;
@@ -39,25 +41,21 @@ import com.google.sites.liberation.elements.XmlElement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.TreeSet;
 
 /**
  * A basic implementation of PageRender that uses a 
- * {@code BaseContentEntry} and an {@code EntryStore} to render a basic web 
+ * {@code BasePageEntry} and an {@code EntryStore} to render a basic web 
  * page from a site.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  * 
  * @param <T> the type of entry being rendered
- * 
- * TODO(bsimon): Replace BaseContentEntry with BasePageRenderer once Greg 
- * approves my CL.
  */
-class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
+class BasePageRenderer<T extends BasePageEntry<?>> implements PageRenderer {
 
   protected final T entry;
   protected final EntryStore entryStore;
-  protected Collection<BaseContentEntry<?>> subpages;
+  protected Collection<BasePageEntry<?>> subpages;
   protected Collection<AttachmentEntry> attachments;
   protected Collection<CommentEntry> comments;
   
@@ -71,9 +69,9 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
   BasePageRenderer(T entry, EntryStore entryStore) {
     this.entry = checkNotNull(entry);
     this.entryStore = checkNotNull(entryStore);
-    subpages = new TreeSet<BaseContentEntry<?>>(new TitleComparator());
-    attachments = new TreeSet<AttachmentEntry>(new UpdatedComparator());
-    comments = new TreeSet<CommentEntry>(new UpdatedComparator());
+    subpages = Sets.newTreeSet(new TitleComparator());
+    attachments = Sets.newTreeSet(new UpdatedComparator());
+    comments = Sets.newTreeSet(new UpdatedComparator());
     for(BaseContentEntry<?> child : entryStore.getChildren(entry.getId())) {
       addChild(child);
     }
@@ -91,7 +89,7 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
       case COMMENT: comments.add((CommentEntry) child); break;
       default: 
         if (isPage(child)) {
-          subpages.add(child);
+          subpages.add((BasePageEntry<?>) child);
         }
     }
   }
@@ -114,7 +112,7 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
     for(BaseContentEntry<?> attachment : attachments) {
       XmlElement attachmentDiv = new EntryElement(attachment);
       XmlElement link = new TitleElement(attachment, "a");
-      String href = entryStore.getName(entry.getId()) + "/" + 
+      String href = entry.getPageName().getValue() + "/" + 
           attachment.getTitle().getPlainText();
       link.setAttribute("href", href);
       XmlElement updated = new UpdatedElement(attachment);
@@ -190,8 +188,8 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
       for(int j = 0; j <= i; j++) {
         path += "../";
       }
-      HyperLink link = new HyperLink(path + entryStore.getName(ancestor.getId()) 
-          + ".html", ancestor.getTitle().getPlainText());
+      HyperLink link = new HyperLink(path + "index.html", 
+          ancestor.getTitle().getPlainText());
       div.addElement(link);
       div.addText(" > ");
     }
@@ -212,9 +210,8 @@ class BasePageRenderer<T extends BaseContentEntry<?>> implements PageRenderer {
     div.addElement(new XmlElement("hr"));
     div.addText("Subpages (" + subpages.size() + "): ");
     boolean firstLink = true;
-    for(BaseContentEntry<?> subpage : subpages) {
-      String href = entryStore.getName(entry.getId()) + "/" + 
-          entryStore.getName(subpage.getId()) + ".html";
+    for(BasePageEntry<?> subpage : subpages) {
+      String href = subpage.getPageName().getValue() + "/index.html";
       if (!firstLink) {
         div.addText(", ");
       }

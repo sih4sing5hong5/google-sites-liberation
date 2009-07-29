@@ -22,6 +22,7 @@ import com.google.gdata.data.sites.AnnouncementEntry;
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.data.sites.CommentEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.gdata.data.sites.ListItemEntry;
@@ -98,14 +99,6 @@ public enum EntryType {
    */
   public static boolean isPage(BaseContentEntry<?> entry) {
     checkNotNull(entry);
-    switch(getType(entry)) {
-      case ANNOUNCEMENT:
-      case ANNOUNCEMENTS_PAGE:
-      case FILE_CABINET_PAGE:
-      case LIST_PAGE:
-      case WEB_PAGE:
-        return true;
-      default: return false;
-    }
+    return (entry instanceof BasePageEntry);
   }
 }

@@ -22,6 +22,7 @@ import static com.google.sites.liberation.EntryType.isPage;
 
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.data.sites.CommentEntry;
 import com.google.gdata.data.sites.ListItemEntry;
 import com.google.gdata.data.sites.ListPageEntry;
@@ -67,7 +68,7 @@ class ListPageRenderer extends BasePageRenderer<ListPageEntry> {
       case LIST_ITEM: listItems.add((ListItemEntry) child); break;
       default: 
         if (isPage(child)) {
-          subpages.add(child);
+          subpages.add((BasePageEntry<?>) child);
         }
     }
   }
@@ -103,7 +104,7 @@ class ListPageRenderer extends BasePageRenderer<ListPageEntry> {
   }
   
   private XmlElement getRow(ListItemEntry item) {
-    XmlElement element = new EntryElement(entry, "tr");
+    XmlElement element = new EntryElement(item, "tr");
     for(Field field : item.getFields()) {
       String val = (field.getValue() == null) ? "" : field.getValue();
       XmlElement cell = new XmlElement("td");

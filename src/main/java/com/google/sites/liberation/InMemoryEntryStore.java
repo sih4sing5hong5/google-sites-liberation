@@ -19,6 +19,7 @@ package com.google.sites.liberation;
 import com.google.gdata.data.ILink;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.data.sites.SitesLink;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Multimap;
@@ -40,7 +41,6 @@ final class InMemoryEntryStore implements EntryStore {
   private final Map<String, BaseContentEntry<?>> entries;
   private final Set<BaseContentEntry<?>> topLevelEntries;
   private final Multimap<String, BaseContentEntry<?>> children;
-  private final Map<String, String> names;
   
   /**
    * Creates a new InMemoryEntryStore which provides constant time storage 
@@ -50,7 +50,6 @@ final class InMemoryEntryStore implements EntryStore {
     entries = Maps.newHashMap();
     topLevelEntries = Sets.newHashSet();
     children = HashMultimap.create();
-    names = Maps.newHashMap();
   }
 
   @Override
@@ -61,30 +60,6 @@ final class InMemoryEntryStore implements EntryStore {
         "All entries must have a unique non-null id!");
     entries.put(id, entry);
     Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
-    if (EntryType.isPage(entry)) {
-      String niceTitle = getNiceTitle(entry);
-      String name = niceTitle;
-      Collection<BaseContentEntry<?>> siblings;
-      if (parentLink == null) {
-        siblings = topLevelEntries;
-      } else {
-        siblings = children.get(parentLink.getHref());
-      }
-      Set<String> siblingNames = Sets.newHashSet();
-      for(BaseContentEntry<?> sibling : siblings) {
-        siblingNames.add(names.get(sibling.getId()));
-      }
-      int num = 2;
-      while(siblingNames.contains(name)) {
-        name = niceTitle;
-        if (name.charAt(name.length() - 1) != '-') {
-          name += '-';
-        }
-        name += num;
-        num++;
-      }
-      names.put(id, name);
-    }
     if (parentLink == null) {
       topLevelEntries.add(entry);
     } else {
@@ -105,21 +80,13 @@ final class InMemoryEntryStore implements EntryStore {
   }
   
   @Override
-  public String getName(String id) {
+  public BasePageEntry<?> getParent(String id) {
     Preconditions.checkNotNull(id);
-    return names.get(id);
-  }
-  
-  /**
-   * Returns the given entry's title with all sequences of non-word characters
-   * (^[a-zA-z0-9_]) replaced by a single hyphen.
-   */
-  private static String getNiceTitle(BaseContentEntry<?> entry) {
-    String title = entry.getTitle().getPlainText();
-    String niceTitle = title.replaceAll("[\\W]+", "-");
-    if(niceTitle.length() == 0) {
-      niceTitle = "-";
+    BaseContentEntry<?> child = getEntry(id);
+    Link parentLink = child.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
+    if (parentLink == null || parentLink.getHref() == null) {
+      return null;
     }
-    return niceTitle;
+    return (BasePageEntry<?>) getEntry(parentLink.getHref());
   }
 }

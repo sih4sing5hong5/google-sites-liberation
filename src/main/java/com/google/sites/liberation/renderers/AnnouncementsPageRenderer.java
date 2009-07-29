@@ -20,20 +20,22 @@ import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 import static com.google.sites.liberation.EntryType.getType;
 import static com.google.sites.liberation.EntryType.isPage;
 
+import com.google.common.collect.Sets;
 import com.google.gdata.data.sites.AnnouncementEntry;
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.data.sites.CommentEntry;
 import com.google.sites.liberation.EntryStore;
 import com.google.sites.liberation.elements.AuthorElement;
 import com.google.sites.liberation.elements.ContentElement;
 import com.google.sites.liberation.elements.EntryElement;
 import com.google.sites.liberation.elements.TitleElement;
+import com.google.sites.liberation.elements.UpdatedElement;
 import com.google.sites.liberation.elements.XmlElement;
 
 import java.util.Collection;
-import java.util.TreeSet;
 
 /**
  * An extension of BasePageRenderer which implements 
@@ -65,7 +67,7 @@ class AnnouncementsPageRenderer extends
   protected void addChild(BaseContentEntry<?> child) {
     checkNotNull(child);
     if (announcements == null) {
-      announcements = new TreeSet<AnnouncementEntry>(new UpdatedComparator());
+      announcements = Sets.newTreeSet(new UpdatedComparator());
     }
     switch(getType(child)) {
       case ANNOUNCEMENT: announcements.add((AnnouncementEntry) child); break;
@@ -73,7 +75,7 @@ class AnnouncementsPageRenderer extends
       case COMMENT: comments.add((CommentEntry) child); break;
       default: 
         if (isPage(child)) {
-          subpages.add(child);
+          subpages.add((BasePageEntry<?>) child);
         }
     }
   }
@@ -90,15 +92,15 @@ class AnnouncementsPageRenderer extends
     for(AnnouncementEntry announcement : announcements) {
       XmlElement announceDiv = new EntryElement(announcement);
       XmlElement title = new XmlElement("h4");
-      String href = entryStore.getName(entry.getId()) + "/" + 
-          entryStore.getName(announcement.getId()) + ".html";
+      String href = announcement.getPageName().getValue() + "/index.html";
       XmlElement titleLink = new TitleElement(announcement, "a");
       titleLink.setAttribute("href", href);
       title.addElement(titleLink);
       announceDiv.addElement(title);
       XmlElement author = new AuthorElement(announcement);
-      announceDiv.addText("posted by ");
-      announceDiv.addElement(author);
+      announceDiv.addText("posted by ").addElement(author);
+      XmlElement updated = new UpdatedElement(announcement);
+      announceDiv.addText(" on ").addElement(updated);
       XmlElement mainHtml = new ContentElement(announcement);
       announceDiv.addElement(mainHtml);
       div.addElement(new XmlElement("hr"));

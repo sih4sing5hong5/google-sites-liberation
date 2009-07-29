@@ -26,6 +26,7 @@ import com.google.gdata.data.ILink;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.data.sites.SitesLink;
 import com.google.inject.Inject;
 import com.google.sites.liberation.renderers.PageRenderer;
@@ -104,14 +105,14 @@ final class SiteExporterImpl implements SiteExporter {
   }
   
   private void exportPage(String id, File rootDirectory, EntryStore entryStore) {
-    BaseContentEntry<?> entry = entryStore.getEntry(id);
+    BasePageEntry<?> entry = (BasePageEntry<?>) entryStore.getEntry(id);
     File relativePath = getPath(entry, entryStore);
     if (relativePath != null) {
       File folder = new File(rootDirectory, relativePath.getPath());
       folder.mkdirs();
       PageRenderer renderer = pageRendererFactory.getPageRenderer(entry, 
           entryStore);
-      File file = new File(folder, entryStore.getName(id) + ".html");
+      File file = new File(folder, "index.html");
       Appendable out = null;
       try {
         out = appendableFactory.getAppendable(file);
@@ -133,36 +134,37 @@ final class SiteExporterImpl implements SiteExporter {
   private void downloadAttachment(String id, File rootDirectory, 
       EntryStore entryStore) {
     AttachmentEntry attachment = (AttachmentEntry) entryStore.getEntry(id);
-    File relativePath = getPath(attachment, entryStore);
-    if (relativePath != null) {
-      File folder = new File(rootDirectory, relativePath.getPath());
-      folder.mkdirs();
-      File file = new File(folder, attachment.getTitle().getPlainText());
-      try {
-        attachmentDownloader.download(attachment, file);
-      } catch (IOException e) {
-        String message = "Error reading from " + attachment.getEnclosureLink()
-            .getHref() + "and/or writing to " + file.getPath();
-        logger.log(Level.WARNING, message, e);
+    BasePageEntry<?> parent = entryStore.getParent(id);
+    if (parent != null) {
+      File relativePath = getPath(parent, entryStore);
+      if (relativePath != null) {
+        File folder = new File(rootDirectory, relativePath.getPath());
+        folder.mkdirs();
+        File file = new File(folder, attachment.getTitle().getPlainText());
+        try {
+          attachmentDownloader.download(attachment, file);
+        } catch (IOException e) {
+          String message = "Error reading from " + attachment.getEnclosureLink()
+              .getHref() + "and/or writing to " + file.getPath();
+          logger.log(Level.WARNING, message, e);
+        }
       }
     }
   }
   
   /**
-   * Returns the site-relative path to the given entry, or {@code null} if
-   * if any of this entry's ancestors are missing. The empty string is returned
-   * if the given entry has no parent.
+   * Returns the site-relative folder path corresponding to the given page, or 
+   * {@code null} if any of the page's ancestors are missing.
    */
-  private File getPath(BaseContentEntry<?> entry, EntryStore entryStore) {
+  private File getPath(BasePageEntry<?> entry, EntryStore entryStore) {
     Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
     if (parentLink == null) {
-      return new File("");
+      return new File(entry.getPageName().getValue());
     }
-    String parentId = parentLink.getHref();
-    BaseContentEntry<?> parent = entryStore.getEntry(parentId);
+    BasePageEntry<?> parent = entryStore.getParent(entry.getId());
     if (parent == null) {
       return null;
     }
-    return new File(getPath(parent, entryStore), entryStore.getName(parentId));
+    return new File(getPath(parent, entryStore), entry.getPageName().getValue());
   }
 }

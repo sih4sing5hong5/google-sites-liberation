@@ -16,7 +16,7 @@
 
 package com.google.sites.liberation.renderers;
 
-import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.BasePageEntry;
 import com.google.inject.ImplementedBy;
 import com.google.sites.liberation.EntryStore;
 
@@ -32,5 +32,5 @@ public interface PageRendererFactory {
    * Returns an appropriate implementation of PageRenderer for the given
    * BaseContentEntry and EntryStore.
    */
-  PageRenderer getPageRenderer(BaseContentEntry<?> entry, EntryStore entryStore);
+  PageRenderer getPageRenderer(BasePageEntry<?> entry, EntryStore entryStore);
 }

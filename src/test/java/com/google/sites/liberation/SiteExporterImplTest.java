@@ -24,8 +24,10 @@ import com.google.gdata.data.ILink;
 import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.gdata.data.sites.ListPageEntry;
+import com.google.gdata.data.sites.PageName;
 import com.google.gdata.data.sites.SitesLink;
 import com.google.gdata.data.sites.WebPageEntry;
 import com.google.sites.liberation.renderers.PageRenderer;
@@ -101,9 +103,10 @@ public class SiteExporterImplTest {
   
   @Test
   public void testOnePage() throws IOException {
-    final BaseContentEntry<?> page = new WebPageEntry();
+    final BasePageEntry<?> page = new WebPageEntry();
     page.setId("1");
     page.setTitle(new PlainTextConstruct("Page 1"));
+    page.setPageName(new PageName("Page-1"));
     entries.add(page);
     final PageRenderer pageRenderer = context.mock(PageRenderer.class);
     final Appendable out = context.mock(Appendable.class);
@@ -112,11 +115,11 @@ public class SiteExporterImplTest {
       allowing (entryStoreFactory).getEntryStore(); 
           will(returnValue(entryStore));
       allowing (entryStore).getEntry("1"); will(returnValue(page));
-      allowing (entryStore).getName("1"); will(returnValue("Page-1"));
       oneOf (entryStore).addEntry(page);
       oneOf (pageRendererFactory).getPageRenderer(page, entryStore); 
           will(returnValue(pageRenderer));
-      oneOf (appendableFactory).getAppendable(new File("path/Page-1.html"));
+      oneOf (appendableFactory).getAppendable(
+          new File("path/Page-1/index.html"));
           will(returnValue(out));
       oneOf (pageExporter).exportPage(pageRenderer, out);
     }});
@@ -126,9 +129,10 @@ public class SiteExporterImplTest {
   
   @Test
   public void testOnePageWithAttachment() throws IOException {
-    final BaseContentEntry<?> page = new FileCabinetPageEntry();
+    final BasePageEntry<?> page = new FileCabinetPageEntry();
     page.setId("1");
     page.setTitle(new PlainTextConstruct("Page 1"));
+    page.setPageName(new PageName("Page-1"));
     final BaseContentEntry<?> attachment = new AttachmentEntry();
     attachment.setId("2");
     attachment.setTitle(new PlainTextConstruct("attach this.wow"));
@@ -143,12 +147,13 @@ public class SiteExporterImplTest {
           will(returnValue(entryStore));
       allowing (entryStore).getEntry("1"); will(returnValue(page));
       allowing (entryStore).getEntry("2"); will(returnValue(attachment));
-      allowing (entryStore).getName("1"); will(returnValue("Page-1"));
+      allowing (entryStore).getParent("2"); will(returnValue(page));
       oneOf (entryStore).addEntry(page);
       oneOf (entryStore).addEntry(attachment);
       oneOf (pageRendererFactory).getPageRenderer(page, entryStore); 
           will(returnValue(pageRenderer));
-      oneOf (appendableFactory).getAppendable(new File("path/Page-1.html"));
+      oneOf (appendableFactory).getAppendable(
+          new File("path/Page-1/index.html"));
           will(returnValue(out));
       oneOf (pageExporter).exportPage(pageRenderer, out);
     }});
@@ -160,16 +165,18 @@ public class SiteExporterImplTest {
   
   @Test
   public void testSeveralOfEach() throws IOException {
-    final BaseContentEntry<?> page1 = new WebPageEntry();
+    final BasePageEntry<?> page1 = new WebPageEntry();
     page1.setId("1");
     page1.setTitle(new PlainTextConstruct("Page 1"));
+    page1.setPageName(new PageName("Page-1"));
     final BaseContentEntry<?> attachment1 = new AttachmentEntry();
     attachment1.setId("2");
     attachment1.setTitle(new PlainTextConstruct("attach this.wow"));
     attachment1.addLink(SitesLink.Rel.PARENT, ILink.Type.ATOM, "1");
-    final BaseContentEntry<?> page2 = new ListPageEntry();
+    final BasePageEntry<?> page2 = new ListPageEntry();
     page2.setId("3");
     page2.setTitle(new PlainTextConstruct("Page 2"));
+    page2.setPageName(new PageName("Page-2"));
     page2.addLink(SitesLink.Rel.PARENT, ILink.Type.ATOM, "1");
     final BaseContentEntry<?> attachment2 = new AttachmentEntry();
     attachment2.setId("4");
@@ -201,8 +208,10 @@ public class SiteExporterImplTest {
       allowing (entryStore).getEntry("3"); will(returnValue(page2));
       allowing (entryStore).getEntry("4"); will(returnValue(attachment2));
       allowing (entryStore).getEntry("5"); will(returnValue(attachment3));
-      allowing (entryStore).getName("1"); will(returnValue("Page-1"));
-      allowing (entryStore).getName("3"); will(returnValue("Page-2"));
+      allowing (entryStore).getParent("2"); will(returnValue(page1));
+      allowing (entryStore).getParent("3"); will(returnValue(page1));
+      allowing (entryStore).getParent("4"); will(returnValue(page1));
+      allowing (entryStore).getParent("5"); will(returnValue(page2));
       oneOf (entryStore).addEntry(page1);
       oneOf (entryStore).addEntry(attachment1);
       oneOf (entryStore).addEntry(page2);
@@ -212,10 +221,11 @@ public class SiteExporterImplTest {
           will(returnValue(pageRenderer1));
       oneOf (pageRendererFactory).getPageRenderer(page2, entryStore); 
           will(returnValue(pageRenderer2));
-      oneOf (appendableFactory).getAppendable(new File("path/Page-1.html"));
+      oneOf (appendableFactory).getAppendable(
+          new File("path/Page-1/index.html"));
           will(returnValue(out1));
       oneOf (appendableFactory).getAppendable(
-          new File("path/Page-1/Page-2.html"));
+          new File("path/Page-1/Page-2/index.html"));
           will(returnValue(out2));
       oneOf (pageExporter).exportPage(pageRenderer1, out1);
       oneOf (pageExporter).exportPage(pageRenderer2, out2);

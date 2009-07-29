@@ -36,7 +36,7 @@ import java.util.List;
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-public class SitesServiceEntryProvider implements EntryProvider {
+final class SitesServiceEntryProvider implements EntryProvider {
 
   SitesService service;
   

@@ -102,29 +102,6 @@ public class InMemoryEntryStoreTest {
     assertTrue(entryStore.getChildren("entry4").isEmpty());
   }
   
-  @Test
-  public void testGetName() {
-    assertNull(entryStore.getName("entry1"));
-    entryStore.addEntry(getNewEntry("entry1"));
-    assertEquals("-", entryStore.getName("entry1"));
-    entryStore.addEntry(getNewEntry("entry2"));
-    assertEquals("-2", entryStore.getName("entry2"));
-    entryStore.addEntry(getNewEntry("entry3"));
-    assertEquals("-3", entryStore.getName("entry3"));
-    entryStore.addEntry(getNewEntry("entry4", "entry1"));
-    assertEquals("-", entryStore.getName("entry4"));
-    entryStore.addEntry(getNewEntry("entry5", "entry1"));
-    assertEquals("-2", entryStore.getName("entry5"));
-    entryStore.addEntry(getNewEntry("entry6", "entry1", "hey&*3_^^\"t"));
-    assertEquals("hey-3_-t", entryStore.getName("entry6"));
-    entryStore.addEntry(getNewEntry("entry7", "entry1", "hey-3_-t"));
-    assertEquals("hey-3_-t-2", entryStore.getName("entry7"));
-    entryStore.addEntry(getNewEntry("entry8", "entry1", "hey-3_-t-2"));
-    assertEquals("hey-3_-t-2-2", entryStore.getName("entry8"));
-    entryStore.addEntry(getNewEntry("entry9", "entry1", "hey-3_-t-1"));
-    assertEquals("hey-3_-t-1", entryStore.getName("entry9"));
-  }
-  
   private BaseContentEntry<?> getNewEntry(String id) {
     return getNewEntry(id, null, "");
   }
