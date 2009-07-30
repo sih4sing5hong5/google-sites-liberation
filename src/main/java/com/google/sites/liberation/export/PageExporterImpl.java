@@ -18,7 +18,8 @@ package com.google.sites.liberation.export;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.sites.liberation.renderers.EntryElement;
+import com.google.inject.Inject;
+import com.google.sites.liberation.renderers.XmlElementFactory;
 import com.google.sites.liberation.util.XmlElement;
 import com.google.sites.liberation.renderers.PageRenderer;
 
@@ -32,6 +33,13 @@ import java.io.IOException;
  */
 final class PageExporterImpl implements PageExporter {
   
+  private XmlElementFactory elementFactory;
+  
+  @Inject
+  PageExporterImpl(XmlElementFactory elementFactory) {
+    this.elementFactory = checkNotNull(elementFactory);
+  }
+  
   @Override
   public void exportPage(PageRenderer renderer, Appendable out) 
       throws IOException {
@@ -39,7 +47,8 @@ final class PageExporterImpl implements PageExporter {
     checkNotNull(out, "out");
     XmlElement html = new XmlElement("html");
     XmlElement body = new XmlElement("body");
-    XmlElement mainDiv = new EntryElement(renderer.getEntry());
+    XmlElement mainDiv = elementFactory.getEntryElement(renderer.getEntry(), 
+        "div");
     XmlElement parentLinks = renderer.renderParentLinks();
     if (parentLinks != null) {
       mainDiv.addElement(parentLinks);

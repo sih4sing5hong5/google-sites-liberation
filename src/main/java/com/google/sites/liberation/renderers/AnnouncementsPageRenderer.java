@@ -85,18 +85,20 @@ class AnnouncementsPageRenderer extends
     }  
     XmlElement div = new XmlElement("div");
     for(AnnouncementEntry announcement : announcements) {
-      XmlElement announceDiv = new EntryElement(announcement);
+      XmlElement announceDiv = elementFactory.getEntryElement(announcement, 
+          "div");
       XmlElement title = new XmlElement("h4");
       String href = announcement.getPageName().getValue() + "/index.html";
-      XmlElement titleLink = new TitleElement(announcement, "a");
+      XmlElement titleLink = new XmlElement("a").addElement(
+          elementFactory.getTitleElement(announcement));
       titleLink.setAttribute("href", href);
       title.addElement(titleLink);
       announceDiv.addElement(title);
-      XmlElement author = new AuthorElement(announcement);
+      XmlElement author = elementFactory.getAuthorElement(announcement);
       announceDiv.addText("posted by ").addElement(author);
-      XmlElement updated = new UpdatedElement(announcement);
+      XmlElement updated = elementFactory.getUpdatedElement(announcement);
       announceDiv.addText(" on ").addElement(updated);
-      XmlElement mainHtml = new ContentElement(announcement);
+      XmlElement mainHtml = elementFactory.getContentElement(announcement);
       announceDiv.addElement(mainHtml);
       div.addElement(new XmlElement("hr"));
       div.addElement(announceDiv);

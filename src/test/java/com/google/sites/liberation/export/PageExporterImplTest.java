@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.WebPageEntry;
 import com.google.sites.liberation.util.XmlElement;
-import com.google.sites.liberation.renderers.EntryElement;
+import com.google.sites.liberation.renderers.XmlElementFactory;
 import com.google.sites.liberation.renderers.PageRenderer;
 
 import org.junit.Before;
@@ -40,13 +40,15 @@ public class PageExporterImplTest {
   private Mockery context;
   private PageRenderer renderer;
   private PageExporter exporter;
+  private XmlElementFactory elementFactory;
   private Appendable out;
   
   @Before
   public void before() {
     context = new JUnit4Mockery();
     renderer = context.mock(PageRenderer.class);
-    exporter = new PageExporterImpl();
+    elementFactory = context.mock(XmlElementFactory.class);
+    exporter = new PageExporterImpl(elementFactory);
     out = new StringBuilder();
   }
   
@@ -66,6 +68,8 @@ public class PageExporterImplTest {
   public void testFullExport() throws IOException {
     final BaseContentEntry<?> entry = new WebPageEntry();
     entry.setId("identification");
+    final XmlElement mainDiv = new XmlElement("div").setAttribute("class",
+        "hentry webpage");
     final XmlElement parentLinks = new XmlElement("span").addText("parents");
     final XmlElement title = new XmlElement("h3").addText("Title");
     final XmlElement content = new XmlElement("div").addXml("<b>Whoo!</b>");
@@ -77,6 +81,8 @@ public class PageExporterImplTest {
     
     context.checking(new Expectations() {{
       oneOf (renderer).getEntry(); will(returnValue(entry));
+      oneOf (elementFactory).getEntryElement(entry, "div");
+          will(returnValue(mainDiv));
       oneOf (renderer).renderParentLinks(); will(returnValue(parentLinks));
       oneOf (renderer).renderTitle(); will(returnValue(title));
       oneOf (renderer).renderContent(); will(returnValue(content));
@@ -87,12 +93,13 @@ public class PageExporterImplTest {
     }});
     
     exporter.exportPage(renderer, out);
-    XmlElement wrapper = new EntryElement(entry);
-    wrapper.addElement(parentLinks);
-    wrapper.addElement(title).addElement(content).addElement(additional)
-        .addElement(subpages).addElement(attachments).addElement(comments);
+    XmlElement expectedDiv = new XmlElement("div").setAttribute("class",
+        "hentry webpage");
+    expectedDiv.addElement(parentLinks).addElement(title).addElement(content)
+        .addElement(additional).addElement(subpages).addElement(attachments)
+        .addElement(comments);
     XmlElement document = new XmlElement("html");
-    document.addElement(new XmlElement("body").addElement(wrapper));
+    document.addElement(new XmlElement("body").addElement(expectedDiv));
     assertEquals(document.toString(), out.toString());
   }
   
@@ -100,6 +107,8 @@ public class PageExporterImplTest {
   public void testSomeNullExport() throws IOException {
     final BaseContentEntry<?> entry = new WebPageEntry();
     entry.setId("identification");
+    final XmlElement mainDiv = new XmlElement("div").setAttribute("class",
+        "hentry webpage").setAttribute("id", "identification");
     final XmlElement parentLinks = null;
     final XmlElement title = new XmlElement("h3").addText("Title");
     final XmlElement content = new XmlElement("div").addXml("<b>Whoo!</b>");
@@ -110,6 +119,8 @@ public class PageExporterImplTest {
     
     context.checking(new Expectations() {{
       oneOf (renderer).getEntry(); will(returnValue(entry));
+      oneOf (elementFactory).getEntryElement(entry, "div");
+          will(returnValue(mainDiv));
       oneOf (renderer).renderParentLinks(); will(returnValue(parentLinks));
       oneOf (renderer).renderTitle(); will(returnValue(title));
       oneOf (renderer).renderContent(); will(returnValue(content));
@@ -120,11 +131,12 @@ public class PageExporterImplTest {
     }});
     
     exporter.exportPage(renderer, out);
-    XmlElement wrapper = new EntryElement(entry);
-    wrapper.addElement(title);
-    wrapper.addElement(content);
+    XmlElement expectedDiv = new XmlElement("div").setAttribute("class",
+        "hentry webpage").setAttribute("id", "identification");
+    expectedDiv.addElement(title);
+    expectedDiv.addElement(content);
     XmlElement document = new XmlElement("html");
-    document.addElement(new XmlElement("body").addElement(wrapper));
+    document.addElement(new XmlElement("body").addElement(expectedDiv));
     assertEquals(document.toString(), out.toString());
   }
 }

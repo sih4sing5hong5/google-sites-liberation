@@ -100,7 +100,7 @@ class ListPageRenderer extends BasePageRenderer<ListPageEntry> {
   }
   
   private XmlElement getRow(ListItemEntry item) {
-    XmlElement element = new EntryElement(item, "tr");
+    XmlElement element = elementFactory.getEntryElement(item, "tr");
     for(Field field : item.getFields()) {
       String val = (field.getValue() == null) ? "" : field.getValue();
       XmlElement cell = new XmlElement("td");
@@ -110,11 +110,14 @@ class ListPageRenderer extends BasePageRenderer<ListPageEntry> {
       element.addElement(cell);
     }
     XmlElement authorCell = new XmlElement("td");
-    element.addElement(authorCell.addElement(new AuthorElement(item)));
+    element.addElement(authorCell.addElement(
+        elementFactory.getAuthorElement(item)));
     XmlElement revisionCell = new XmlElement("td");
-    element.addElement(revisionCell.addElement(new RevisionElement(item)));
+    element.addElement(revisionCell.addElement(
+        elementFactory.getRevisionElement(item)));
     XmlElement updatedCell = new XmlElement("td");
-    element.addElement(updatedCell.addElement(new UpdatedElement(item)));
+    element.addElement(updatedCell.addElement(
+        elementFactory.getUpdatedElement(item)));
     return element;
   }
 }

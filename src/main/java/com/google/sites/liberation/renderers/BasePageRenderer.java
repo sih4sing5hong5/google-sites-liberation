@@ -51,6 +51,7 @@ class BasePageRenderer<T extends BasePageEntry<?>> implements PageRenderer {
   protected Collection<BasePageEntry<?>> subpages;
   protected Collection<AttachmentEntry> attachments;
   protected Collection<CommentEntry> comments;
+  protected XmlElementFactory elementFactory;
   
   /** 
    * Creates a new instance of BasePageRenderer.
@@ -68,6 +69,7 @@ class BasePageRenderer<T extends BasePageEntry<?>> implements PageRenderer {
     for(BaseContentEntry<?> child : entryStore.getChildren(entry.getId())) {
       addChild(child);
     }
+    elementFactory = new XmlElementFactoryImpl();
   }
   
   /**
@@ -103,14 +105,16 @@ class BasePageRenderer<T extends BasePageEntry<?>> implements PageRenderer {
     h4.addText("Attachments (" + attachments.size() + ")");
     div.addElement(h4);
     for(BaseContentEntry<?> attachment : attachments) {
-      XmlElement attachmentDiv = new EntryElement(attachment);
-      XmlElement link = new TitleElement(attachment, "a");
+      XmlElement attachmentDiv = elementFactory.getEntryElement(attachment, 
+          "div");
+      XmlElement link = new XmlElement("a").addElement(
+          elementFactory.getTitleElement(attachment));
       String href = entry.getPageName().getValue() + "/" + 
           attachment.getTitle().getPlainText();
       link.setAttribute("href", href);
-      XmlElement updated = new UpdatedElement(attachment);
-      XmlElement author = new AuthorElement(attachment);
-      XmlElement revision = new RevisionElement(attachment);
+      XmlElement updated = elementFactory.getUpdatedElement(attachment);
+      XmlElement author = elementFactory.getAuthorElement(attachment);
+      XmlElement revision = elementFactory.getRevisionElement(attachment);
       attachmentDiv.addElement(link);
       attachmentDiv.addText(" - on ").addElement(updated);
       attachmentDiv.addText(" by ").addElement(author);
@@ -131,11 +135,11 @@ class BasePageRenderer<T extends BasePageEntry<?>> implements PageRenderer {
     h4.addText("Comments (" + comments.size() + ")");
     div.addElement(h4);
     for(BaseContentEntry<?> comment : comments) {
-      XmlElement commentDiv = new EntryElement(comment);
-      XmlElement author = new AuthorElement(comment);
-      XmlElement updated = new UpdatedElement(comment);
-      XmlElement revision = new RevisionElement(comment);
-      XmlElement content = new ContentElement(comment);
+      XmlElement commentDiv = elementFactory.getEntryElement(comment, "div");
+      XmlElement author = elementFactory.getAuthorElement(comment);
+      XmlElement updated = elementFactory.getUpdatedElement(comment);
+      XmlElement revision = elementFactory.getRevisionElement(comment);
+      XmlElement content = elementFactory.getContentElement(comment);
       commentDiv.addElement(author).addText(" - ").addElement(updated);
       commentDiv.addText(" (Version ").addElement(revision).addText(")");
       commentDiv.addElement(content);
@@ -148,10 +152,10 @@ class BasePageRenderer<T extends BasePageEntry<?>> implements PageRenderer {
   public XmlElement renderContent() {
     XmlElement div = new XmlElement("div");
     div.addText("Updated on ");
-    div.addElement(new UpdatedElement(entry));
+    div.addElement(elementFactory.getUpdatedElement(entry));
     div.addText(" by ");
-    div.addElement(new AuthorElement(entry));
-    div.addElement(new ContentElement(entry));
+    div.addElement(elementFactory.getAuthorElement(entry));
+    div.addElement(elementFactory.getContentElement(entry));
     return div;
   }
 
@@ -181,7 +185,7 @@ class BasePageRenderer<T extends BasePageEntry<?>> implements PageRenderer {
       for(int j = 0; j <= i; j++) {
         path += "../";
       }
-      HyperLink link = new HyperLink(path + "index.html", 
+      XmlElement link = elementFactory.getHyperLink(path + "index.html", 
           ancestor.getTitle().getPlainText());
       div.addElement(link);
       div.addText(" > ");
@@ -208,7 +212,7 @@ class BasePageRenderer<T extends BasePageEntry<?>> implements PageRenderer {
       if (!firstLink) {
         div.addText(", ");
       }
-      div.addElement(new HyperLink(href, subpage.getTitle().getPlainText()));
+      div.addElement(elementFactory.getHyperLink(href, subpage.getTitle().getPlainText()));
       firstLink = false;
     }
     return div;
@@ -216,7 +220,8 @@ class BasePageRenderer<T extends BasePageEntry<?>> implements PageRenderer {
 
   @Override
   public XmlElement renderTitle() {
-    XmlElement title = new TitleElement(entry, "h3");
+    XmlElement title = new XmlElement("h3").addElement(
+        elementFactory.getTitleElement(entry));
     return title;
   }
 }

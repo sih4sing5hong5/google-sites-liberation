@@ -50,15 +50,16 @@ class FileCabinetPageRenderer extends BasePageRenderer<FileCabinetPageEntry> {
     }
     XmlElement table = new XmlElement("table");
     for(AttachmentEntry attachment : attachments) {
-      XmlElement row = new EntryElement(attachment, "tr");
-      XmlElement titleCell = new TitleElement(attachment, "td");
+      XmlElement row = elementFactory.getEntryElement(attachment, "tr");
+      XmlElement titleCell = new XmlElement("td").addElement(
+          elementFactory.getTitleElement(attachment));
       row.addElement(titleCell);
-      XmlElement updated = new UpdatedElement(attachment);
+      XmlElement updated = elementFactory.getUpdatedElement(attachment);
       XmlElement updatedCell = new XmlElement("td");
       row.addElement((new XmlElement("td")).addElement(updated));
-      XmlElement author = new AuthorElement(attachment);
+      XmlElement author = elementFactory.getAuthorElement(attachment);
       row.addElement((new XmlElement("td")).addElement(author));
-      XmlElement revision = new RevisionElement(attachment);
+      XmlElement revision = elementFactory.getRevisionElement(attachment);
       row.addElement((new XmlElement("td")).addText("(Version ")
           .addElement(revision).addText(")"));
       table.addElement(row);
