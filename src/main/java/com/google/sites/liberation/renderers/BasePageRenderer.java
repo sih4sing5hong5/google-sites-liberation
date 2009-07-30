@@ -17,8 +17,8 @@
 package com.google.sites.liberation.renderers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.sites.liberation.EntryType.getType;
-import static com.google.sites.liberation.EntryType.isPage;
+import static com.google.sites.liberation.util.EntryType.getType;
+import static com.google.sites.liberation.util.EntryType.isPage;
 
 import com.google.common.collect.Sets;
 import com.google.gdata.data.ILink;
@@ -28,15 +28,8 @@ import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.data.sites.CommentEntry;
 import com.google.gdata.data.sites.SitesLink;
-import com.google.sites.liberation.EntryStore;
-import com.google.sites.liberation.elements.AuthorElement;
-import com.google.sites.liberation.elements.ContentElement;
-import com.google.sites.liberation.elements.EntryElement;
-import com.google.sites.liberation.elements.HyperLink;
-import com.google.sites.liberation.elements.RevisionElement;
-import com.google.sites.liberation.elements.TitleElement;
-import com.google.sites.liberation.elements.UpdatedElement;
-import com.google.sites.liberation.elements.XmlElement;
+import com.google.sites.liberation.util.EntryStore;
+import com.google.sites.liberation.util.XmlElement;
 
 import java.util.ArrayList;
 import java.util.Collection;

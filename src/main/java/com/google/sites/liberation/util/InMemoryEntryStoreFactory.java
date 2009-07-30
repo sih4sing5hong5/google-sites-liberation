@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.renderers;
-
-import com.google.gdata.data.sites.BasePageEntry;
-import com.google.inject.ImplementedBy;
-import com.google.sites.liberation.util.EntryStore;
+package com.google.sites.liberation.util;
 
 /**
- * Used to create appropriate implementations of PageRenderer.
+ * Provides new InMemoryEntryStore's.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(PageRendererFactoryImpl.class)
-public interface PageRendererFactory {
+public class InMemoryEntryStoreFactory implements EntryStoreFactory {
 
   /**
-   * Returns an appropriate implementation of PageRenderer for the given
-   * BaseContentEntry and EntryStore.
+   * Returns a new InMemoryEntryStore.
    */
-  PageRenderer getPageRenderer(BasePageEntry<?> entry, EntryStore entryStore);
+  public EntryStore getEntryStore() {
+    return new InMemoryEntryStore();
+  }
 }

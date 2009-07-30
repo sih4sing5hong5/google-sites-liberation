@@ -14,23 +14,26 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.renderers;
+package com.google.sites.liberation.export;
 
-import com.google.gdata.data.sites.BasePageEntry;
-import com.google.inject.ImplementedBy;
-import com.google.sites.liberation.util.EntryStore;
+import com.google.gdata.client.Query;
+import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.util.ServiceException;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
- * Used to create appropriate implementations of PageRenderer.
+ * Returns a list of {@code BaseContentEntry}'s for a given 
+ * query.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(PageRendererFactoryImpl.class)
-public interface PageRendererFactory {
-
+interface EntryDownloader {
+  
   /**
-   * Returns an appropriate implementation of PageRenderer for the given
-   * BaseContentEntry and EntryStore.
+   * Returns list of entries for the given query.
    */
-  PageRenderer getPageRenderer(BasePageEntry<?> entry, EntryStore entryStore);
+  @SuppressWarnings("unchecked")
+  List<BaseContentEntry<?>> getEntries(Query query) throws IOException, ServiceException;
 }

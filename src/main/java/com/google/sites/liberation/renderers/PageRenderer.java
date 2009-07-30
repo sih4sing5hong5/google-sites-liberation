@@ -17,7 +17,7 @@
 package com.google.sites.liberation.renderers;
 
 import com.google.gdata.data.sites.BaseContentEntry;
-import com.google.sites.liberation.elements.XmlElement;
+import com.google.sites.liberation.util.XmlElement;
 
 /**
  * Defines an object that can render the different components

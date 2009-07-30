@@ -20,13 +20,8 @@ import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
-import com.google.sites.liberation.EntryStore;
-import com.google.sites.liberation.elements.AuthorElement;
-import com.google.sites.liberation.elements.EntryElement;
-import com.google.sites.liberation.elements.RevisionElement;
-import com.google.sites.liberation.elements.TitleElement;
-import com.google.sites.liberation.elements.UpdatedElement;
-import com.google.sites.liberation.elements.XmlElement;
+import com.google.sites.liberation.util.EntryStore;
+import com.google.sites.liberation.util.XmlElement;
 
 /**
  * An extension of BasePageRenderer which implements 

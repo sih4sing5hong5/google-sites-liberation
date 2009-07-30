@@ -14,23 +14,29 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.renderers;
+package com.google.sites.liberation.export;
 
-import com.google.gdata.data.sites.BasePageEntry;
-import com.google.inject.ImplementedBy;
-import com.google.sites.liberation.util.EntryStore;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 /**
- * Used to create appropriate implementations of PageRenderer.
+ * Implements {@link AppendableFactory} to provide a 
+ * {@code BufferedWriter} for a given file name.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(PageRendererFactoryImpl.class)
-public interface PageRendererFactory {
-
+final class BufferedWriterFactory implements AppendableFactory {
+  
   /**
-   * Returns an appropriate implementation of PageRenderer for the given
-   * BaseContentEntry and EntryStore.
+   * Returns an Appendable corresponding to the given file name.
    */
-  PageRenderer getPageRenderer(BasePageEntry<?> entry, EntryStore entryStore);
+  @Override
+  public Appendable getAppendable(File file) throws IOException {
+    checkNotNull(file);
+    return new BufferedWriter(new FileWriter(file));
+  }
 }

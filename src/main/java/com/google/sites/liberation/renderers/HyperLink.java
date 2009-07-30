@@ -16,21 +16,26 @@
 
 package com.google.sites.liberation.renderers;
 
-import com.google.gdata.data.sites.BasePageEntry;
-import com.google.inject.ImplementedBy;
-import com.google.sites.liberation.util.EntryStore;
+import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
+
+import com.google.sites.liberation.util.XmlElement;
 
 /**
- * Used to create appropriate implementations of PageRenderer.
- * 
+ * Extends XmlElement to allow the creation of a hyper link
+ * in a single statement.
+ *
  * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(PageRendererFactoryImpl.class)
-public interface PageRendererFactory {
+final class HyperLink extends XmlElement {
 
   /**
-   * Returns an appropriate implementation of PageRenderer for the given
-   * BaseContentEntry and EntryStore.
+   * Creates a new HyperLink with the given href and display text.
    */
-  PageRenderer getPageRenderer(BasePageEntry<?> entry, EntryStore entryStore);
+  public HyperLink(String href, String text) {
+    super("a");
+    checkNotNull(href, "href");
+    checkNotNull(text, "text");
+    this.setAttribute("href", href);
+    this.addText(text);
+  }  
 }

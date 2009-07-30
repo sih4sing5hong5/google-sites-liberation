@@ -24,7 +24,7 @@ import com.google.gdata.data.sites.AnnouncementsPageEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.gdata.data.sites.ListPageEntry;
 import com.google.gdata.data.sites.WebPageEntry;
-import com.google.sites.liberation.EntryStore;
+import com.google.sites.liberation.util.EntryStore;
 
 import org.junit.Before;
 import org.junit.Test;

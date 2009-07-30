@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.renderers;
+package com.google.sites.liberation.export;
 
-import com.google.gdata.data.sites.BasePageEntry;
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.inject.ImplementedBy;
-import com.google.sites.liberation.util.EntryStore;
+
+import java.io.File;
 
 /**
- * Used to create appropriate implementations of PageRenderer.
+ * Used to export an entire Site to a given root folder.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(PageRendererFactoryImpl.class)
-public interface PageRendererFactory {
-
+@ImplementedBy(SiteExporterImpl.class)
+interface SiteExporter {
+  
   /**
-   * Returns an appropriate implementation of PageRenderer for the given
-   * BaseContentEntry and EntryStore.
+   * Exports the site with the given entries to the given root folder.
    */
-  PageRenderer getPageRenderer(BasePageEntry<?> entry, EntryStore entryStore);
+  void exportSite(Iterable<BaseContentEntry<?>> entries, File folder);
 }

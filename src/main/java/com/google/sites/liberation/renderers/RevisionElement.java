@@ -16,21 +16,30 @@
 
 package com.google.sites.liberation.renderers;
 
-import com.google.gdata.data.sites.BasePageEntry;
-import com.google.inject.ImplementedBy;
-import com.google.sites.liberation.util.EntryStore;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.sites.liberation.util.XmlElement;
 
 /**
- * Used to create appropriate implementations of PageRenderer.
- * 
+ * Extends XmlElement to allow the creation of a "sites:revision" 
+ * element in a single statement.
+ *
  * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(PageRendererFactoryImpl.class)
-public interface PageRendererFactory {
+final class RevisionElement extends XmlElement {
 
   /**
-   * Returns an appropriate implementation of PageRenderer for the given
-   * BaseContentEntry and EntryStore.
+   * Creates a new "sites:revision" for the given entry.
    */
-  PageRenderer getPageRenderer(BasePageEntry<?> entry, EntryStore entryStore);
+  public RevisionElement(BaseContentEntry<?> entry) {
+    super("span");
+    checkNotNull(entry);
+    this.setAttribute("class", "sites:revision");
+    if (entry.getRevision() == null) {
+      this.addText("1");
+    } else {
+      this.addText(entry.getRevision().getValue().toString());
+    }
+  }  
 }

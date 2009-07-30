@@ -12,8 +12,7 @@ import java.util.Comparator;
 class UpdatedComparator implements Comparator<BaseContentEntry<?>> {
   
   /**
-   * Returns a positive integer if {@code e1} was less recently updated than
-   * {@code e2}.
+   * Orders two entries such that the more recently updated entry comes first.
    */
   @Override
   public int compare(BaseContentEntry<?> e1, BaseContentEntry<?> e2) {
