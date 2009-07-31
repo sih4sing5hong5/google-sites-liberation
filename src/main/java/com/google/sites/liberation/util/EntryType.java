@@ -49,13 +49,13 @@ public enum EntryType {
   public String toString() {
     switch(this) {
       case ANNOUNCEMENT: return "announcement";
-      case ANNOUNCEMENTS_PAGE: return "announcementsPage";
+      case ANNOUNCEMENTS_PAGE: return "announcementspage";
       case ATTACHMENT: return "attachment";
       case COMMENT: return "comment";
-      case FILE_CABINET_PAGE: return "fileCabinet";
-      case LIST_ITEM: return "listItem";
-      case LIST_PAGE: return "listPage";
-      case WEB_PAGE: return "webPage";
+      case FILE_CABINET_PAGE: return "filecabinet";
+      case LIST_ITEM: return "listitem";
+      case LIST_PAGE: return "listpage";
+      case WEB_PAGE: return "webpage";
       default: return "other";
     }
   }
