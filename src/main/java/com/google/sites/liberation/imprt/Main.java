@@ -42,7 +42,7 @@ import java.util.logging.Logger;
  */
 public class Main {
 
-  private static final Logger logger = Logger.getLogger(
+  private static final Logger LOGGER = Logger.getLogger(
       Main.class.getCanonicalName());
   
   @Option(name="-u", usage="username with which to authenticate")
@@ -82,14 +82,14 @@ public class Main {
           domain + '/' + name;
       siteImporter.importSite(rootDirectory, new URL(feedUrl), entryUploader);
     } catch (MalformedURLException e) {
-      logger.log(Level.SEVERE, e.getMessage());
+      LOGGER.log(Level.SEVERE, e.getMessage());
       throw new RuntimeException(e);
     } catch (CmdLineException e) {
-      logger.log(Level.SEVERE, e.getMessage());
+      LOGGER.log(Level.SEVERE, e.getMessage());
       parser.printUsage(System.err);
       return;
     } catch (ServiceException e) {
-      logger.log(Level.SEVERE, "Invalid User Credentials!");
+      LOGGER.log(Level.SEVERE, "Invalid User Credentials!");
       throw new RuntimeException(e);
     }
   }

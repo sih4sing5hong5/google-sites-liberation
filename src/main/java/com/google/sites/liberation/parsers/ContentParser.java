@@ -30,7 +30,7 @@ import org.w3c.dom.Element;
 public interface ContentParser {
 
   /**
-   * Returns a TextConstruct containing the content defined by the given 
+   * Returns a TextConstruct containing any content defined by the given 
    * element.
    */
   TextConstruct parseContent(Element element);

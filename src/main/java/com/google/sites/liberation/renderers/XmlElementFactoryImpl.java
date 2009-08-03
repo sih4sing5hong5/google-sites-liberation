@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  */
 public final class XmlElementFactoryImpl implements XmlElementFactory {
 
-  private static final Logger logger = Logger.getLogger(
+  private static final Logger LOGGER = Logger.getLogger(
       XmlElementFactoryImpl.class.getCanonicalName());
   
   @Override
@@ -53,13 +53,13 @@ public final class XmlElementFactoryImpl implements XmlElementFactory {
       xhtmlContent = ((XhtmlTextConstruct)(entry.getTextContent()
           .getContent())).getXhtml().getBlob();
     } catch(IllegalStateException e) {
-      logger.log(Level.WARNING, "Invalid Content", e);
+      LOGGER.log(Level.WARNING, "Invalid Content", e);
       xhtmlContent = "";
     } catch(ClassCastException e) {
-      logger.log(Level.WARNING, "Invalid Content", e);
+      LOGGER.log(Level.WARNING, "Invalid Content", e);
       xhtmlContent = "";
     } catch(NullPointerException e) {
-      logger.log(Level.WARNING, "Invalid Content", e);
+      LOGGER.log(Level.WARNING, "Invalid Content", e);
       xhtmlContent = "";
     }
     element.addXml(xhtmlContent);

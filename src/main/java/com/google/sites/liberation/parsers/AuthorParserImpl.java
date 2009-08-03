@@ -17,6 +17,7 @@
 package com.google.sites.liberation.parsers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.sites.liberation.parsers.ParserUtil.hasClass;
 
 import com.google.gdata.data.Person;
 
@@ -63,18 +64,5 @@ final class AuthorParserImpl implements AuthorParser {
         }
       }
     }
-  }
-  
-  /**
-   * Returns whether or not the given element has the given class.
-   */
-  private boolean hasClass(Element element, String cls) {
-    boolean hasClass = false;
-    for(String str : element.getAttribute("class").split(" ")) {
-      if (str.equals(cls)) {
-        hasClass = true;
-      }
-    }
-    return hasClass;
   }
 }

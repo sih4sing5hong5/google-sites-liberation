@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.export;
+package com.google.sites.liberation.util;
 
 import static org.junit.Assert.*;
 
@@ -23,8 +23,6 @@ import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.SitesLink;
 import com.google.gdata.data.sites.WebPageEntry;
-import com.google.sites.liberation.util.EntryStore;
-import com.google.sites.liberation.util.InMemoryEntryStoreFactory;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +38,7 @@ public class InMemoryEntryStoreTest {
   
   @Before
   public void setUp() {
-    entryStore = new InMemoryEntryStoreFactory().getEntryStore();
+    entryStore = new InMemoryEntryStore();
   }
   
   @Test

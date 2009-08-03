@@ -51,12 +51,13 @@ import javax.xml.parsers.ParserConfigurationException;
 /**
  * @author bsimon@google.com (Benjamin Simon)
  */
-public class EntryParserImplTest {
+public class EntryParserImplTest extends AbstractParserImplTest {
   
   private Mockery context;
   private AuthorParser authorParser;
   private ContentParser contentParser;
   private DataParser dataParser;
+  private Document document;
   private EntryParser entryParser;
   private FieldParser fieldParser;
   private SummaryParser summaryParser;
@@ -78,17 +79,16 @@ public class EntryParserImplTest {
     entryParser = new EntryParserImpl(authorParser, contentParser, dataParser,
         new InMemoryEntryTreeFactory(), fieldParser, summaryParser, titleParser, 
         updatedParser);
-  }
-  
-  @Test
-  public void testNormalPage() {
-    Document document = null;
     try {
       document = DocumentBuilderFactory.newInstance()
           .newDocumentBuilder().newDocument();
     } catch (ParserConfigurationException e) {
       fail("Failure to create test document");
     }
+  }
+  
+  @Test
+  public void testNormalPage() {
     final Element entryElement = document.createElement("div");
     entryElement.setAttribute("class", "hentry webpage");
     entryElement.setAttribute("id", "http://identification");
@@ -140,13 +140,6 @@ public class EntryParserImplTest {
   
   @Test
   public void testDataParsing() {
-    Document document = null;
-    try {
-      document = DocumentBuilderFactory.newInstance()
-          .newDocumentBuilder().newDocument();
-    } catch (ParserConfigurationException e) {
-      fail("Failure to create test document");
-    }
     final Element entryElement = document.createElement("div");
     entryElement.setAttribute("class", "hentry listpage");
     final Element dataElement = document.createElement("tr");
@@ -168,13 +161,6 @@ public class EntryParserImplTest {
   
   @Test
   public void testFieldParsing() {
-    Document document = null;
-    try {
-      document = DocumentBuilderFactory.newInstance()
-          .newDocumentBuilder().newDocument();
-    } catch (ParserConfigurationException e) {
-      fail("Failure to create test document");
-    }
     final Element entryElement = document.createElement("tr");
     entryElement.setAttribute("class", "hentry listitem");
     final Element fieldElement1 = document.createElement("td");
@@ -210,13 +196,6 @@ public class EntryParserImplTest {
   
   @Test
   public void testChildParsing() {
-    Document document = null;
-    try {
-      document = DocumentBuilderFactory.newInstance()
-          .newDocumentBuilder().newDocument();
-    } catch (ParserConfigurationException e) {
-      fail("Failure to create test document");
-    }
     final Element entryElement = document.createElement("div");
     entryElement.setAttribute("class", "hentry listpage");
     final Element attachmentElement1 = document.createElement("span");
@@ -253,13 +232,6 @@ public class EntryParserImplTest {
   
   @Test
   public void testUnusualStructure() {
-    Document document = null;
-    try {
-      document = DocumentBuilderFactory.newInstance()
-          .newDocumentBuilder().newDocument();
-    } catch (ParserConfigurationException e) {
-      fail("Failure to create test document");
-    }
     final Element entryElement = document.createElement("div");
     entryElement.setAttribute("class", "hentry announcementspage");
     final Element row = document.createElement("tr");

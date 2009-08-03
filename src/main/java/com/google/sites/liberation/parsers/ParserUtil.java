@@ -16,22 +16,29 @@
 
 package com.google.sites.liberation.parsers;
 
-import com.google.gdata.data.TextConstruct;
-import com.google.inject.ImplementedBy;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.w3c.dom.Element;
 
 /**
- * Parses an html element representing an entry summary.
+ * Contains utility methods for parsing.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(SummaryParserImpl.class)
-public interface SummaryParser {
+final class ParserUtil {
 
   /**
-   * Returns a TextConstruct containing any summary information defined by the 
-   * given element.
+   * Returns whether or not the given element has the given class.
    */
-  TextConstruct parseSummary(Element element);
+  static boolean hasClass(Element element, String cls) {
+    checkNotNull(element);
+    checkNotNull(cls);
+    boolean hasClass = false;
+    for(String str : element.getAttribute("class").split(" ")) {
+      if (str.equals(cls)) {
+        hasClass = true;
+      }
+    }
+    return hasClass;
+  }
 }

@@ -51,7 +51,7 @@ import javax.xml.parsers.ParserConfigurationException;
  */
 final class PageImporterImpl implements PageImporter {
 
-  private static final Logger logger = Logger.getLogger(
+  private static final Logger LOGGER = Logger.getLogger(
       PageImporterImpl.class.getCanonicalName());
   
   private final ContentParser contentParser;
@@ -82,22 +82,22 @@ final class PageImporterImpl implements PageImporter {
       entryTree = parseElement(document.getDocumentElement());
     } catch (IOException e) {
       String message = "Error importing from file: " + file.getName();
-      logger.log(Level.WARNING, message, e);
+      LOGGER.log(Level.WARNING, message, e);
       return null;
     } catch (ParserConfigurationException e) {
       String message = "Error importing from file: " + file.getName();
-      logger.log(Level.WARNING, message, e);
+      LOGGER.log(Level.WARNING, message, e);
       return null;
     } catch (SAXException e) {
       String message = "Error importing from file: " + file.getName();
-      logger.log(Level.WARNING, message, e);
+      LOGGER.log(Level.WARNING, message, e);
       return null;
     }
     if (entryTree == null) {
       NodeList nodeList = document.getElementsByTagName("body");
       if (nodeList.getLength() == 0) {
         String message = "Error importing from file: " + file.getName();
-        logger.log(Level.WARNING, message);
+        LOGGER.log(Level.WARNING, message);
         return null;
       }
       Element body = (Element) nodeList.item(0);

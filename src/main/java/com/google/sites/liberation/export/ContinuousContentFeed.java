@@ -48,7 +48,7 @@ import java.util.logging.Logger;
  */
 final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
 
-  private static final Logger logger = Logger.getLogger(
+  private static final Logger LOGGER = Logger.getLogger(
       ContinuousContentFeed.class.getCanonicalName());
   
   private final EntryDownloader entryDownloader;
@@ -163,7 +163,7 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
     private Pair<Iterator<BaseContentEntry<?>>, Integer> 
         catchException(Exception e, int start, int num) {
       String message = "Error retrieving response from query.";
-      logger.log(Level.WARNING, message, e);
+      LOGGER.log(Level.WARNING, message, e);
       if (num == 1) {
         Iterator<BaseContentEntry<?>> itr = Iterators.emptyIterator();
         return Pair.of(itr, 1);

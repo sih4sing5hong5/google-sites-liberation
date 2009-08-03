@@ -17,6 +17,7 @@
 package com.google.sites.liberation.util;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
@@ -50,17 +51,20 @@ final class InMemoryEntryTree implements EntryTree {
   
   @Override
   public void addEntry(BaseContentEntry<?> entry, BasePageEntry<?> parent) {
+    checkArgument(contains(parent));
     parents.put(checkNotNull(entry), checkNotNull(parent));
     children.put(parent, entry);
   }
 
   @Override
   public Set<BaseContentEntry<?>> getChildren(BaseContentEntry<?> entry) {
+    checkArgument(contains(entry));
     return Sets.newHashSet(children.get(checkNotNull(entry)));
   }
 
   @Override
   public BasePageEntry<?> getParent(BaseContentEntry<?> entry) {
+    checkArgument(contains(entry));
     return parents.get(checkNotNull(entry));
   }
 
@@ -70,7 +74,13 @@ final class InMemoryEntryTree implements EntryTree {
   }
   
   @Override
+  public boolean contains(BaseContentEntry<?> entry) {
+    return parents.keySet().contains(entry) || entry.equals(root);
+  }
+  
+  @Override
   public void addSubTree(EntryTree subTree, BasePageEntry<?> parent) {
+    checkArgument(contains(parent));
     checkNotNull(subTree);
     checkNotNull(parent);
     BaseContentEntry<?> root = subTree.getRoot();

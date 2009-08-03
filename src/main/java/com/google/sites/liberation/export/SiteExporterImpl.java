@@ -49,7 +49,7 @@ import java.util.logging.Logger;
  */
 final class SiteExporterImpl implements SiteExporter {
   
-  private static final Logger logger = Logger.getLogger(
+  private static final Logger LOGGER = Logger.getLogger(
       SiteExporterImpl.class.getCanonicalName());
   
   private final AppendableFactory appendableFactory;
@@ -95,7 +95,7 @@ final class SiteExporterImpl implements SiteExporter {
       }
     }
     if (!someEntries) {
-      logger.log(Level.WARNING, "No data returned. You may need to provide " +
+      LOGGER.log(Level.WARNING, "No data returned. You may need to provide " +
           "user credentials.");
     }
     for(String id : pageIds) {
@@ -120,13 +120,13 @@ final class SiteExporterImpl implements SiteExporter {
         out = appendableFactory.getAppendable(file);
         pageExporter.exportPage(renderer, out);
       } catch (IOException e) {
-        logger.log(Level.SEVERE, "Failed writing to file: " + file.getPath(), e);
+        LOGGER.log(Level.SEVERE, "Failed writing to file: " + file.getPath(), e);
       } finally {
         if (out instanceof Closeable) {
           try {
             ((Closeable) out).close();
           } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed closing file: " + file.getPath(), e);
+            LOGGER.log(Level.SEVERE, "Failed closing file: " + file.getPath(), e);
           }
         }
       }
@@ -148,7 +148,7 @@ final class SiteExporterImpl implements SiteExporter {
         } catch (IOException e) {
           String message = "Error reading from " + attachment.getEnclosureLink()
               .getHref() + "and/or writing to " + file.getPath();
-          logger.log(Level.WARNING, message, e);
+          LOGGER.log(Level.WARNING, message, e);
         }
       }
     }

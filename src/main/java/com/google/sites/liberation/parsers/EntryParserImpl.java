@@ -1,6 +1,7 @@
 package com.google.sites.liberation.parsers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.sites.liberation.parsers.ParserUtil.hasClass;
 import static com.google.sites.liberation.util.EntryType.isPage;
 
 import com.google.gdata.data.sites.AnnouncementEntry;
@@ -31,7 +32,7 @@ import java.util.logging.Logger;
  */
 final class EntryParserImpl implements EntryParser {
   
-  private static final Logger logger = Logger.getLogger(
+  private static final Logger LOGGER = Logger.getLogger(
       EntryParserImpl.class.getCanonicalName());
   
   private final AuthorParser authorParser;
@@ -115,19 +116,6 @@ final class EntryParserImpl implements EntryParser {
       }
     }
   }
-  
-  /**
-   * Returns whether or not the given element has the given class.
-   */
-  private boolean hasClass(Element element, String cls) {
-    boolean hasClass = false;
-    for(String str : element.getAttribute("class").split(" ")) {
-      if (str.equals(cls)) {
-        hasClass = true;
-      }
-    }
-    return hasClass;
-  }
 
   /**
    * Returns an appropriate BaseContentEntry for the given element that 
@@ -153,7 +141,7 @@ final class EntryParserImpl implements EntryParser {
     } else if (hasClass(element, "webpage")) {
       entry = new WebPageEntry();
     } else {
-      logger.log(Level.WARNING, "Entry type is undefined!");
+      LOGGER.log(Level.WARNING, "Entry type is undefined!");
       entry = new WebPageEntry();
     }
     String id = element.getAttribute("id");

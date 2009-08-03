@@ -22,20 +22,12 @@ import com.google.gdata.data.spreadsheet.Field;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author bsimon@google.com (Benjamin Simon)
  */
-public class FieldParserImplTest {
+public class FieldParserImplTest extends AbstractParserImplTest {
 
   private FieldParser parser;
    
@@ -63,21 +55,5 @@ public class FieldParserImplTest {
     Field field = parser.parseField(element);
     assertEquals(field.getIndex(), "A");
     assertEquals(field.getValue(), "Value whoo!");     
-  }
-  
-  private Element getElement(String html) {
-    ByteArrayInputStream stream = new ByteArrayInputStream(html.getBytes());
-    Document document = null;
-    try {
-      document = DocumentBuilderFactory.newInstance()
-          .newDocumentBuilder().parse(stream);
-    } catch (SAXException e) {
-      fail("Invalid html!");
-    } catch (IOException e) {
-      fail("Invalid html!");
-    } catch (ParserConfigurationException e) {
-      fail("Invalid html!");
-    }
-    return document.getDocumentElement();
   }
 }

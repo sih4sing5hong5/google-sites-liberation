@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  */
 final class AttachmentDownloaderImpl implements AttachmentDownloader {
   
-  private static final Logger logger = Logger.getLogger(
+  private static final Logger LOGGER = Logger.getLogger(
       AttachmentDownloaderImpl.class.getCanonicalName());
   
   /**
@@ -50,7 +50,7 @@ final class AttachmentDownloaderImpl implements AttachmentDownloader {
       throws IOException {
     checkNotNull(attachment);
     checkNotNull(file);
-    logger.log(Level.WARNING, 
+    LOGGER.log(Level.WARNING, 
         "Attachment downloads are not supported at this time.");
     /* TODO(bsimon): Add back in when attachments are working.
     URL url = new URL(attachment.getEnclosureLink().getHref());

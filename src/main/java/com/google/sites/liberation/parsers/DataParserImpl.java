@@ -17,6 +17,7 @@
 package com.google.sites.liberation.parsers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.sites.liberation.parsers.ParserUtil.hasClass;
 
 import com.google.gdata.data.spreadsheet.Column;
 import com.google.gdata.data.spreadsheet.Data;
@@ -36,6 +37,7 @@ final class DataParserImpl implements DataParser {
   public Data parseData(Element element) {
     checkNotNull(element);
     Data data = new Data();
+    //This line is needed for the spreadsheet API
     data.setStartIndex(2);
     parseElement(element, data);
     return data;
@@ -50,13 +52,7 @@ final class DataParserImpl implements DataParser {
       Node node = nodeList.item(i);
       if (node.getNodeType() == Node.ELEMENT_NODE) {
         Element child = (Element) node;
-        boolean isColumn = false;
-        for(String str : child.getAttribute("class").split(" ")) {
-          if (str.equals("gs:column")) {
-            isColumn = true;
-          }
-        }
-        if (isColumn) {
+        if (hasClass(child, "gs:column")) {
           Column column = new Column();
           column.setIndex(child.getAttribute("title"));
           column.setName(child.getTextContent());

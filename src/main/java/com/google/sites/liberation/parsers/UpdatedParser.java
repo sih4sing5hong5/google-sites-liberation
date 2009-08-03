@@ -30,7 +30,8 @@ import org.w3c.dom.Element;
 public interface UpdatedParser {
 
   /**
-   * Returns the DateTime object corresponding to the given element.
+   * Returns the DateTime object corresponding to the given element. Returns
+   * null if the element contains invalid date-time information.
    */
   DateTime parseUpdated(Element element);
 }

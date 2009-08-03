@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  */
 final class SitesServiceEntryUploader implements EntryUploader {
 
-  private static final Logger logger = Logger.getLogger(
+  private static final Logger LOGGER = Logger.getLogger(
       SitesServiceEntryUploader.class.getCanonicalName());
   
   private final SitesService service;
@@ -92,7 +92,7 @@ final class SitesServiceEntryUploader implements EntryUploader {
    * Returns the site-relative path to the given entry.
    */
   private String getPath(BasePageEntry<?> entry, EntryTree entryTree) {
-    String name = ((BasePageEntry<?>) entry).getPageName().getValue();
+    String name = entry.getPageName().getValue();
     BasePageEntry<?> parent = entryTree.getParent(entry);
     if (parent == null) {
       return "/" + name;
@@ -130,10 +130,10 @@ final class SitesServiceEntryUploader implements EntryUploader {
     try {
       return service.insert(feedUrl, entry);
     } catch (IOException e) {
-      logger.log(Level.WARNING, "Unable to insert entry.", e);
+      LOGGER.log(Level.WARNING, "Unable to insert entry.", e);
       return null;
     } catch (ServiceException e) {
-      logger.log(Level.WARNING, "Unable to insert entry.", e);
+      LOGGER.log(Level.WARNING, "Unable to insert entry.", e);
       return null;
     }
   }
@@ -148,13 +148,13 @@ final class SitesServiceEntryUploader implements EntryUploader {
     try {
       return service.update(new URL(oldEntry.getEditLink().getHref()), newEntry);
     } catch (IOException e) {
-      logger.log(Level.WARNING, "Unable to update entry.", e);
+      LOGGER.log(Level.WARNING, "Unable to update entry.", e);
       return null;
     } catch (NullPointerException e) {
-      logger.log(Level.WARNING, "Unable to update entry.", e);
+      LOGGER.log(Level.WARNING, "Unable to update entry.", e);
       return null;
     } catch (ServiceException e) {
-      logger.log(Level.WARNING, "Unable to update entry.", e);
+      LOGGER.log(Level.WARNING, "Unable to update entry.", e);
       return null;
     }
   }

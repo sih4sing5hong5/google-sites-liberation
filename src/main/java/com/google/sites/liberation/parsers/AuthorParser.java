@@ -30,7 +30,7 @@ import org.w3c.dom.Element;
 public interface AuthorParser {
 
   /**
-   * Parses the given element and returns a Person object with the contained 
+   * Parses the given element and returns a Person object with any contained 
    * author information.
    */
   Person parseAuthor(Element element);

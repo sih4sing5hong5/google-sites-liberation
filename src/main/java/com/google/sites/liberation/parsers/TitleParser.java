@@ -30,8 +30,8 @@ import org.w3c.dom.Element;
 public interface TitleParser {
 
   /**
-   * Returns a TextConstruct corresponding the to entry title defined by the 
-   * given element. 
+   * Returns a TextConstruct containing any title information in the given 
+   * element. 
    */
   TextConstruct parseTitle(Element element);
 }

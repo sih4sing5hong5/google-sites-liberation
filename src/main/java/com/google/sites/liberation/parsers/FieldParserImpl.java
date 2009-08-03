@@ -29,6 +29,7 @@ import org.w3c.dom.Element;
  */
 final class FieldParserImpl implements FieldParser {
 
+  @Override
   public Field parseField(Element element) {
     checkNotNull(element);
     Field field = new Field();

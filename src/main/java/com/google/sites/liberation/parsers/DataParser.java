@@ -30,7 +30,7 @@ import org.w3c.dom.Element;
 public interface DataParser {
 
   /**
-   * Returns a Data object corresponding to the given element.
+   * Returns a Data object containing any data information in the given element.
    */
   Data parseData(Element element);
 }
