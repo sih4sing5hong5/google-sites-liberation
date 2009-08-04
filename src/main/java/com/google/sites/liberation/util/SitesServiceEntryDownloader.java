@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.export;
+package com.google.sites.liberation.util;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -36,7 +36,7 @@ import java.util.List;
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-final class SitesServiceEntryDownloader implements EntryDownloader {
+public final class SitesServiceEntryDownloader implements EntryDownloader {
 
   SitesService service;
   

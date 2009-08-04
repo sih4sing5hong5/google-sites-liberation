@@ -22,17 +22,15 @@ import static com.google.sites.liberation.util.EntryType.getType;
 import static com.google.sites.liberation.util.EntryType.isPage;
 
 import com.google.common.collect.Sets;
-import com.google.gdata.data.ILink;
-import com.google.gdata.data.Link;
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
-import com.google.gdata.data.sites.SitesLink;
 import com.google.inject.Inject;
 import com.google.sites.liberation.renderers.PageRenderer;
 import com.google.sites.liberation.renderers.PageRendererFactory;
 import com.google.sites.liberation.util.EntryStore;
 import com.google.sites.liberation.util.EntryStoreFactory;
+import com.google.sites.liberation.util.EntryUtils;
 
 import java.io.Closeable;
 import java.io.File;
@@ -86,6 +84,9 @@ final class SiteExporterImpl implements SiteExporter {
     Set<String> attachmentIds = Sets.newHashSet();
     EntryStore entryStore = entryStoreFactory.getEntryStore();
     for(BaseContentEntry<?> entry : entries) {
+      if (entry.getTitle() != null) {
+        System.out.println(entry.getTitle().getPlainText());
+      }
       entryStore.addEntry(entry);
       someEntries = true;
       if (isPage(entry)) {
@@ -159,11 +160,11 @@ final class SiteExporterImpl implements SiteExporter {
    * {@code null} if any of the page's ancestors are missing.
    */
   private File getPath(BasePageEntry<?> entry, EntryStore entryStore) {
-    Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
-    if (parentLink == null) {
+    String parentId = EntryUtils.getParentId(entry);
+    if (parentId == null) {
       return new File(entry.getPageName().getValue());
     }
-    BasePageEntry<?> parent = entryStore.getParent(entry.getId());
+    BasePageEntry<?> parent = (BasePageEntry<?>) entryStore.getEntry(parentId);
     if (parent == null) {
       return null;
     }

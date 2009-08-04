@@ -18,9 +18,7 @@ package com.google.sites.liberation.export;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.gdata.data.ILink;
 import com.google.gdata.data.sites.AttachmentEntry;
-import com.google.gdata.data.sites.SitesLink;
 
 import java.io.File;
 import java.io.FileOutputStream;

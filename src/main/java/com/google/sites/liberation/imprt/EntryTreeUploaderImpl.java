@@ -16,6 +16,7 @@
 
 package com.google.sites.liberation.imprt;
 
+import static com.google.sites.liberation.util.EntryType.ATTACHMENT;
 import static com.google.sites.liberation.util.EntryType.COMMENT;
 import static com.google.sites.liberation.util.EntryType.getType;
 import static com.google.sites.liberation.util.EntryType.LIST_ITEM;
@@ -25,7 +26,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gdata.data.ILink;
-import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.CommentEntry;
 import com.google.gdata.data.sites.ListItemEntry;
@@ -69,7 +69,7 @@ final class EntryTreeUploaderImpl implements EntryTreeUploader {
       EntryTree entryTree, URL feedUrl, EntryUploader entryUploader) {    
     Set<BaseContentEntry<?>> children = Sets.newTreeSet(new UpdatedComparator());
     for(BaseContentEntry<?> entry : entries) {
-      if (!(entry instanceof AttachmentEntry)) {
+      if (getType(entry) != ATTACHMENT) {
         BaseContentEntry<?> returnedEntry = entryUploader.uploadEntry(
             entry, entryTree, feedUrl);
         if (returnedEntry != null) {

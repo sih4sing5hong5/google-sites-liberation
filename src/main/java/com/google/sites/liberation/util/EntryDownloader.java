@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.export;
+package com.google.sites.liberation.util;
 
 import com.google.gdata.client.Query;
 import com.google.gdata.data.sites.BaseContentEntry;
@@ -29,11 +29,10 @@ import java.util.List;
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-interface EntryDownloader {
+public interface EntryDownloader {
   
   /**
    * Returns list of entries for the given query.
    */
-  @SuppressWarnings("unchecked")
   List<BaseContentEntry<?>> getEntries(Query query) throws IOException, ServiceException;
 }

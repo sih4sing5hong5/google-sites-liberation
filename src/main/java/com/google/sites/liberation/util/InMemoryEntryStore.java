@@ -16,11 +16,8 @@
 
 package com.google.sites.liberation.util;
 
-import com.google.gdata.data.ILink;
-import com.google.gdata.data.Link;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
-import com.google.gdata.data.sites.SitesLink;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Maps;
@@ -59,11 +56,11 @@ final class InMemoryEntryStore implements EntryStore {
     Preconditions.checkArgument(id != null && entries.get(id) == null,
         "All entries must have a unique non-null id!");
     entries.put(id, entry);
-    Link parentLink = entry.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
-    if (parentLink == null) {
+    String parentId = EntryUtils.getParentId(entry);
+    if (parentId == null) {
       topLevelEntries.add(entry);
     } else {
-      children.put(parentLink.getHref(), entry);
+      children.put(parentId, entry);
     }
   }
   
@@ -83,10 +80,10 @@ final class InMemoryEntryStore implements EntryStore {
   public BasePageEntry<?> getParent(String id) {
     Preconditions.checkNotNull(id);
     BaseContentEntry<?> child = getEntry(id);
-    Link parentLink = child.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
-    if (parentLink == null || parentLink.getHref() == null) {
+    String parentId = EntryUtils.getParentId(child);
+    if (parentId == null) {
       return null;
     }
-    return (BasePageEntry<?>) getEntry(parentLink.getHref());
+    return (BasePageEntry<?>) getEntry(parentId);
   }
 }

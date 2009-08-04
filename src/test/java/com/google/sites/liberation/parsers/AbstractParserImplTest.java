@@ -9,7 +9,7 @@ import java.io.ByteArrayInputStream;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-abstract class AbstractParserImplTest {
+public abstract class AbstractParserImplTest {
   
   protected Element getElement(String html) {
     ByteArrayInputStream stream = new ByteArrayInputStream(html.getBytes());

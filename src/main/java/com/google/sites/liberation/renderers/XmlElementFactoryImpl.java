@@ -4,14 +4,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.sites.liberation.util.EntryType.getType;
 
 import com.google.gdata.data.Person;
-import com.google.gdata.data.XhtmlTextConstruct;
 import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.sites.liberation.util.EntryUtils;
 import com.google.sites.liberation.util.XmlElement;
 
 import org.joda.time.DateTime;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Implements XmlElementFactory to construct various XmlElement's.
@@ -19,9 +16,6 @@ import java.util.logging.Logger;
  * @author bsimon@google.com (Benjamin Simon)
  */
 public final class XmlElementFactoryImpl implements XmlElementFactory {
-
-  private static final Logger LOGGER = Logger.getLogger(
-      XmlElementFactoryImpl.class.getCanonicalName());
   
   @Override
   public XmlElement getAuthorElement(BaseContentEntry<?> entry) {
@@ -49,19 +43,7 @@ public final class XmlElementFactoryImpl implements XmlElementFactory {
     XmlElement element = new XmlElement("div");
     element.setAttribute("class", "entry-content");
     String xhtmlContent;
-    try {
-      xhtmlContent = ((XhtmlTextConstruct)(entry.getTextContent()
-          .getContent())).getXhtml().getBlob();
-    } catch(IllegalStateException e) {
-      LOGGER.log(Level.WARNING, "Invalid Content", e);
-      xhtmlContent = "";
-    } catch(ClassCastException e) {
-      LOGGER.log(Level.WARNING, "Invalid Content", e);
-      xhtmlContent = "";
-    } catch(NullPointerException e) {
-      LOGGER.log(Level.WARNING, "Invalid Content", e);
-      xhtmlContent = "";
-    }
+    xhtmlContent = EntryUtils.getContent(entry);
     element.addXml(xhtmlContent);
     return element;
   }

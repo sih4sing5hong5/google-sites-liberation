@@ -23,6 +23,7 @@ import com.google.gdata.client.Query;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.WebPageEntry;
 import com.google.gdata.util.ServiceException;
+import com.google.sites.liberation.util.EntryDownloader;
 
 import org.junit.Before;
 import org.junit.Test;

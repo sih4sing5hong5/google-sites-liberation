@@ -19,7 +19,7 @@ package com.google.sites.liberation.imprt;
 import com.google.inject.ImplementedBy;
 import com.google.sites.liberation.util.EntryTree;
 
-import java.io.File;
+import org.w3c.dom.Document;
 
 /**
  * Parses a single file representing a page in a site.
@@ -30,8 +30,9 @@ import java.io.File;
 public interface PageImporter {
 
   /**
-   * Parses the given file, returning an EntryTree containing a BasePageEntry
-   * as the root, and its comments and attachments as children.
+   * Parses the given document, returning an EntryTree containing a BasePageEntry
+   * as the root, and its comments and attachments as children. Returns null
+   * if the document does not contain a valid entry.
    */
-  EntryTree importPage(File file);
+  EntryTree importPage(Document document);
 }

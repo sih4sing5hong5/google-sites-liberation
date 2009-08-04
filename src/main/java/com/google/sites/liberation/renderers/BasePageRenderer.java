@@ -21,14 +21,12 @@ import static com.google.sites.liberation.util.EntryType.getType;
 import static com.google.sites.liberation.util.EntryType.isPage;
 
 import com.google.common.collect.Sets;
-import com.google.gdata.data.ILink;
-import com.google.gdata.data.Link;
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.data.sites.CommentEntry;
-import com.google.gdata.data.sites.SitesLink;
 import com.google.sites.liberation.util.EntryStore;
+import com.google.sites.liberation.util.EntryUtils;
 import com.google.sites.liberation.util.XmlElement;
 
 import java.util.ArrayList;
@@ -164,12 +162,11 @@ class BasePageRenderer<T extends BasePageEntry<?>> implements PageRenderer {
     List<BaseContentEntry<?>> ancestors = new ArrayList<BaseContentEntry<?>>();
     BaseContentEntry<?> currentChild = entry;
     while(currentChild != null) {
-      Link parentLink = 
-          currentChild.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM);
-      if (parentLink == null) {
+      String parentId = EntryUtils.getParentId(currentChild);
+      if (parentId == null) {
         currentChild = null;
       } else {
-        currentChild = entryStore.getEntry(parentLink.getHref());
+        currentChild = entryStore.getEntry(parentId);
         if (currentChild != null) {
           ancestors.add(currentChild);
         }

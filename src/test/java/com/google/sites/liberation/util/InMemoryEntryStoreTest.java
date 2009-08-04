@@ -18,10 +18,8 @@ package com.google.sites.liberation.util;
 
 import static org.junit.Assert.*;
 
-import com.google.gdata.data.ILink;
 import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.sites.BaseContentEntry;
-import com.google.gdata.data.sites.SitesLink;
 import com.google.gdata.data.sites.WebPageEntry;
 
 import org.junit.Before;
@@ -115,7 +113,7 @@ public class InMemoryEntryStoreTest {
     WebPageEntry entry = new WebPageEntry();
     entry.setId(id);
     if (parentId != null) {
-      entry.addLink(SitesLink.Rel.PARENT, ILink.Type.ATOM, parentId);
+      EntryUtils.setParentId(entry, parentId);
     }
     if (title != null) {
       entry.setTitle(new PlainTextConstruct(title));

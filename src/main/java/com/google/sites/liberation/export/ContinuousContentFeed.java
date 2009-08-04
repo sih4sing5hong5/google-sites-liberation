@@ -27,6 +27,8 @@ import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.util.ServiceException;
 import com.google.gdata.util.common.base.Pair;
+import com.google.sites.liberation.util.EntryDownloader;
+import com.google.sites.liberation.util.SitesServiceEntryDownloader;
 
 import java.io.IOException;
 import java.net.URL;
@@ -80,7 +82,7 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
   ContinuousContentFeed(SitesService service, URL feedUrl) {
     this.entryDownloader = new SitesServiceEntryDownloader(checkNotNull(service));
     this.feedUrl = checkNotNull(feedUrl);
-    this.resultsPerRequest = 100;
+    this.resultsPerRequest = 5;
   }
   
   /**

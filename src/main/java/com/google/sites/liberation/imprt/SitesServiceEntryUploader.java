@@ -16,19 +16,32 @@
 
 package com.google.sites.liberation.imprt;
 
+import static com.google.sites.liberation.util.EntryType.ATTACHMENT;
+import static com.google.sites.liberation.util.EntryType.COMMENT;
+import static com.google.sites.liberation.util.EntryType.LIST_ITEM;
+import static com.google.sites.liberation.util.EntryType.getType;
 import static com.google.sites.liberation.util.EntryType.isPage;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.collect.Maps;
 import com.google.gdata.client.sites.ContentQuery;
 import com.google.gdata.client.sites.SitesService;
+import com.google.gdata.data.ILink;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
-import com.google.gdata.data.sites.ContentFeed;
+import com.google.gdata.data.sites.CommentEntry;
+import com.google.gdata.data.sites.ListItemEntry;
+import com.google.gdata.data.sites.SitesLink;
+import com.google.gdata.data.spreadsheet.Field;
 import com.google.gdata.util.ServiceException;
+import com.google.sites.liberation.util.EntryDownloader;
 import com.google.sites.liberation.util.EntryTree;
+import com.google.sites.liberation.util.SitesServiceEntryDownloader;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,12 +56,14 @@ final class SitesServiceEntryUploader implements EntryUploader {
       SitesServiceEntryUploader.class.getCanonicalName());
   
   private final SitesService service;
+  private final EntryDownloader entryDownloader;
   
   /**
    * Creates a new SitesServiceEntryUploader that uses the given SitesService.
    */
   SitesServiceEntryUploader(SitesService service) {
     this.service = checkNotNull(service);
+    entryDownloader = new SitesServiceEntryDownloader(service);
   }
   
   @Override
@@ -62,9 +77,24 @@ final class SitesServiceEntryUploader implements EntryUploader {
         entry.getId().startsWith(feedUrl.toExternalForm())) {
       returnedEntry = getEntryById(entry.getId(), entry.getClass());
     }
-    if (returnedEntry == null && isPage(entry)) {
-      String path = getPath((BasePageEntry<?>) entry, entryTree);
-      returnedEntry = getEntryByPath(path, feedUrl);
+    if (returnedEntry == null) {
+      if (isPage(entry)) {
+        String path = getPath((BasePageEntry<?>) entry, entryTree);
+        returnedEntry = getEntryByPath(path, feedUrl);
+      } else if (getType(entry) == ATTACHMENT) {
+        String name = entry.getTitle().getPlainText().replaceAll(" ", "%20");
+        String path = getPath(entryTree.getParent(entry), entryTree) + 
+            "/" + name;
+        returnedEntry = getEntryByPath(path, feedUrl);        
+      } else if (getType(entry) == COMMENT) {
+        if (commentExists((CommentEntry) entry, feedUrl)) {
+          return entry;
+        }
+      } else if (getType(entry) == LIST_ITEM) {
+        if (listItemExists((ListItemEntry) entry, feedUrl)) {
+          return entry;
+        }
+      }
     }
     if (returnedEntry == null) {
       returnedEntry = insertEntry(entry, feedUrl);
@@ -72,6 +102,76 @@ final class SitesServiceEntryUploader implements EntryUploader {
       returnedEntry = updateEntry(entry, returnedEntry);
     }
     return returnedEntry;
+  }
+
+  /**
+   * Returns whether or not an identical comment to the one given exists at the 
+   * given feed URL.
+   */
+  @SuppressWarnings("unchecked")
+  private boolean commentExists(CommentEntry comment, URL feedUrl) {
+    try {
+      String content = comment.getTextContent().getContent().getPlainText();
+      ContentQuery query = new ContentQuery(feedUrl);
+      String parentId = comment.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM)
+          .getHref();
+      query.setParent(parentId.substring(parentId.lastIndexOf('/') + 1));
+      query.setKind("comment");
+      List<BaseContentEntry<?>> entries = entryDownloader.getEntries(query);
+      for(BaseContentEntry<?> entry : entries) {
+        String otherContent = entry.getTextContent().getContent().getPlainText();
+        if (otherContent.equals(content)) {
+          return true;
+        }
+      }      
+      return false;
+    } catch(IOException e) {
+      LOGGER.log(Level.WARNING, "Error communicating with the server.", e);
+      return false;
+    } catch (ServiceException e) {
+      LOGGER.log(Level.WARNING, "Error communicating with the server.", e);
+      return false;
+    }
+  }
+
+  /**
+   * Returns whether or not an identical list item to the one given exists at 
+   * the given feed URL.
+   */
+  private boolean listItemExists(ListItemEntry listItem, URL feedUrl) {
+    try {
+      Map<String, String> values = Maps.newHashMap();
+      for(Field field : listItem.getFields()) {
+        values.put(field.getIndex(), field.getValue());
+      }
+      ContentQuery query = new ContentQuery(feedUrl);
+      String parentId = listItem.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM)
+          .getHref();
+      query.setParent(parentId.substring(parentId.lastIndexOf('/') + 1));
+      query.setKind("listitem");
+      List<BaseContentEntry<?>> entries = entryDownloader.getEntries(query);
+      for(BaseContentEntry<?> entry : entries) {
+        ListItemEntry item = (ListItemEntry) entry;
+        if (item.getFields().size() == listItem.getFields().size()) {
+          boolean equal = true;
+          for(Field field : item.getFields()) {
+            if (!values.get(field.getIndex()).equals(field.getValue())) {
+              equal = false;
+            }
+          }
+          if (equal) { 
+            return true;
+          }
+        }
+      }
+      return false;
+    } catch (IOException e) {
+      LOGGER.log(Level.WARNING, "Error communicating with the server.", e);
+      return false;
+    } catch (ServiceException e) {
+      LOGGER.log(Level.WARNING, "Error communicating with the server.", e);
+      return false;
+    }
   }
   
   /**
@@ -104,15 +204,16 @@ final class SitesServiceEntryUploader implements EntryUploader {
   /**
    * Returns the entry with the given path, or null if it doesn't exist.
    */
+  @SuppressWarnings("unchecked")
   private BaseContentEntry<?> getEntryByPath(String path, URL feedUrl) {
     try {
       ContentQuery query = new ContentQuery(feedUrl);
       query.setPath(path);
-      ContentFeed feed = service.getFeed(query, ContentFeed.class);
-      if (feed.getEntries().size() == 0) {
+      List<BaseContentEntry<?>> entries = entryDownloader.getEntries(query);
+      if (entries.size() == 0) {
         return null;
       } else {
-        return (BaseContentEntry<?>) feed.getEntries().get(0).getAdaptedEntry();
+        return entries.get(0);
       }
     } catch (IOException e) {
       return null;

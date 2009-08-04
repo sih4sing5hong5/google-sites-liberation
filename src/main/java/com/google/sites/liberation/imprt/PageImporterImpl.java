@@ -20,8 +20,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.TextConstruct;
-import com.google.gdata.data.sites.BasePageEntry;
-import com.google.gdata.data.sites.PageName;
 import com.google.gdata.data.sites.WebPageEntry;
 import com.google.inject.Inject;
 import com.google.sites.liberation.parsers.ContentParser;
@@ -33,16 +31,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Implements {@link PageImporter} to parse a single file as a page in a site.
@@ -71,33 +62,16 @@ final class PageImporterImpl implements PageImporter {
   }
   
   @Override
-  public EntryTree importPage(File file) {
-    checkNotNull(file);
-    Document document;
-    EntryTree entryTree;
-    try {
-      DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance()
-          .newDocumentBuilder();
-      document = docBuilder.parse(file);
-      entryTree = parseElement(document.getDocumentElement());
-    } catch (IOException e) {
-      String message = "Error importing from file: " + file.getName();
-      LOGGER.log(Level.WARNING, message, e);
-      return null;
-    } catch (ParserConfigurationException e) {
-      String message = "Error importing from file: " + file.getName();
-      LOGGER.log(Level.WARNING, message, e);
-      return null;
-    } catch (SAXException e) {
-      String message = "Error importing from file: " + file.getName();
-      LOGGER.log(Level.WARNING, message, e);
-      return null;
-    }
+  public EntryTree importPage(Document document) {
+    checkNotNull(document);
+    Element docElement = document.getDocumentElement();
+    EntryTree entryTree = parseElement(docElement);
+    //If there is no "hentry" element, then the whole body is taken as the
+    //the content for a webpage.
     if (entryTree == null) {
-      NodeList nodeList = document.getElementsByTagName("body");
+      NodeList nodeList = docElement.getElementsByTagName("body");
       if (nodeList.getLength() == 0) {
-        String message = "Error importing from file: " + file.getName();
-        LOGGER.log(Level.WARNING, message);
+        LOGGER.log(Level.WARNING, "Invalid document!");        
         return null;
       }
       Element body = (Element) nodeList.item(0);
@@ -107,9 +81,6 @@ final class PageImporterImpl implements PageImporter {
       webPage.setContent(content);
       entryTree = entryTreeFactory.getEntryTree(webPage);
     }
-    String pageName = file.getParentFile().getName();
-    BasePageEntry<?> page = (BasePageEntry<?>) entryTree.getRoot();
-    page.setPageName(new PageName(pageName));
     return entryTree;
   }
   
