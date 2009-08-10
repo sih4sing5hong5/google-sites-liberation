@@ -38,6 +38,8 @@ import com.google.sites.liberation.util.EntryDownloader;
 import com.google.sites.liberation.util.EntryTree;
 import com.google.sites.liberation.util.SitesServiceEntryDownloader;
 
+import org.apache.commons.lang.StringEscapeUtils;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -56,19 +58,33 @@ final class SitesServiceEntryUploader implements EntryUploader {
       SitesServiceEntryUploader.class.getCanonicalName());
   
   private final SitesService service;
+  private final URL feedUrl;
   private final EntryDownloader entryDownloader;
   
   /**
-   * Creates a new SitesServiceEntryUploader that uses the given SitesService.
+   * Creates a new SitesServiceEntryUploader that uses the given SitesService to
+   * upload to the given feedUrl.
    */
-  SitesServiceEntryUploader(SitesService service) {
+  SitesServiceEntryUploader(SitesService service, URL feedUrl) {
     this.service = checkNotNull(service);
+    this.feedUrl = checkNotNull(feedUrl);
     entryDownloader = new SitesServiceEntryDownloader(service);
+  }
+  
+  /**
+   * Creates a new SitesServiceEntryUploader that uses the given SitesService 
+   * and EntryDownloader to upload to the given feedUrl (used only for testing).
+   */
+  SitesServiceEntryUploader(SitesService service, URL feedUrl, 
+      EntryDownloader entryDownloader) {
+    this.service = checkNotNull(service);
+    this.feedUrl = checkNotNull(feedUrl);
+    this.entryDownloader = checkNotNull(entryDownloader);
   }
   
   @Override
   public BaseContentEntry<?> uploadEntry(BaseContentEntry<?> entry, 
-      EntryTree entryTree, URL feedUrl) {
+      EntryTree entryTree) {
     checkNotNull(entry);
     checkNotNull(entryTree);
     checkNotNull(feedUrl);
@@ -108,10 +124,10 @@ final class SitesServiceEntryUploader implements EntryUploader {
    * Returns whether or not an identical comment to the one given exists at the 
    * given feed URL.
    */
-  @SuppressWarnings("unchecked")
   private boolean commentExists(CommentEntry comment, URL feedUrl) {
     try {
-      String content = comment.getTextContent().getContent().getPlainText();
+      String content = StringEscapeUtils.unescapeXml(
+          comment.getTextContent().getContent().getPlainText());
       ContentQuery query = new ContentQuery(feedUrl);
       String parentId = comment.getLink(SitesLink.Rel.PARENT, ILink.Type.ATOM)
           .getHref();
@@ -123,7 +139,7 @@ final class SitesServiceEntryUploader implements EntryUploader {
         if (otherContent.equals(content)) {
           return true;
         }
-      }      
+      }
       return false;
     } catch(IOException e) {
       LOGGER.log(Level.WARNING, "Error communicating with the server.", e);

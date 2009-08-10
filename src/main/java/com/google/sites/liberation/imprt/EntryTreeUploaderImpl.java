@@ -37,7 +37,6 @@ import com.google.gdata.data.spreadsheet.Field;
 import com.google.gdata.data.threading.InReplyTo;
 import com.google.sites.liberation.util.EntryTree;
 
-import java.net.URL;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
@@ -50,15 +49,13 @@ import java.util.Set;
 final class EntryTreeUploaderImpl implements EntryTreeUploader {
   
   @Override
-  public void uploadEntryTree(EntryTree entryTree, URL feedUrl, 
-      EntryUploader entryUploader) {
+  public void uploadEntryTree(EntryTree entryTree, EntryUploader entryUploader) {
     checkNotNull(entryTree);
-    checkNotNull(feedUrl);
     checkNotNull(entryUploader);
     BaseContentEntry<?> root = entryTree.getRoot();
     Set<BaseContentEntry<?>> rootSet = Sets.newHashSet();
     rootSet.add(root);
-    uploadEntries(rootSet, entryTree, feedUrl, entryUploader);
+    uploadEntries(rootSet, entryTree, entryUploader);
   }
   
   /**
@@ -66,12 +63,12 @@ final class EntryTreeUploaderImpl implements EntryTreeUploader {
    * recursively uploads the children.
    */
   private void uploadEntries(Set<BaseContentEntry<?>> entries, 
-      EntryTree entryTree, URL feedUrl, EntryUploader entryUploader) {    
+      EntryTree entryTree, EntryUploader entryUploader) {    
     Set<BaseContentEntry<?>> children = Sets.newTreeSet(new UpdatedComparator());
     for(BaseContentEntry<?> entry : entries) {
       if (getType(entry) != ATTACHMENT) {
         BaseContentEntry<?> returnedEntry = entryUploader.uploadEntry(
-            entry, entryTree, feedUrl);
+            entry, entryTree);
         if (returnedEntry != null) {
           for(BaseContentEntry<?> child : entryTree.getChildren(entry)) {
             updateChild(child, returnedEntry);
@@ -81,7 +78,7 @@ final class EntryTreeUploaderImpl implements EntryTreeUploader {
       }
     }
     if (!children.isEmpty()) {
-      uploadEntries(children, entryTree, feedUrl, entryUploader);
+      uploadEntries(children, entryTree, entryUploader);
     }
   }
   

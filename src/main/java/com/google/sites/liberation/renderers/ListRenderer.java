@@ -16,21 +16,24 @@
 
 package com.google.sites.liberation.renderers;
 
-import com.google.gdata.data.sites.BasePageEntry;
+import com.google.gdata.data.sites.ListItemEntry;
+import com.google.gdata.data.sites.ListPageEntry;
 import com.google.inject.ImplementedBy;
-import com.google.sites.liberation.util.EntryStore;
+import com.google.sites.liberation.util.XmlElement;
+
+import java.util.List;
 
 /**
- * Used to create appropriate implementations of PageRenderer.
+ * Renders the list in a list page.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(PageRendererFactoryImpl.class)
-public interface PageRendererFactory {
+@ImplementedBy(ListRendererImpl.class)
+public interface ListRenderer {
 
   /**
-   * Returns an appropriate implementation of PageRenderer for the given
-   * BaseContentEntry and EntryStore.
+   * Returns an XmlElement containing the list given by the ListPageEntry,
+   * with the given list items.
    */
-  PageRenderer getPageRenderer(BasePageEntry<?> entry, EntryStore entryStore);
+  XmlElement renderList(ListPageEntry entry, List<ListItemEntry> listItems);
 }

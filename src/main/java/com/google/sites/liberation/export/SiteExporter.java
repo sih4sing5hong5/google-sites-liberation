@@ -20,6 +20,7 @@ import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.inject.ImplementedBy;
 
 import java.io.File;
+import java.net.URL;
 
 /**
  * Used to export an entire Site to a given root folder.
@@ -32,5 +33,6 @@ interface SiteExporter {
   /**
    * Exports the site with the given entries to the given root folder.
    */
-  void exportSite(Iterable<BaseContentEntry<?>> entries, File folder);
+  void exportSite(Iterable<BaseContentEntry<?>> entries, File folder,
+      URL siteUrl);
 }

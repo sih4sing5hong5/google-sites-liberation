@@ -1,11 +1,17 @@
 package com.google.sites.liberation.imprt;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.sites.liberation.util.EntryType.isPage;
 
+import com.google.gdata.data.TextConstruct;
+import com.google.gdata.data.XhtmlTextConstruct;
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.data.sites.PageName;
+import com.google.gdata.util.XmlBlob;
 import com.google.inject.Inject;
 import com.google.sites.liberation.util.EntryTree;
+import com.google.sites.liberation.util.EntryUtils;
 
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -44,15 +50,22 @@ final class SiteImporterImpl implements SiteImporter {
   }
   
   @Override
-  public void importSite(File rootDirectory, URL feedUrl, 
+  public void importSite(File rootDirectory, URL siteUrl, 
       EntryUploader entryUploader) {
-    for(File subDirectory : rootDirectory.listFiles()) {
-      if (subDirectory.isDirectory()) {
-        EntryTree entryTree = importPage(subDirectory);
-        if (entryTree != null) {
-          entryTreeUploader.uploadEntryTree(entryTree, feedUrl, entryUploader);
+    if (rootDirectory.isDirectory()) {
+      for(File subDirectory : rootDirectory.listFiles()) {
+        if (subDirectory.isDirectory()) {
+          EntryTree entryTree = importPage(subDirectory);
+          if (entryTree != null) {
+            fixLinks(entryTree, siteUrl);
+            System.out.println(entryTree.getRoot().getTitle().getPlainText());
+            entryTreeUploader.uploadEntryTree(entryTree, entryUploader);
+          }
         }
       }
+    } else {
+      LOGGER.log(Level.WARNING, "Invalid directory!");
+      return;
     }
   }
   
@@ -71,15 +84,15 @@ final class SiteImporterImpl implements SiteImporter {
           .newDocumentBuilder();
       document = docBuilder.parse(page);
     } catch (IOException e) {
-      String message = "Error importing from file: " + page.getName();
+      String message = "Error importing from " + pageDirectory.getPath();
       LOGGER.log(Level.WARNING, message, e);
       return null;
     } catch (ParserConfigurationException e) {
-      String message = "Error importing from file: " + page.getName();
+      String message = "Error importing from " + pageDirectory.getPath();
       LOGGER.log(Level.WARNING, message, e);
       return null;
     } catch (SAXException e) {
-      String message = "Error importing from file: " + page.getName();
+      String message = "Error importing from " + pageDirectory.getPath();
       LOGGER.log(Level.WARNING, message, e);
       return null;
     }
@@ -99,5 +112,66 @@ final class SiteImporterImpl implements SiteImporter {
       }
     }
     return entryTree;
+  }
+  
+  /**
+   * Converts all of the relative links in all of the entries in the given 
+   * EntryTree to absolute links, assuming that the root of the EntryTree
+   * exists at the given siteUrl.
+   */
+  private void fixLinks(EntryTree entryTree, URL siteUrl) {
+    fixLinks(entryTree.getRoot(), entryTree, siteUrl, "href=\"", "\"");
+    fixLinks(entryTree.getRoot(), entryTree, siteUrl, "href='", "'");
+  }
+  
+  /**
+   * Converts the relative links in the content of the given entry and
+   * recursively on all of its children. A link is defined by the given
+   * prefix and suffix. 
+   */
+  private void fixLinks(BaseContentEntry<?> entry, EntryTree entryTree,
+      URL siteUrl, String prefix, String suffix) {
+    if (!isPage(entry)) {
+      return;
+    }
+    String content = EntryUtils.getContent(entry);
+    String url = siteUrl.toExternalForm();
+    int index = content.indexOf(prefix + "../");
+    while(index != -1) {
+      int startIndex = index + 6;
+      int endIndex = content.indexOf(suffix, startIndex);
+      if (endIndex == -1) {
+        break;
+      }
+      String link = content.substring(startIndex, endIndex);
+      if (link.startsWith("../")) {
+        BasePageEntry<?> currentAncestor = (BasePageEntry<?>) entry;
+        while(link.startsWith("../") && currentAncestor != null) {
+          link = link.substring(3);
+          currentAncestor = entryTree.getParent(currentAncestor);
+        }
+        String ancestors = "";
+        while(currentAncestor != null) {
+          ancestors = currentAncestor.getPageName().getValue() + 
+              "/" + ancestors;
+          currentAncestor = entryTree.getParent(currentAncestor);
+        }
+        link = ancestors + link;
+      }
+      if (link.endsWith("/index.html")) {
+        link = link.substring(0, link.lastIndexOf("/index.html"));
+      }
+      String beforeLink = content.substring(0, startIndex);
+      String afterLink = content.substring(endIndex);
+      content = beforeLink + url + "/" + link + afterLink;
+      index = content.indexOf(prefix + "../");
+    }
+    XmlBlob blob = new XmlBlob();
+    blob.setBlob(content);
+    TextConstruct textConstruct = new XhtmlTextConstruct(blob);
+    entry.setContent(textConstruct);
+    for (BaseContentEntry<?> child : entryTree.getChildren(entry)) {
+      fixLinks(child, entryTree, siteUrl, prefix, suffix);
+    }
   }
 }

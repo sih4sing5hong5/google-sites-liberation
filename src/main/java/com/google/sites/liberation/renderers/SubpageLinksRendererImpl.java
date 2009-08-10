@@ -14,25 +14,30 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.export;
+package com.google.sites.liberation.renderers;
 
 import com.google.gdata.data.sites.BasePageEntry;
-import com.google.inject.ImplementedBy;
-import com.google.sites.liberation.util.EntryStore;
+import com.google.sites.liberation.util.XmlElement;
 
-import java.io.IOException;
+import java.util.List;
 
 /**
- * Export a single page in a Site to a given Appendable.
+ * Renders the links to a page's subpages.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(PageExporterImpl.class)
-interface PageExporter {
+final class SubpageLinksRendererImpl implements SubpageLinksRenderer {
 
-  /** 
-   * Exports the given page from the given EntryStore to the given Appendable.
-   */
-  void exportPage(BasePageEntry<?> entry, EntryStore entryStore, Appendable out) 
-      throws IOException;
+  @Override
+  public XmlElement renderSubpageLinks(List<BasePageEntry<?>> subpages) {
+    XmlElement div = new XmlElement("div");
+    div.addText("Subpages (" + subpages.size() + "):");
+    for(BasePageEntry<?> subpage : subpages) {
+      String href = subpage.getPageName().getValue() + "/index.html";
+      div.addText(" ");
+      div.addElement(RendererUtils.getHyperLink(href, 
+          subpage.getTitle().getPlainText()));
+    }
+    return div;
+  }
 }

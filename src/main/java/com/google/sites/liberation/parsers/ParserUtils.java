@@ -14,25 +14,31 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.imprt;
+package com.google.sites.liberation.parsers;
 
-import com.google.inject.ImplementedBy;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.File;
-import java.net.URL;
+import org.w3c.dom.Element;
 
 /**
- * Imports an entire site from a given directory.
+ * Contains utility methods for parsing.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(SiteImporterImpl.class)
-public interface SiteImporter {
+final class ParserUtils {
 
   /**
-   * Imports the site with the given root directory, to the given feed URL, 
-   * using the given EntryUploader.
+   * Returns whether or not the given element has the given class.
    */
-  public void importSite(File rootDirectory, URL siteUrl, 
-      EntryUploader entryUploader);
+  static boolean hasClass(Element element, String cls) {
+    checkNotNull(element);
+    checkNotNull(cls);
+    boolean hasClass = false;
+    for(String str : element.getAttribute("class").split(" ")) {
+      if (str.equals(cls)) {
+        hasClass = true;
+      }
+    }
+    return hasClass;
+  }
 }

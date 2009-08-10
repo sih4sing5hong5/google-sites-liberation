@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.imprt;
+package com.google.sites.liberation.renderers;
 
+import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.inject.ImplementedBy;
+import com.google.sites.liberation.util.XmlElement;
 
-import java.io.File;
-import java.net.URL;
+import java.util.List;
 
 /**
- * Imports an entire site from a given directory.
+ * Renders the file cabinet in a file cabinet page.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(SiteImporterImpl.class)
-public interface SiteImporter {
+@ImplementedBy(FileCabinetRendererImpl.class)
+public interface FileCabinetRenderer {
 
   /**
-   * Imports the site with the given root directory, to the given feed URL, 
-   * using the given EntryUploader.
+   * Returns an XmlElement containing the given attachments as a file cabinet.
    */
-  public void importSite(File rootDirectory, URL siteUrl, 
-      EntryUploader entryUploader);
+  XmlElement renderFileCabinet(List<AttachmentEntry> attachments);
 }

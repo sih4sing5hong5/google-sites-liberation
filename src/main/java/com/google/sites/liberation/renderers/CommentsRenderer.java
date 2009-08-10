@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.imprt;
+package com.google.sites.liberation.renderers;
 
+import com.google.gdata.data.sites.CommentEntry;
 import com.google.inject.ImplementedBy;
+import com.google.sites.liberation.util.XmlElement;
 
-import java.io.File;
-import java.net.URL;
+import java.util.List;
 
 /**
- * Imports an entire site from a given directory.
+ * Renders a page's comments.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(SiteImporterImpl.class)
-public interface SiteImporter {
+@ImplementedBy(CommentsRendererImpl.class)
+public interface CommentsRenderer {
 
   /**
-   * Imports the site with the given root directory, to the given feed URL, 
-   * using the given EntryUploader.
+   * Returns an XmlElement containing the given comments, in the same order as
+   * they appear in the list.
    */
-  public void importSite(File rootDirectory, URL siteUrl, 
-      EntryUploader entryUploader);
+  XmlElement renderComments(List<CommentEntry> comments);
 }

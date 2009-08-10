@@ -16,64 +16,26 @@
 
 package com.google.sites.liberation.renderers;
 
-import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
-import static com.google.sites.liberation.util.EntryType.getType;
-import static com.google.sites.liberation.util.EntryType.isPage;
-
-import com.google.gdata.data.sites.AttachmentEntry;
-import com.google.gdata.data.sites.BaseContentEntry;
-import com.google.gdata.data.sites.BasePageEntry;
-import com.google.gdata.data.sites.CommentEntry;
 import com.google.gdata.data.sites.ListItemEntry;
 import com.google.gdata.data.sites.ListPageEntry;
 import com.google.gdata.data.spreadsheet.Column;
 import com.google.gdata.data.spreadsheet.Field;
-import com.google.sites.liberation.util.EntryStore;
 import com.google.sites.liberation.util.XmlElement;
 
-import java.util.Collection;
-import java.util.TreeSet;
+import org.apache.commons.lang.StringEscapeUtils;
+
+import java.util.List;
 
 /**
- * An extension of BasePageRenderer which implements 
- * PageRenderer.renderSpecialContent to render the list section in a List Page.
+ * Renders the list in a list page.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-class ListPageRenderer extends BasePageRenderer<ListPageEntry> {
-
-  Collection<ListItemEntry> listItems;
+final class ListRendererImpl implements ListRenderer {
   
-  ListPageRenderer(ListPageEntry entry, EntryStore entryStore) {
-    super(checkNotNull(entry), checkNotNull(entryStore));
-  }
-  
-  /**
-   * Overrides addChild from BasePageRenderer so that listItems is populated 
-   * in addition to subpages, attachments, and comments.
-   */
   @Override
-  protected void addChild(BaseContentEntry<?> child) {
-    checkNotNull(child);
-    if (listItems == null) { 
-      listItems = new TreeSet<ListItemEntry>(new UpdatedComparator());
-    }
-    switch(getType(child)) {
-      case ATTACHMENT: attachments.add((AttachmentEntry) child); break;
-      case COMMENT: comments.add((CommentEntry) child); break;
-      case LIST_ITEM: listItems.add((ListItemEntry) child); break;
-      default: 
-        if (isPage(child)) {
-          subpages.add((BasePageEntry<?>) child);
-        }
-    }
-  }
-  
-  /**
-   * Renders the list section in the page.
-   */
-  @Override
-  public XmlElement renderAdditionalContent() {
+  public XmlElement renderList(ListPageEntry entry, 
+      List<ListItemEntry> listItems) {
     XmlElement table = new XmlElement("table");
     XmlElement header = new XmlElement("tr");
     header.setAttribute("class", "gs:data");
@@ -100,9 +62,16 @@ class ListPageRenderer extends BasePageRenderer<ListPageEntry> {
   }
   
   private XmlElement getRow(ListItemEntry item) {
-    XmlElement element = elementFactory.getEntryElement(item, "tr");
+    XmlElement element = RendererUtils.getEntryElement(item, "tr");
     for(Field field : item.getFields()) {
-      String val = (field.getValue() == null) ? "" : field.getValue();
+      String val;
+      if (field.getValue() == null) {
+        val = "";
+      } else if (field.getValue().equals("on")) {
+        val = "\u2713";
+      } else {
+        val = StringEscapeUtils.unescapeHtml(field.getValue());
+      }
       XmlElement cell = new XmlElement("td");
       cell.setAttribute("class", "gs:field");
       cell.setAttribute("title", field.getIndex());
@@ -111,13 +80,13 @@ class ListPageRenderer extends BasePageRenderer<ListPageEntry> {
     }
     XmlElement authorCell = new XmlElement("td");
     element.addElement(authorCell.addElement(
-        elementFactory.getAuthorElement(item)));
+        RendererUtils.getAuthorElement(item)));
     XmlElement revisionCell = new XmlElement("td");
-    element.addElement(revisionCell.addElement(
-        elementFactory.getRevisionElement(item)));
     XmlElement updatedCell = new XmlElement("td");
     element.addElement(updatedCell.addElement(
-        elementFactory.getUpdatedElement(item)));
+        RendererUtils.getUpdatedElement(item)));
+    element.addElement(revisionCell.addElement(
+        RendererUtils.getRevisionElement(item)));
     return element;
   }
 }

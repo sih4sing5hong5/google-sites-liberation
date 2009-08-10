@@ -58,8 +58,8 @@ public class InMemoryEntryTreeTest {
     
     try {
       entryTree.addEntry(entry2, entry1);
-      fail("Should throw IllegalStateException!");
-    } catch (IllegalStateException e) {
+      fail("Should throw IllegalArgumentException!");
+    } catch (IllegalArgumentException e) {
       entryTree.addEntry(entry1, root);
       entryTree.addEntry(entry2, entry1);
     }

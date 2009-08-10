@@ -22,12 +22,13 @@ import static com.google.sites.liberation.util.EntryType.getType;
 import static com.google.sites.liberation.util.EntryType.isPage;
 
 import com.google.common.collect.Sets;
+import com.google.gdata.data.TextConstruct;
+import com.google.gdata.data.XhtmlTextConstruct;
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
+import com.google.gdata.util.XmlBlob;
 import com.google.inject.Inject;
-import com.google.sites.liberation.renderers.PageRenderer;
-import com.google.sites.liberation.renderers.PageRendererFactory;
 import com.google.sites.liberation.util.EntryStore;
 import com.google.sites.liberation.util.EntryStoreFactory;
 import com.google.sites.liberation.util.EntryUtils;
@@ -35,6 +36,7 @@ import com.google.sites.liberation.util.EntryUtils;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,7 +56,6 @@ final class SiteExporterImpl implements SiteExporter {
   private final AttachmentDownloader attachmentDownloader;
   private final EntryStoreFactory entryStoreFactory;
   private final PageExporter pageExporter;
-  private final PageRendererFactory pageRendererFactory;
   
   /**
    * Creates a new SiteExporter for the given AppendableFactory,
@@ -65,61 +66,121 @@ final class SiteExporterImpl implements SiteExporter {
   SiteExporterImpl(AppendableFactory appendableFactory,
       AttachmentDownloader attachmentDownloader,
       EntryStoreFactory entryStoreFactory,
-      PageExporter pageExporter,
-      PageRendererFactory pageRendererFactory) {
+      PageExporter pageExporter) {
     this.appendableFactory = checkNotNull(appendableFactory);
     this.attachmentDownloader = checkNotNull(attachmentDownloader);
     this.entryStoreFactory = checkNotNull(entryStoreFactory);
     this.pageExporter = checkNotNull(pageExporter);
-    this.pageRendererFactory = checkNotNull(pageRendererFactory);
   }
   
   @Override
   public void exportSite(Iterable<BaseContentEntry<?>> entries, 
-      File rootDirectory) {
+      File rootDirectory, URL siteUrl) {
     checkNotNull(entries, "entries");
     checkNotNull(rootDirectory, "rootDirectory");
+    checkNotNull(siteUrl, "siteUrl");
+    if (rootDirectory.isFile()) {
+      rootDirectory.delete();
+    } else if (rootDirectory.isDirectory()) {
+      for(File file : rootDirectory.listFiles()) {
+        if (file.isFile()) {
+          file.delete();
+        } else if (file.isDirectory()) {
+          deleteDirectory(file);
+        }
+      }
+    }
     boolean someEntries = false;
-    Set<String> pageIds = Sets.newHashSet();
-    Set<String> attachmentIds = Sets.newHashSet();
+    Set<BasePageEntry<?>> pages = Sets.newHashSet();
+    Set<AttachmentEntry> attachments = Sets.newHashSet();
     EntryStore entryStore = entryStoreFactory.getEntryStore();
     for(BaseContentEntry<?> entry : entries) {
-      if (entry.getTitle() != null) {
-        System.out.println(entry.getTitle().getPlainText());
-      }
-      entryStore.addEntry(entry);
       someEntries = true;
+      entryStore.addEntry(entry);
       if (isPage(entry)) {
-        pageIds.add(entry.getId());
+        pages.add((BasePageEntry<?>) entry);
       } else if (getType(entry) == ATTACHMENT) {
-        attachmentIds.add(entry.getId());
+        attachments.add((AttachmentEntry) entry);
       }
     }
     if (!someEntries) {
       LOGGER.log(Level.WARNING, "No data returned. You may need to provide " +
           "user credentials.");
     }
-    for(String id : pageIds) {
-      exportPage(id, rootDirectory, entryStore);
+    for(BasePageEntry<?> page : pages) {
+      fixLinks(page, entryStore, siteUrl);
+      exportPage(page, rootDirectory, entryStore);
     }
-    for(String id : attachmentIds) {
-      downloadAttachment(id, rootDirectory, entryStore);
+    for(AttachmentEntry attachment : attachments) {
+      downloadAttachment(attachment, rootDirectory, entryStore);
     }
   }
   
-  private void exportPage(String id, File rootDirectory, EntryStore entryStore) {
-    BasePageEntry<?> entry = (BasePageEntry<?>) entryStore.getEntry(id);
+  private void deleteDirectory(File directory) {
+    for (File file : directory.listFiles()) {
+      if (file.isFile()) {
+        file.delete();
+      } else if (file.isDirectory()) {
+        deleteDirectory(file);
+      }
+    }
+    directory.delete();
+  }
+  
+  /**
+   * Changes all of the absolute links to other pages in this site to relative 
+   * links in the given entry's content to other.
+   */
+  private void fixLinks(BasePageEntry<?> entry, EntryStore entryStore, 
+      URL siteUrl) {
+    String content = EntryUtils.getContent(entry);
+    String url = siteUrl.toExternalForm();
+    String siteRoot = getSiteRoot(entry, entryStore);
+    int index = content.indexOf("href=\"" + url);
+    while(index != -1) {
+      int startIndex = index + 6;
+      int endIndex = content.indexOf("\"", startIndex + 1);
+      String beforeLink = content.substring(0, startIndex);
+      String link = content.substring(startIndex + url.length() + 1, endIndex);
+      String afterLink = content.substring(endIndex);
+      content = beforeLink + siteRoot + link + "/index.html" + afterLink;
+      index = content.indexOf("href=\"" + url);
+    }
+    index = content.indexOf("href='" + url);
+    while(index != -1) {
+      int startIndex = index + 6;
+      int endIndex = content.indexOf("'", startIndex + 1);
+      String beforeLink = content.substring(0, startIndex);
+      String link = content.substring(startIndex + url.length() + 1, endIndex);
+      String afterLink = content.substring(endIndex);
+      content = beforeLink + siteRoot + link + "/index.html" + afterLink;
+      index = content.indexOf("href='" + url);
+    }
+    XmlBlob blob = new XmlBlob();
+    blob.setBlob(content);
+    TextConstruct textConstruct = new XhtmlTextConstruct(blob);
+    entry.setContent(textConstruct);
+  }
+  
+  private String getSiteRoot(BasePageEntry<?> entry, EntryStore entryStore) {
+    BasePageEntry<?> parent = entryStore.getParent(entry.getId());
+    if (parent == null) {
+      return "../";
+    }
+    return getSiteRoot(parent, entryStore) + "../";
+  }
+  
+  private void exportPage(BasePageEntry<?> entry, 
+      File rootDirectory, EntryStore entryStore) {
     File relativePath = getPath(entry, entryStore);
     if (relativePath != null) {
       File folder = new File(rootDirectory, relativePath.getPath());
       folder.mkdirs();
-      PageRenderer renderer = pageRendererFactory.getPageRenderer(entry, 
-          entryStore);
       File file = new File(folder, "index.html");
       Appendable out = null;
       try {
         out = appendableFactory.getAppendable(file);
-        pageExporter.exportPage(renderer, out);
+        pageExporter.exportPage(entry, entryStore, out);
       } catch (IOException e) {
         LOGGER.log(Level.SEVERE, "Failed writing to file: " + file.getPath(), e);
       } finally {
@@ -134,10 +195,9 @@ final class SiteExporterImpl implements SiteExporter {
     }
   }
   
-  private void downloadAttachment(String id, File rootDirectory, 
-      EntryStore entryStore) {
-    AttachmentEntry attachment = (AttachmentEntry) entryStore.getEntry(id);
-    BasePageEntry<?> parent = entryStore.getParent(id);
+  private void downloadAttachment(AttachmentEntry attachment, 
+      File rootDirectory, EntryStore entryStore) {
+    BasePageEntry<?> parent = entryStore.getParent(attachment.getId());
     if (parent != null) {
       File relativePath = getPath(parent, entryStore);
       if (relativePath != null) {

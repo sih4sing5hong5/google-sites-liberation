@@ -82,7 +82,7 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
   ContinuousContentFeed(SitesService service, URL feedUrl) {
     this.entryDownloader = new SitesServiceEntryDownloader(checkNotNull(service));
     this.feedUrl = checkNotNull(feedUrl);
-    this.resultsPerRequest = 5;
+    this.resultsPerRequest = 20;
   }
   
   /**

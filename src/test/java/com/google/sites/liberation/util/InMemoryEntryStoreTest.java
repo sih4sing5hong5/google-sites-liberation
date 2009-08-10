@@ -40,30 +40,6 @@ public class InMemoryEntryStoreTest {
   }
   
   @Test
-  public void testAddEntry() {
-    BaseContentEntry<?> entry1 = new WebPageEntry();
-    boolean thrown = false;
-    try {
-      entryStore.addEntry(entry1);
-    } catch (IllegalArgumentException e) {
-      thrown = true;
-    }
-    assertTrue(thrown);
-    entry1 = getNewEntry("entry1");
-    entryStore.addEntry(entry1);
-    BaseContentEntry<?> entry2 = getNewEntry("entry1");
-    thrown = false;
-    try {
-      entryStore.addEntry(entry2);
-    } catch (IllegalArgumentException e) {
-      thrown = true;
-    }
-    assertTrue(thrown);
-    entry2.setId("entry2");
-    entryStore.addEntry(entry2);
-  }
-  
-  @Test
   public void testGetEntry() {
     assertNull(entryStore.getEntry("entry1"));
     BaseContentEntry<?> entry1 = getNewEntry("entry1");

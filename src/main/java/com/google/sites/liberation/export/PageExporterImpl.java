@@ -17,13 +17,36 @@
 package com.google.sites.liberation.export;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.sites.liberation.util.EntryType.ANNOUNCEMENTS_PAGE;
+import static com.google.sites.liberation.util.EntryType.FILE_CABINET_PAGE;
+import static com.google.sites.liberation.util.EntryType.LIST_PAGE;
+import static com.google.sites.liberation.util.EntryType.getType;
 
+import com.google.common.collect.Lists;
+import com.google.gdata.data.sites.AnnouncementEntry;
+import com.google.gdata.data.sites.AttachmentEntry;
+import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.BasePageEntry;
+import com.google.gdata.data.sites.CommentEntry;
+import com.google.gdata.data.sites.ListItemEntry;
+import com.google.gdata.data.sites.ListPageEntry;
 import com.google.inject.Inject;
-import com.google.sites.liberation.renderers.XmlElementFactory;
+import com.google.sites.liberation.renderers.AncestorLinksRenderer;
+import com.google.sites.liberation.renderers.AnnouncementsRenderer;
+import com.google.sites.liberation.renderers.AttachmentsRenderer;
+import com.google.sites.liberation.renderers.CommentsRenderer;
+import com.google.sites.liberation.renderers.ContentRenderer;
+import com.google.sites.liberation.renderers.FileCabinetRenderer;
+import com.google.sites.liberation.renderers.ListRenderer;
+import com.google.sites.liberation.renderers.SubpageLinksRenderer;
+import com.google.sites.liberation.renderers.TitleRenderer;
 import com.google.sites.liberation.util.XmlElement;
-import com.google.sites.liberation.renderers.PageRenderer;
+import com.google.sites.liberation.util.EntryStore;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Implements {@link PageExporter} to export a single page in a 
@@ -33,52 +56,153 @@ import java.io.IOException;
  */
 final class PageExporterImpl implements PageExporter {
   
-  private XmlElementFactory elementFactory;
+  private AncestorLinksRenderer ancestorLinksRenderer;
+  private AnnouncementsRenderer announcementsRenderer;
+  private AttachmentsRenderer attachmentsRenderer;
+  private CommentsRenderer commentsRenderer;
+  private ContentRenderer contentRenderer;
+  private FileCabinetRenderer fileCabinetRenderer;
+  private ListRenderer listRenderer;
+  private SubpageLinksRenderer subpageLinksRenderer;
+  private TitleRenderer titleRenderer;
   
   @Inject
-  PageExporterImpl(XmlElementFactory elementFactory) {
-    this.elementFactory = checkNotNull(elementFactory);
+  PageExporterImpl(
+      AncestorLinksRenderer ancestorLinksRenderer,
+      AnnouncementsRenderer announcementsRenderer,
+      AttachmentsRenderer attachmentsRenderer,
+      CommentsRenderer commentsRenderer,
+      ContentRenderer contentRenderer,
+      FileCabinetRenderer fileCabinetRenderer,
+      ListRenderer listRenderer,
+      SubpageLinksRenderer subpageLinksRenderer,
+      TitleRenderer titleRenderer) {
+    this.ancestorLinksRenderer = checkNotNull(ancestorLinksRenderer);
+    this.announcementsRenderer = checkNotNull(announcementsRenderer);
+    this.attachmentsRenderer = checkNotNull(attachmentsRenderer);
+    this.commentsRenderer = checkNotNull(commentsRenderer);
+    this.contentRenderer = checkNotNull(contentRenderer);
+    this.fileCabinetRenderer = checkNotNull(fileCabinetRenderer);
+    this.listRenderer = checkNotNull(listRenderer);
+    this.subpageLinksRenderer = checkNotNull(subpageLinksRenderer);
+    this.titleRenderer = checkNotNull(titleRenderer);
   }
   
   @Override
-  public void exportPage(PageRenderer renderer, Appendable out) 
-      throws IOException {
-    checkNotNull(renderer, "renderer");
+  public void exportPage(BasePageEntry<?> entry, EntryStore entryStore,
+      Appendable out) throws IOException {
+    checkNotNull(entry, "entry");
+    checkNotNull(entryStore, "entryStore");
     checkNotNull(out, "out");
     XmlElement html = new XmlElement("html");
+    XmlElement head = new XmlElement("head");
+    XmlElement title = new XmlElement("title");
+    title.addText(entry.getTitle().getPlainText());
+    head.addElement(title);
+    html.addElement(head);
     XmlElement body = new XmlElement("body");
-    XmlElement mainDiv = elementFactory.getEntryElement(renderer.getEntry(), 
-        "div");
-    XmlElement parentLinks = renderer.renderParentLinks();
-    if (parentLinks != null) {
-      mainDiv.addElement(parentLinks);
+    XmlElement mainDiv = new XmlElement("div");
+    mainDiv.setAttribute("class", "hentry " + getType(entry).toString());
+    mainDiv.setAttribute("id", entry.getId());
+    if (entryStore.getParent(entry.getId()) != null) {
+      List<BasePageEntry<?>> ancestors = getAncestors(entry, entryStore);
+      mainDiv.addElement(ancestorLinksRenderer.renderAncestorLinks(ancestors));      
     }
-    XmlElement title = renderer.renderTitle();
-    if (title != null) {
-      mainDiv.addElement(title);
+    mainDiv.addElement(titleRenderer.renderTitle(entry));
+    mainDiv.addElement(contentRenderer.renderContent(entry));
+    List<AnnouncementEntry> announcements = Lists.newArrayList();
+    List<AttachmentEntry> attachments = Lists.newArrayList();
+    List<CommentEntry> comments = Lists.newArrayList();
+    List<ListItemEntry> listItems = Lists.newArrayList();
+    List<BasePageEntry<?>> subpages = Lists.newArrayList();
+    for(BaseContentEntry<?> child : entryStore.getChildren(entry.getId())) {
+      switch(getType(child)) {
+        case ANNOUNCEMENT:
+          announcements.add((AnnouncementEntry) child); break;
+        case ATTACHMENT:
+          attachments.add((AttachmentEntry) child); break;
+        case COMMENT:
+          comments.add((CommentEntry) child); break;
+        case LIST_ITEM:
+          listItems.add((ListItemEntry) child); break;
+        default:
+          subpages.add((BasePageEntry<?>) child); break;
+      }
     }
-    XmlElement content = renderer.renderContent();
-    if (content != null) {
-      mainDiv.addElement(content);
+    Comparator<BaseContentEntry<?>> titleComparator = new TitleComparator();
+    Comparator<BaseContentEntry<?>> updatedComparator = new UpdatedComparator();
+    Collections.sort(announcements, updatedComparator);
+    Collections.sort(attachments, updatedComparator);
+    Collections.sort(comments, updatedComparator);
+    Collections.sort(listItems, updatedComparator);
+    Collections.sort(subpages, titleComparator);
+    if (getType(entry) == ANNOUNCEMENTS_PAGE) {
+      mainDiv.addElement(announcementsRenderer
+          .renderAnnouncements(announcements));
+    } else if (getType(entry) == FILE_CABINET_PAGE) {
+      mainDiv.addElement(fileCabinetRenderer.renderFileCabinet(attachments));
+    } else if (getType(entry) == LIST_PAGE) {
+      mainDiv.addElement(listRenderer.renderList(
+          (ListPageEntry) entry, listItems));
     }
-    XmlElement specialContent = renderer.renderAdditionalContent();
-    if(specialContent != null) {
-      mainDiv.addElement(specialContent);
+    if (!subpages.isEmpty()) {
+      mainDiv.addElement(new XmlElement("hr"));
+      mainDiv.addElement(subpageLinksRenderer.renderSubpageLinks(subpages));
     }
-    XmlElement subpageLinks = renderer.renderSubpageLinks();
-    if (subpageLinks != null) {
-      mainDiv.addElement(subpageLinks);
+    if (!attachments.isEmpty() && getType(entry) != FILE_CABINET_PAGE) {
+      mainDiv.addElement(new XmlElement("hr"));
+      mainDiv.addElement(attachmentsRenderer.renderAttachments(attachments));
     }
-    XmlElement attachments = renderer.renderAttachments();
-    if (attachments != null) {
-      mainDiv.addElement(attachments);
-    }
-    XmlElement comments = renderer.renderComments();
-    if (comments != null) {
-      mainDiv.addElement(comments);
+    if (!comments.isEmpty()) {
+      mainDiv.addElement(new XmlElement("hr"));
+      mainDiv.addElement(commentsRenderer.renderComments(comments));
     }
     body.addElement(mainDiv);
     html.addElement(body);
     html.appendTo(out);
+  }
+  
+  private List<BasePageEntry<?>> getAncestors(BasePageEntry<?> entry,
+      EntryStore entryStore) {
+    BasePageEntry<?> parent = entryStore.getParent(entry.getId());
+    if (parent == null) {
+      return Lists.newLinkedList();
+    }
+    List<BasePageEntry<?>> ancestors = getAncestors(parent, entryStore);
+    ancestors.add(parent);
+    return ancestors;
+  }
+  
+  /**
+   * Compares BaseContentEntry's based on their titles.
+   * 
+   * @author bsimon@google.com (Benjamin Simon)
+   */
+  private class TitleComparator implements Comparator<BaseContentEntry<?>> {
+    
+    /**
+     * Returns a positive integer if {@code e1}'s title comes after {@code e2}'s
+     * title alphabetically.
+     */
+    @Override
+    public int compare(BaseContentEntry<?> e1, BaseContentEntry<?> e2) {
+      return e1.getTitle().getPlainText().compareTo(e2.getTitle().getPlainText());
+    }
+  }
+  
+  /** 
+   * Compares BaseContentEntry's based on when they were last updated.
+   * 
+   * @author bsimon@google.com (Benjamin Simon)
+   */
+  private class UpdatedComparator implements Comparator<BaseContentEntry<?>> {
+    
+    /**
+     * Orders two entries such that the more recently updated entry comes first.
+     */
+    @Override
+    public int compare(BaseContentEntry<?> e1, BaseContentEntry<?> e2) {
+      return e2.getUpdated().compareTo(e1.getUpdated());
+    }
   }
 }

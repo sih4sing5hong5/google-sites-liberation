@@ -17,7 +17,7 @@
 package com.google.sites.liberation.parsers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.sites.liberation.parsers.ParserUtil.hasClass;
+import static com.google.sites.liberation.parsers.ParserUtils.hasClass;
 
 import com.google.gdata.data.Person;
 

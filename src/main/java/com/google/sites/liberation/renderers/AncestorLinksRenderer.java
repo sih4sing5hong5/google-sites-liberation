@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.imprt;
+package com.google.sites.liberation.renderers;
 
+import com.google.gdata.data.sites.BasePageEntry;
 import com.google.inject.ImplementedBy;
+import com.google.sites.liberation.util.XmlElement;
 
-import java.io.File;
-import java.net.URL;
+import java.util.List;
 
 /**
- * Imports an entire site from a given directory.
+ * Renders the links to a page's ancestors.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(SiteImporterImpl.class)
-public interface SiteImporter {
+@ImplementedBy(AncestorLinksRendererImpl.class)
+public interface AncestorLinksRenderer {
 
-  /**
-   * Imports the site with the given root directory, to the given feed URL, 
-   * using the given EntryUploader.
+  /** 
+   * Returns an XmlElement containing links to an entry's ancestors. The
+   * given list of ancestors should have the entry's parent as the last item,
+   * parent's parent as the second to last item, and so on.
    */
-  public void importSite(File rootDirectory, URL siteUrl, 
-      EntryUploader entryUploader);
+  XmlElement renderAncestorLinks(List<BasePageEntry<?>> ancestors);
 }

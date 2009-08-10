@@ -52,7 +52,7 @@ public class Main {
   private String password = null;
   
   @Option(name="-d", usage="domain of site")
-  private String domain = "site";
+  private String domain = null;
   
   @Option(name="-n", usage="name of site")
   private String name = null;
@@ -77,10 +77,18 @@ public class Main {
       if (username != null && password != null) {
         service.setUserCredentials(username, password);
       }
-      EntryUploader entryUploader = new SitesServiceEntryUploader(service);
-      String feedUrl = "http://" + server + "/feeds/content/" + 
-          domain + '/' + name;
-      siteImporter.importSite(rootDirectory, new URL(feedUrl), entryUploader);
+      String feedUrl;
+      String siteUrl;
+      if (domain == null) {
+        feedUrl = "http://" + server + "/feeds/content/site/" + name;
+        siteUrl = "http://" + server + "/site/" + name;
+      } else {
+        feedUrl = "http://" + server + "/feeds/content/" + domain + '/' + name;
+        siteUrl = "http://" + server + "/a/" + domain + "/" + name;
+      }
+      EntryUploader entryUploader = new SitesServiceEntryUploader(
+          service, new URL(feedUrl));
+      siteImporter.importSite(rootDirectory, new URL(siteUrl), entryUploader);
     } catch (MalformedURLException e) {
       LOGGER.log(Level.SEVERE, e.getMessage());
       throw new RuntimeException(e);

@@ -13,18 +13,10 @@ import com.google.gdata.data.XhtmlTextConstruct;
 import com.google.gdata.util.XmlBlob;
 import com.google.sites.liberation.util.XmlElement;
 
-import org.junit.Before;
 import org.junit.Test;
 
-public class XmlElementFactoryImplTest {
+public class RendererUtilsTest {
 
-  private XmlElementFactory elementFactory;
-  
-  @Before
-  public void before() {
-    elementFactory = new XmlElementFactoryImpl();
-  }
-  
   @Test
   public void testGetAuthorElement() {
     Person author = new Person();
@@ -32,7 +24,7 @@ public class XmlElementFactoryImplTest {
     author.setEmail("me@company.com");
     BaseContentEntry<?> entry = new WebPageEntry();
     entry.getAuthors().add(author);
-    XmlElement element = elementFactory.getAuthorElement(entry);
+    XmlElement element = RendererUtils.getAuthorElement(entry);
     assertEquals("<span class=\"vcard\"><a class=\"fn\" href=\"" +
     		"mailto:me@company.com\">Ben Simon</a></span>", element.toString());
   }
@@ -44,12 +36,11 @@ public class XmlElementFactoryImplTest {
     blob.setBlob(xhtml);
     BaseContentEntry<?> entry = new WebPageEntry();
     entry.setContent(new XhtmlTextConstruct(blob));
-    XmlElement element = elementFactory.getContentElement(entry);
+    XmlElement element = RendererUtils.getContentElement(entry);
     assertEquals("<div class=\"entry-content\">" + xhtml + "</div>", 
         element.toString());
-    
     entry = new WebPageEntry();
-    element = elementFactory.getContentElement(entry);
+    element = RendererUtils.getContentElement(entry);
     assertEquals("<div class=\"entry-content\"></div>", element.toString());
   }
 
@@ -57,17 +48,17 @@ public class XmlElementFactoryImplTest {
   public void testGetEntryElement() {
     BaseContentEntry<?> entry = new AnnouncementEntry();
     entry.setId("announce");
-    XmlElement element = elementFactory.getEntryElement(entry, "div");
+    XmlElement element = RendererUtils.getEntryElement(entry, "div");
     assertEquals("<div class=\"hentry announcement\" id=\"announce\" />",
         element.toString());
   }
 
   @Test
   public void testGetHyperLink() {
-    XmlElement link = elementFactory.getHyperLink("http://test.html", "test");
+    XmlElement link = RendererUtils.getHyperLink("http://test.html", "test");
     assertEquals("<a href=\"http://test.html\">test</a>", link.toString());
     
-    link = elementFactory.getHyperLink("", "");
+    link = RendererUtils.getHyperLink("", "");
     assertEquals("<a href=\"\"></a>", link.toString());
   }
 
@@ -75,11 +66,11 @@ public class XmlElementFactoryImplTest {
   public void testGetRevisionElement() {
     BaseContentEntry<?> entry = new WebPageEntry();
     entry.setRevision(new Revision(25));
-    XmlElement element = elementFactory.getRevisionElement(entry);
+    XmlElement element = RendererUtils.getRevisionElement(entry);
     assertEquals("<span class=\"sites:revision\">25</span>",
         element.toString());
     
-    element = elementFactory.getRevisionElement(new WebPageEntry());
+    element = RendererUtils.getRevisionElement(new WebPageEntry());
     assertEquals("<span class=\"sites:revision\">1</span>",
         element.toString());
   }
@@ -88,12 +79,12 @@ public class XmlElementFactoryImplTest {
   public void testGetSummaryElement() {
     BaseContentEntry<?> entry = new WebPageEntry();
     entry.setSummary(new PlainTextConstruct("summary 1"));
-    XmlElement element = elementFactory.getSummaryElement(entry);
+    XmlElement element = RendererUtils.getSummaryElement(entry);
     assertEquals("<span class=\"entry-summary\">summary 1</span>",
         element.toString());
     
     entry.setSummary(new PlainTextConstruct("<summary 1>"));
-    element = elementFactory.getSummaryElement(entry);
+    element = RendererUtils.getSummaryElement(entry);
     assertEquals("<span class=\"entry-summary\">&lt;summary 1&gt;</span>",
         element.toString());
   }
@@ -102,12 +93,12 @@ public class XmlElementFactoryImplTest {
   public void testGetTitleElement() {
     BaseContentEntry<?> entry = new WebPageEntry();
     entry.setTitle(new PlainTextConstruct("title 1"));
-    XmlElement element = elementFactory.getTitleElement(entry);
+    XmlElement element = RendererUtils.getTitleElement(entry);
     assertEquals("<span class=\"entry-title\">title 1</span>",
         element.toString());
     
     entry.setTitle(new PlainTextConstruct("<title 1>"));
-    element = elementFactory.getTitleElement(entry);
+    element = RendererUtils.getTitleElement(entry);
     assertEquals("<span class=\"entry-title\">&lt;title 1&gt;</span>",
         element.toString());
   }
@@ -117,13 +108,13 @@ public class XmlElementFactoryImplTest {
     String date = "2009-07-02T21:46:23.133Z";
     BaseContentEntry<?> entry = new WebPageEntry();
     entry.setUpdated(DateTime.parseDateTime(date));
-    XmlElement element = elementFactory.getUpdatedElement(entry);
+    XmlElement element = RendererUtils.getUpdatedElement(entry);
     assertEquals("<abbr class=\"updated\" title=\"" + date + 
         "\">Jul 2, 2009</abbr>", element.toString());
     
     date = "2598-11-25T23:41:10.256Z";
     entry.setUpdated(DateTime.parseDateTime(date));
-    element = elementFactory.getUpdatedElement(entry);
+    element = RendererUtils.getUpdatedElement(entry);
     assertEquals("<abbr class=\"updated\" title=\"" + date + 
         "\">Nov 25, 2598</abbr>", element.toString());
   }

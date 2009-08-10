@@ -19,8 +19,6 @@ package com.google.sites.liberation.imprt;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.sites.liberation.util.EntryTree;
 
-import java.net.URL;
-
 /**
  * Uploads an entry to a given feed URL.
  * 
@@ -29,9 +27,8 @@ import java.net.URL;
 public interface EntryUploader {
 
   /**
-   * Uploads the given entry belonging to the given EntryTree to the given 
-   * feed URL.
+   * Uploads the given entry belonging to the given EntryTree.
    */
   BaseContentEntry<?> uploadEntry(BaseContentEntry<?> entry, 
-      EntryTree entryTree, URL feedUrl);
+      EntryTree entryTree);
 }

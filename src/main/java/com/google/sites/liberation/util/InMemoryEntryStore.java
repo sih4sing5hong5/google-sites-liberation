@@ -27,6 +27,8 @@ import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An in-memory implementation of {@link EntryStore}.
@@ -35,6 +37,9 @@ import java.util.Set;
  */
 final class InMemoryEntryStore implements EntryStore {
 
+  private static final Logger LOGGER = Logger.getLogger(
+      InMemoryEntryStore.class.getCanonicalName());
+  
   private final Map<String, BaseContentEntry<?>> entries;
   private final Set<BaseContentEntry<?>> topLevelEntries;
   private final Multimap<String, BaseContentEntry<?>> children;
@@ -53,14 +58,16 @@ final class InMemoryEntryStore implements EntryStore {
   public void addEntry(BaseContentEntry<?> entry) {
     Preconditions.checkNotNull(entry);
     String id = entry.getId();
-    Preconditions.checkArgument(id != null && entries.get(id) == null,
-        "All entries must have a unique non-null id!");
-    entries.put(id, entry);
-    String parentId = EntryUtils.getParentId(entry);
-    if (parentId == null) {
-      topLevelEntries.add(entry);
+    if (id != null && entries.get(id) == null) {
+      entries.put(id, entry);
+      String parentId = EntryUtils.getParentId(entry);
+      if (parentId == null) {
+        topLevelEntries.add(entry);
+      } else {
+        children.put(parentId, entry);
+      }
     } else {
-      children.put(parentId, entry);
+      LOGGER.log(Level.WARNING, "All entries should have a unique non-null id!");
     }
   }
   

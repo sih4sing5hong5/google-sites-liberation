@@ -34,7 +34,11 @@ final class FieldParserImpl implements FieldParser {
     checkNotNull(element);
     Field field = new Field();
     field.setIndex(element.getAttribute("title"));
-    field.setValue(element.getTextContent());
+    String value = element.getTextContent();
+    if (value.equals("\u2713")) {
+      value = "on";
+    }
+    field.setValue(value);
     return field;
   }
 }

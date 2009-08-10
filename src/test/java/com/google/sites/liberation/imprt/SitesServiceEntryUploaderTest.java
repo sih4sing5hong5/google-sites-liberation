@@ -24,10 +24,10 @@ import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.data.ILink;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
-import com.google.gdata.data.sites.ContentFeed;
 import com.google.gdata.data.sites.PageName;
 import com.google.gdata.data.sites.WebPageEntry;
 import com.google.gdata.util.ServiceException;
+import com.google.sites.liberation.util.EntryDownloader;
 import com.google.sites.liberation.util.EntryTree;
 import com.google.sites.liberation.util.InMemoryEntryTreeFactory;
 
@@ -49,6 +49,7 @@ public class SitesServiceEntryUploaderTest {
 
   private Mockery context;
   private SitesService sitesService;
+  private EntryDownloader entryDownloader;
   private EntryUploader entryUploader;
   private URL feedUrl;
   
@@ -58,8 +59,10 @@ public class SitesServiceEntryUploaderTest {
       setImposteriser(ClassImposteriser.INSTANCE);
     }};
     sitesService = context.mock(SitesService.class);
-    entryUploader = new SitesServiceEntryUploader(sitesService);
+    entryDownloader = context.mock(EntryDownloader.class);
     feedUrl = new URL("http://sites.google.com/feeds/content/site/test");
+    entryUploader = new SitesServiceEntryUploader(sitesService, feedUrl, 
+        entryDownloader);
   }
   
   @Test
@@ -81,7 +84,7 @@ public class SitesServiceEntryUploaderTest {
     }});
     
     assertEquals(returnedEntry, entryUploader.uploadEntry(newEntry, 
-        context.mock(EntryTree.class), feedUrl));
+        context.mock(EntryTree.class)));
   }
   
   @SuppressWarnings("unchecked")
@@ -99,19 +102,15 @@ public class SitesServiceEntryUploaderTest {
     oldEntry.setId(id);
     oldEntry.addLink(ILink.Rel.ENTRY_EDIT, ILink.Type.ATOM, id);
     final BaseContentEntry<?> returnedEntry = new WebPageEntry();
-    final ContentFeed feed = context.mock(ContentFeed.class);
     
     context.checking(new Expectations() {{
-      allowing (sitesService).getFeed(with(any(ContentQuery.class)), 
-          with(ContentFeed.class)); will(returnValue(feed));
-      allowing (feed).getEntries(); 
+      allowing (entryDownloader).getEntries(with(any(ContentQuery.class))); 
           will(returnValue(Lists.newArrayList(oldEntry)));
       oneOf (sitesService).update(new URL(id), newEntry);
           will(returnValue(returnedEntry));
     }});
     
-    assertEquals(returnedEntry, entryUploader.uploadEntry(newEntry, entryTree, 
-        feedUrl));
+    assertEquals(returnedEntry, entryUploader.uploadEntry(newEntry, entryTree));
   }
   
   @Test
@@ -128,18 +127,14 @@ public class SitesServiceEntryUploaderTest {
     oldEntry.setId(id);
     oldEntry.addLink(ILink.Rel.ENTRY_EDIT, ILink.Type.ATOM, id);
     final BaseContentEntry<?> returnedEntry = new WebPageEntry();
-    final ContentFeed feed = context.mock(ContentFeed.class);
     
     context.checking(new Expectations() {{
-      allowing (sitesService).getFeed(with(any(ContentQuery.class)), 
-          with(ContentFeed.class)); will(returnValue(feed));
-      allowing (feed).getEntries(); 
+      allowing (entryDownloader).getEntries(with(any(ContentQuery.class)));
           will(returnValue(Lists.newArrayList()));
       oneOf (sitesService).insert(feedUrl, newEntry);
           will(returnValue(returnedEntry));
     }});
     
-    assertEquals(returnedEntry, entryUploader.uploadEntry(newEntry, entryTree, 
-        feedUrl));
+    assertEquals(returnedEntry, entryUploader.uploadEntry(newEntry, entryTree));
   }
 }

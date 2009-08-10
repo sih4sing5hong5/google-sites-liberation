@@ -53,7 +53,7 @@ public class Main {
   private String password = null;
   
   @Option(name="-d", usage="domain of site")
-  private String domain = "site";
+  private String domain = null;
   
   @Option(name="-n", usage="name of site")
   private String name = null;
@@ -78,11 +78,18 @@ public class Main {
       if (username != null && password != null) {
         service.setUserCredentials(username, password);
       }
-      String feedUrl = "http://" + server + "/feeds/content/" + 
-          domain + '/' + name;
+      String feedUrl;
+      String siteUrl;
+      if (domain == null) {
+        feedUrl = "http://" + server + "/feeds/content/site/" + name;
+        siteUrl = "http://" + server + "/site/" + name;
+      } else {
+        feedUrl = "http://" + server + "/feeds/content/" + domain + '/' + name;
+        siteUrl = "http://" + server + "/a/" + domain + "/" + name;
+      }
       Iterable<BaseContentEntry<?>> entries = 
         new ContinuousContentFeed(service, new URL(feedUrl));
-      siteExporter.exportSite(entries, rootDirectory);
+      siteExporter.exportSite(entries, rootDirectory, new URL(siteUrl));
     } catch (MalformedURLException e) {
       LOGGER.log(Level.SEVERE, e.getMessage());
       throw new RuntimeException(e);

@@ -19,8 +19,6 @@ package com.google.sites.liberation.imprt;
 import com.google.inject.ImplementedBy;
 import com.google.sites.liberation.util.EntryTree;
 
-import java.net.URL;
-
 /**
  * Uploads entries to a given feed URL.
  * 
@@ -30,9 +28,9 @@ import java.net.URL;
 public interface EntryTreeUploader {
 
   /**
-   * Uploads all of the entries in the given EntryTree to the given feed URL,
-   * using the given EntryUploader and retaining the tree structure.
+   * Uploads all of the entries in the given EntryTree using the given 
+   * EntryUploader and retaining the tree structure.
    */
-  void uploadEntryTree(EntryTree entryTree, URL feedUrl, 
+  void uploadEntryTree(EntryTree entryTree, 
       EntryUploader entryUploader);
 }

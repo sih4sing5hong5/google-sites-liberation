@@ -33,24 +33,19 @@ import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 public class EntryTreeUploaderImplTest {
 
   private Mockery context;
-  private URL feedUrl;
   private EntryUploader entryUploader;
   private BasePageEntry<?> root;
   private EntryTree entryTree;
   private EntryTreeUploader entryTreeUploader;
   
   @Before
-  public void before() throws MalformedURLException {
+  public void before() {
     context = new JUnit4Mockery() {{
       setImposteriser(ClassImposteriser.INSTANCE);
     }};
-    feedUrl = new URL("http://sites.google.com");
     entryUploader = context.mock(EntryUploader.class);
     root = getEntry("root");
     entryTree = new InMemoryEntryTreeFactory().getEntryTree(root);
@@ -60,11 +55,11 @@ public class EntryTreeUploaderImplTest {
   @Test
   public void testJustRoot() {
     context.checking(new Expectations() {{
-      oneOf (entryUploader).uploadEntry(root, entryTree, feedUrl);
+      oneOf (entryUploader).uploadEntry(root, entryTree);
         will(returnValue(root));
     }});
     
-    entryTreeUploader.uploadEntryTree(entryTree, feedUrl, entryUploader);
+    entryTreeUploader.uploadEntryTree(entryTree, entryUploader);
   }
   
   @Test
@@ -83,23 +78,23 @@ public class EntryTreeUploaderImplTest {
     entryTree.addEntry(grandchild3, child2);
     
     context.checking(new Expectations() {{
-      oneOf (entryUploader).uploadEntry(root, entryTree, feedUrl);
+      oneOf (entryUploader).uploadEntry(root, entryTree);
         will(returnValue(root));
-      oneOf (entryUploader).uploadEntry(child1, entryTree, feedUrl);
+      oneOf (entryUploader).uploadEntry(child1, entryTree);
         will(returnValue(child1));
-      oneOf (entryUploader).uploadEntry(child2, entryTree, feedUrl);
+      oneOf (entryUploader).uploadEntry(child2, entryTree);
         will(returnValue(child2));
-      oneOf (entryUploader).uploadEntry(child3, entryTree, feedUrl);
+      oneOf (entryUploader).uploadEntry(child3, entryTree);
         will(returnValue(child3));
-      oneOf (entryUploader).uploadEntry(grandchild1, entryTree, feedUrl);
+      oneOf (entryUploader).uploadEntry(grandchild1, entryTree);
         will(returnValue(grandchild1));
-      oneOf (entryUploader).uploadEntry(grandchild2, entryTree, feedUrl);
+      oneOf (entryUploader).uploadEntry(grandchild2, entryTree);
         will(returnValue(grandchild2));
-      oneOf (entryUploader).uploadEntry(grandchild3, entryTree, feedUrl);
+      oneOf (entryUploader).uploadEntry(grandchild3, entryTree);
         will(returnValue(grandchild3));
     }});
     
-    entryTreeUploader.uploadEntryTree(entryTree, feedUrl, entryUploader);
+    entryTreeUploader.uploadEntryTree(entryTree, entryUploader);
     assertEquals(getParentId(child1), "root");
     assertEquals(getParentId(child2), "root");
     assertEquals(getParentId(child3), "root");

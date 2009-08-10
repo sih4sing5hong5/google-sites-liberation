@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2009 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.sites.liberation.renderers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -11,14 +27,16 @@ import com.google.sites.liberation.util.XmlElement;
 import org.joda.time.DateTime;
 
 /**
- * Implements XmlElementFactory to construct various XmlElement's.
+ * Provides utility methods to construct various XmlElement's.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-public final class XmlElementFactoryImpl implements XmlElementFactory {
+final class RendererUtils {
   
-  @Override
-  public XmlElement getAuthorElement(BaseContentEntry<?> entry) {
+  /**
+   * Creates a new hCard element for the given entry.
+   */
+  static XmlElement getAuthorElement(BaseContentEntry<?> entry) {
     checkNotNull(entry);
     XmlElement element = new XmlElement("span");
     element.setAttribute("class", "vcard");
@@ -36,20 +54,26 @@ public final class XmlElementFactoryImpl implements XmlElementFactory {
     }
     return element;
   }
-
-  @Override
-  public XmlElement getContentElement(BaseContentEntry<?> entry) {
+  
+  /**
+   * Creates a new hAtom "entry-content" div for the given entry.
+   */
+  static XmlElement getContentElement(BaseContentEntry<?> entry) {
     checkNotNull(entry);
     XmlElement element = new XmlElement("div");
     element.setAttribute("class", "entry-content");
-    String xhtmlContent;
-    xhtmlContent = EntryUtils.getContent(entry);
+    String xhtmlContent = EntryUtils.getContent(entry);
+    if(xhtmlContent.contains("CDATA")) {
+      System.out.println(xhtmlContent);
+    }
     element.addXml(xhtmlContent);
     return element;
   }
-
-  @Override
-  public XmlElement getEntryElement(BaseContentEntry<?> entry, String elementType) {
+  
+  /**
+   * Creates a new hAtom "hentry" element of the given type for the given entry.
+   */
+  static XmlElement getEntryElement(BaseContentEntry<?> entry, String elementType) {
     checkNotNull(entry, "entry");
     checkNotNull(elementType, "elementType");
     XmlElement element = new XmlElement(elementType);
@@ -58,8 +82,10 @@ public final class XmlElementFactoryImpl implements XmlElementFactory {
     return element;
   }
 
-  @Override
-  public XmlElement getHyperLink(String href, String text) {
+  /**
+   * Creates a new HyperLink with the given href and display text.
+   */
+  static XmlElement getHyperLink(String href, String text) {
     checkNotNull(href, "href");
     checkNotNull(text, "text");
     XmlElement element = new XmlElement("a");
@@ -68,8 +94,10 @@ public final class XmlElementFactoryImpl implements XmlElementFactory {
     return element;
   }
 
-  @Override
-  public XmlElement getRevisionElement(BaseContentEntry<?> entry) {
+  /**
+   * Creates a new "sites:revision" for the given entry.
+   */
+  static XmlElement getRevisionElement(BaseContentEntry<?> entry) {
     checkNotNull(entry);
     XmlElement element = new XmlElement("span");
     element.setAttribute("class", "sites:revision");
@@ -81,8 +109,10 @@ public final class XmlElementFactoryImpl implements XmlElementFactory {
     return element;
   }
 
-  @Override
-  public XmlElement getSummaryElement(BaseContentEntry<?> entry) {
+  /**
+   * Creates a new hAtom "entry-summary" element for the given entry.
+   */
+  static XmlElement getSummaryElement(BaseContentEntry<?> entry) {
     checkNotNull(entry);
     XmlElement element = new XmlElement("span");
     element.setAttribute("class", "entry-summary");
@@ -90,8 +120,10 @@ public final class XmlElementFactoryImpl implements XmlElementFactory {
     return element;
   }
 
-  @Override
-  public XmlElement getTitleElement(BaseContentEntry<?> entry) {
+  /**
+   * Creates a new hAtom "entry-title" element for the given entry.
+   */
+  static XmlElement getTitleElement(BaseContentEntry<?> entry) {
     checkNotNull(entry);
     XmlElement element = new XmlElement("span");
     element.setAttribute("class", "entry-title");
@@ -99,8 +131,10 @@ public final class XmlElementFactoryImpl implements XmlElementFactory {
     return element;
   }
 
-  @Override
-  public XmlElement getUpdatedElement(BaseContentEntry<?> entry) {
+  /**
+   * Creates a new hAtom "updated" element for the given entry.
+   */
+  static XmlElement getUpdatedElement(BaseContentEntry<?> entry) {
     checkNotNull(entry);
     XmlElement element = new XmlElement("abbr");
     element.setAttribute("class", "updated");

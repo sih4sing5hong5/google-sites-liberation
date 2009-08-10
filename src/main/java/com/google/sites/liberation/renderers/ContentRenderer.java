@@ -14,31 +14,22 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.parsers;
+package com.google.sites.liberation.renderers;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import org.w3c.dom.Element;
+import com.google.gdata.data.sites.BasePageEntry;
+import com.google.inject.ImplementedBy;
+import com.google.sites.liberation.util.XmlElement;
 
 /**
- * Contains utility methods for parsing.
+ * Renders a page's main content.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-final class ParserUtil {
+@ImplementedBy(ContentRendererImpl.class)
+public interface ContentRenderer {
 
   /**
-   * Returns whether or not the given element has the given class.
+   * Returns an XmlElement containing the given entry's content.
    */
-  static boolean hasClass(Element element, String cls) {
-    checkNotNull(element);
-    checkNotNull(cls);
-    boolean hasClass = false;
-    for(String str : element.getAttribute("class").split(" ")) {
-      if (str.equals(cls)) {
-        hasClass = true;
-      }
-    }
-    return hasClass;
-  }
+  XmlElement renderContent(BasePageEntry<?> entry);
 }

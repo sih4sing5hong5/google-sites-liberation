@@ -20,8 +20,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 
 /**
  * Implements {@link AppendableFactory} to provide a 
@@ -37,6 +38,7 @@ final class BufferedWriterFactory implements AppendableFactory {
   @Override
   public Appendable getAppendable(File file) throws IOException {
     checkNotNull(file);
-    return new BufferedWriter(new FileWriter(file));
+    return new BufferedWriter(new OutputStreamWriter(
+        new FileOutputStream(file), "UTF-8"));
   }
 }

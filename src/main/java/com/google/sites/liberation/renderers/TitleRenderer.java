@@ -14,25 +14,19 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.imprt;
+package com.google.sites.liberation.renderers;
 
+import com.google.gdata.data.sites.BasePageEntry;
 import com.google.inject.ImplementedBy;
-
-import java.io.File;
-import java.net.URL;
+import com.google.sites.liberation.util.XmlElement;
 
 /**
- * Imports an entire site from a given directory.
+ * Renders the links to a page's ancestors.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(SiteImporterImpl.class)
-public interface SiteImporter {
+@ImplementedBy(TitleRendererImpl.class)
+public interface TitleRenderer {
 
-  /**
-   * Imports the site with the given root directory, to the given feed URL, 
-   * using the given EntryUploader.
-   */
-  public void importSite(File rootDirectory, URL siteUrl, 
-      EntryUploader entryUploader);
+  XmlElement renderTitle(BasePageEntry<?> entry);
 }

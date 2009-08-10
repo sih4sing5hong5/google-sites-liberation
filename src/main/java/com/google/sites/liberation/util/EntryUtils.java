@@ -59,8 +59,13 @@ public class EntryUtils {
    */
   public static String getContent(BaseContentEntry<?> entry) {
     try {
-      return ((XhtmlTextConstruct)(entry.getTextContent().getContent()))
-          .getXhtml().getBlob();
+      String content = ((XhtmlTextConstruct)(entry.getTextContent()
+          .getContent())).getXhtml().getBlob();
+      //This is due to a bug in the GData client: http://b/issue?id=2044419
+      while(content.contains("]]>")) {
+        content = content.replace("]]>", "]]&gt;");
+      }
+      return content;
     } catch(IllegalStateException e) {
       LOGGER.log(Level.WARNING, "Invalid Content", e);
       return "";
