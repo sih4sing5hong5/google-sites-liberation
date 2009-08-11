@@ -36,6 +36,7 @@ import com.google.gdata.data.spreadsheet.Data;
 import com.google.gdata.data.spreadsheet.Field;
 import com.google.gdata.data.threading.InReplyTo;
 import com.google.sites.liberation.util.EntryTree;
+import com.google.sites.liberation.util.EntryUtils;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -47,6 +48,9 @@ import java.util.Set;
  * @author bsimon@google.com (Benjamin Simon)
  */
 final class EntryTreeUploaderImpl implements EntryTreeUploader {
+  
+  private static final Comparator<BaseContentEntry<?>> updatedComparator =
+      EntryUtils.getUpdatedComparator();
   
   @Override
   public void uploadEntryTree(EntryTree entryTree, EntryUploader entryUploader) {
@@ -64,13 +68,13 @@ final class EntryTreeUploaderImpl implements EntryTreeUploader {
    */
   private void uploadEntries(Set<BaseContentEntry<?>> entries, 
       EntryTree entryTree, EntryUploader entryUploader) {    
-    Set<BaseContentEntry<?>> children = Sets.newTreeSet(new UpdatedComparator());
-    for(BaseContentEntry<?> entry : entries) {
+    Set<BaseContentEntry<?>> children = Sets.newTreeSet(updatedComparator);
+    for (BaseContentEntry<?> entry : entries) {
       if (getType(entry) != ATTACHMENT) {
         BaseContentEntry<?> returnedEntry = entryUploader.uploadEntry(
             entry, entryTree);
         if (returnedEntry != null) {
-          for(BaseContentEntry<?> child : entryTree.getChildren(entry)) {
+          for (BaseContentEntry<?> child : entryTree.getChildren(entry)) {
             updateChild(child, returnedEntry);
             children.add(child);
           }
@@ -103,30 +107,13 @@ final class EntryTreeUploaderImpl implements EntryTreeUploader {
       ListPageEntry listPage = (ListPageEntry) parent;
       Data data = listPage.getData();
       Map<String, String> names = Maps.newHashMap();
-      for(Column column : data.getColumns()) {
+      for (Column column : data.getColumns()) {
         names.put(column.getIndex(), column.getName());
       }
-      for(Field field : listItem.getFields()) {
+      for (Field field : listItem.getFields()) {
         String name = names.get(field.getIndex());
         field.setName(name);
       }
-    }
-  }
-  
-  /** 
-   * Compares BaseContentEntry's based on when they were last updated.
-   * 
-   * @author bsimon@google.com (Benjamin Simon)
-   */
-  private class UpdatedComparator implements Comparator<BaseContentEntry<?>> {
-    
-    /**
-     * Orders entries by when they were updated so that the oldest entries
-     * come first.
-     */
-    @Override
-    public int compare(BaseContentEntry<?> e1, BaseContentEntry<?> e2) {
-      return e1.getUpdated().compareTo(e2.getUpdated());
     }
   }
 }

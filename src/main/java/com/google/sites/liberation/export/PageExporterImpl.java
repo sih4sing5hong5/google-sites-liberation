@@ -40,6 +40,7 @@ import com.google.sites.liberation.renderers.FileCabinetRenderer;
 import com.google.sites.liberation.renderers.ListRenderer;
 import com.google.sites.liberation.renderers.SubpageLinksRenderer;
 import com.google.sites.liberation.renderers.TitleRenderer;
+import com.google.sites.liberation.util.EntryUtils;
 import com.google.sites.liberation.util.XmlElement;
 import com.google.sites.liberation.util.EntryStore;
 
@@ -55,6 +56,11 @@ import java.util.List;
  * @author bsimon@google.com (Benjamin Simon)
  */
 final class PageExporterImpl implements PageExporter {
+  
+  private static final Comparator<BaseContentEntry<?>> updatedComparator =
+      EntryUtils.getReverseUpdatedComparator();
+  private static final Comparator<BaseContentEntry<?>> titleComparator =
+      EntryUtils.getTitleComparator();
   
   private AncestorLinksRenderer ancestorLinksRenderer;
   private AnnouncementsRenderer announcementsRenderer;
@@ -98,8 +104,7 @@ final class PageExporterImpl implements PageExporter {
     XmlElement head = new XmlElement("head");
     XmlElement title = new XmlElement("title");
     title.addText(entry.getTitle().getPlainText());
-    head.addElement(title);
-    html.addElement(head);
+    html.addElement(head.addElement(title));
     XmlElement body = new XmlElement("body");
     XmlElement mainDiv = new XmlElement("div");
     mainDiv.setAttribute("class", "hentry " + getType(entry).toString());
@@ -115,7 +120,7 @@ final class PageExporterImpl implements PageExporter {
     List<CommentEntry> comments = Lists.newArrayList();
     List<ListItemEntry> listItems = Lists.newArrayList();
     List<BasePageEntry<?>> subpages = Lists.newArrayList();
-    for(BaseContentEntry<?> child : entryStore.getChildren(entry.getId())) {
+    for (BaseContentEntry<?> child : entryStore.getChildren(entry.getId())) {
       switch(getType(child)) {
         case ANNOUNCEMENT:
           announcements.add((AnnouncementEntry) child); break;
@@ -129,8 +134,6 @@ final class PageExporterImpl implements PageExporter {
           subpages.add((BasePageEntry<?>) child); break;
       }
     }
-    Comparator<BaseContentEntry<?>> titleComparator = new TitleComparator();
-    Comparator<BaseContentEntry<?>> updatedComparator = new UpdatedComparator();
     Collections.sort(announcements, updatedComparator);
     Collections.sort(attachments, updatedComparator);
     Collections.sort(comments, updatedComparator);
@@ -157,8 +160,7 @@ final class PageExporterImpl implements PageExporter {
       mainDiv.addElement(new XmlElement("hr"));
       mainDiv.addElement(commentsRenderer.renderComments(comments));
     }
-    body.addElement(mainDiv);
-    html.addElement(body);
+    html.addElement(body.addElement(mainDiv));
     html.appendTo(out);
   }
   
@@ -171,38 +173,5 @@ final class PageExporterImpl implements PageExporter {
     List<BasePageEntry<?>> ancestors = getAncestors(parent, entryStore);
     ancestors.add(parent);
     return ancestors;
-  }
-  
-  /**
-   * Compares BaseContentEntry's based on their titles.
-   * 
-   * @author bsimon@google.com (Benjamin Simon)
-   */
-  private class TitleComparator implements Comparator<BaseContentEntry<?>> {
-    
-    /**
-     * Returns a positive integer if {@code e1}'s title comes after {@code e2}'s
-     * title alphabetically.
-     */
-    @Override
-    public int compare(BaseContentEntry<?> e1, BaseContentEntry<?> e2) {
-      return e1.getTitle().getPlainText().compareTo(e2.getTitle().getPlainText());
-    }
-  }
-  
-  /** 
-   * Compares BaseContentEntry's based on when they were last updated.
-   * 
-   * @author bsimon@google.com (Benjamin Simon)
-   */
-  private class UpdatedComparator implements Comparator<BaseContentEntry<?>> {
-    
-    /**
-     * Orders two entries such that the more recently updated entry comes first.
-     */
-    @Override
-    public int compare(BaseContentEntry<?> e1, BaseContentEntry<?> e2) {
-      return e2.getUpdated().compareTo(e1.getUpdated());
-    }
   }
 }

@@ -47,7 +47,7 @@ public enum EntryType {
   
   @Override
   public String toString() {
-    switch(this) {
+    switch (this) {
       case ANNOUNCEMENT: return "announcement";
       case ANNOUNCEMENTS_PAGE: return "announcementspage";
       case ATTACHMENT: return "attachment";

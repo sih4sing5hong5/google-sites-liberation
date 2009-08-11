@@ -32,10 +32,10 @@ final class AncestorLinksRendererImpl implements AncestorLinksRenderer {
   @Override
   public XmlElement renderAncestorLinks(List<BasePageEntry<?>> ancestors) {
     XmlElement div = new XmlElement("div");
-    for(int i = 0; i < ancestors.size(); i++) {
+    for (int i = 0; i < ancestors.size(); i++) {
       BaseContentEntry<?> ancestor = ancestors.get(i);
       String path = "";
-      for(int j = 0; j < ancestors.size() - i; j++) {
+      for (int j = 0; j < ancestors.size() - i; j++) {
         path += "../";
       }
       XmlElement link = RendererUtils.getHyperLink(path + "index.html", 

@@ -32,7 +32,7 @@ final class AnnouncementsRendererImpl implements AnnouncementsRenderer {
   public XmlElement renderAnnouncements(
       List<AnnouncementEntry> announcements) {
     XmlElement div = new XmlElement("div");
-    for(AnnouncementEntry announcement : announcements) {
+    for (AnnouncementEntry announcement : announcements) {
       div.addElement(new XmlElement("hr"));
       XmlElement announceDiv = RendererUtils.getEntryElement(announcement, 
           "div");

@@ -109,7 +109,7 @@ public class XmlElement {
    */
   public void appendTo(Appendable a) throws IOException {
     a.append('<').append(elementType);
-    for(Map.Entry<String, String> attribute : attributes.entrySet()) {
+    for (Map.Entry<String, String> attribute : attributes.entrySet()) {
       a.append(' ').append(attribute.getKey()).append("=\"")
           .append(attribute.getValue()).append("\"");
     }
@@ -117,10 +117,10 @@ public class XmlElement {
       a.append(" />");
     } else {
       a.append(">");
-      for(Pair<Object, ChildType> pair : children) {
+      for (Pair<Object, ChildType> pair : children) {
         Object child = pair.getFirst();
         ChildType type = pair.getSecond();
-        if(type == ChildType.ELEMENT) {
+        if (type == ChildType.ELEMENT) {
           ((XmlElement)child).appendTo(a);
         } else {
           a.append((String)child);

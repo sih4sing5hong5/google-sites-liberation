@@ -25,6 +25,8 @@ import com.google.sites.liberation.util.EntryUtils;
 import com.google.sites.liberation.util.XmlElement;
 
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.DateTimeFormatterBuilder;
 
 /**
  * Provides utility methods to construct various XmlElement's.
@@ -32,6 +34,14 @@ import org.joda.time.DateTime;
  * @author bsimon@google.com (Benjamin Simon)
  */
 final class RendererUtils {
+  
+  private static final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+      .appendMonthOfYearShortText()
+      .appendLiteral(' ')
+      .appendDayOfMonth(1)
+      .appendLiteral(", ")
+      .appendYear(4, 4)
+      .toFormatter();
   
   /**
    * Creates a new hCard element for the given entry.
@@ -140,24 +150,7 @@ final class RendererUtils {
     element.setAttribute("class", "updated");
     element.setAttribute("title", entry.getUpdated().toString());
     DateTime jodaTime = new DateTime(entry.getUpdated().getValue());
-    String month = "";
-    switch(jodaTime.getMonthOfYear()) {
-      case 1: month = "Jan"; break;
-      case 2: month = "Feb"; break;
-      case 3: month = "Mar"; break;
-      case 4: month = "Apr"; break;
-      case 5: month = "May"; break;
-      case 6: month = "Jun"; break;
-      case 7: month = "Jul"; break;
-      case 8: month = "Aug"; break;
-      case 9: month = "Sep"; break;
-      case 10: month = "Oct"; break;
-      case 11: month = "Nov"; break;
-      case 12: month = "Dec"; break;
-    }
-    int day = jodaTime.getDayOfMonth();
-    int year = jodaTime.getYear();
-    element.addText(month + ' ' + day + ", " + year);
+    element.addText(jodaTime.toString(formatter));
     return element;
   }
 }

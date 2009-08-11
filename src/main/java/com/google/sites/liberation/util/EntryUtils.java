@@ -18,10 +18,13 @@ package com.google.sites.liberation.util;
 
 import com.google.gdata.data.ILink;
 import com.google.gdata.data.Link;
+import com.google.gdata.data.TextConstruct;
 import com.google.gdata.data.XhtmlTextConstruct;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.SitesLink;
+import com.google.gdata.util.XmlBlob;
 
+import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,7 +36,7 @@ import java.util.logging.Logger;
 public class EntryUtils {
 
   private static final Logger LOGGER = Logger.getLogger(
-      EntryUtils.class.getCanonicalName());
+      EntryUtils.class.getCanonicalName());  
   
   /**
    * Returns the id given by the given entry's parent link, or null if it has
@@ -62,7 +65,7 @@ public class EntryUtils {
       String content = ((XhtmlTextConstruct)(entry.getTextContent()
           .getContent())).getXhtml().getBlob();
       //This is due to a bug in the GData client: http://b/issue?id=2044419
-      while(content.contains("]]>")) {
+      while (content.contains("]]>")) {
         content = content.replace("]]>", "]]&gt;");
       }
       return content;
@@ -78,4 +81,73 @@ public class EntryUtils {
     }
   }
   
+  /**
+   * Sets the content of the given entry to the given String.
+   */
+  public static void setContent(BaseContentEntry<?> entry, String content) {
+    XmlBlob blob = new XmlBlob();
+    blob.setBlob(content);
+    TextConstruct textConstruct = new XhtmlTextConstruct(blob);
+    entry.setContent(textConstruct);
+  }
+  
+  /**
+   * Returns a new Comparator that orders BaseContentEntry's based on
+   * their updated times (earlier updated times come first).
+   */
+  public static Comparator<BaseContentEntry<?>> getUpdatedComparator() {
+    return new UpdatedComparator(true);
+  }
+  
+  /**
+   * Returns a new Comparator that orders BaseContentEntry's based on
+   * their updated times (later updated times come first).
+   */
+  public static Comparator<BaseContentEntry<?>> getReverseUpdatedComparator() {
+    return new UpdatedComparator(false);
+  }
+  
+  /**
+   * Returns a new Comparator that orders BaseContentEntry's alphabetically
+   * by their titles.
+   */
+  public static Comparator<BaseContentEntry<?>> getTitleComparator() {
+    return new TitleComparator();
+  }
+  
+  /**
+   * Compares BaseContentEntry's based on their titles.
+   */
+  private static class TitleComparator implements Comparator<BaseContentEntry<?>> {
+    
+    /**
+     * Returns a positive integer if {@code e1}'s title comes after {@code e2}'s
+     * title alphabetically.
+     */
+    @Override
+    public int compare(BaseContentEntry<?> e1, BaseContentEntry<?> e2) {
+      return e1.getTitle().getPlainText().compareTo(e2.getTitle().getPlainText());
+    }
+  }
+  
+  /** 
+   * Compares BaseContentEntry's based on when they were last updated.
+   */
+  private static class UpdatedComparator implements Comparator<BaseContentEntry<?>> {
+    
+    private boolean forward;
+    
+    public UpdatedComparator(boolean forward) {
+      this.forward = forward;
+    }
+    
+    /**
+     * Orders two entries such that the more recently updated entry comes first.
+     */
+    @Override
+    public int compare(BaseContentEntry<?> e1, BaseContentEntry<?> e2) {
+      int compare = e1.getUpdated().compareTo(e2.getUpdated());
+      return forward ? compare : -compare;
+    }
+  }
 }

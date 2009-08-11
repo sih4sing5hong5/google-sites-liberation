@@ -54,7 +54,7 @@ public final class SitesServiceEntryDownloader implements EntryDownloader {
     List<BaseEntry> baseEntries = 
         service.getFeed(query, ContentFeed.class).getEntries();
     List<BaseContentEntry<?>> adaptedEntries = Lists.newLinkedList();
-    for(BaseEntry entry : baseEntries) {
+    for (BaseEntry entry : baseEntries) {
       try {
         adaptedEntries.add((BaseContentEntry<?>) entry.getAdaptedEntry());
       } catch (AdaptorException e) {

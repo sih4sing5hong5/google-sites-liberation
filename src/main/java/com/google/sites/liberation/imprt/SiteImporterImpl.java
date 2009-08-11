@@ -27,7 +27,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 /**
- * Implements {@link SiteImporter} to import an entrire site.
+ * Implements {@link SiteImporter} to import an entire site.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
@@ -53,12 +53,11 @@ final class SiteImporterImpl implements SiteImporter {
   public void importSite(File rootDirectory, URL siteUrl, 
       EntryUploader entryUploader) {
     if (rootDirectory.isDirectory()) {
-      for(File subDirectory : rootDirectory.listFiles()) {
+      for (File subDirectory : rootDirectory.listFiles()) {
         if (subDirectory.isDirectory()) {
           EntryTree entryTree = importPage(subDirectory);
           if (entryTree != null) {
             fixLinks(entryTree, siteUrl);
-            System.out.println(entryTree.getRoot().getTitle().getPlainText());
             entryTreeUploader.uploadEntryTree(entryTree, entryUploader);
           }
         }
@@ -102,7 +101,7 @@ final class SiteImporterImpl implements SiteImporter {
     }
     BasePageEntry<?> pageEntry = (BasePageEntry<?>) entryTree.getRoot();
     pageEntry.setPageName(new PageName(pageDirectory.getName()));
-    for(File subDirectory : pageDirectory.listFiles()) {
+    for (File subDirectory : pageDirectory.listFiles()) {
       if (subDirectory.isDirectory()) {
         EntryTree subTree = importPage(subDirectory);
         if (subTree != null) {
@@ -137,8 +136,8 @@ final class SiteImporterImpl implements SiteImporter {
     String content = EntryUtils.getContent(entry);
     String url = siteUrl.toExternalForm();
     int index = content.indexOf(prefix + "../");
-    while(index != -1) {
-      int startIndex = index + 6;
+    while (index != -1) {
+      int startIndex = index + prefix.length();
       int endIndex = content.indexOf(suffix, startIndex);
       if (endIndex == -1) {
         break;
@@ -146,14 +145,13 @@ final class SiteImporterImpl implements SiteImporter {
       String link = content.substring(startIndex, endIndex);
       if (link.startsWith("../")) {
         BasePageEntry<?> currentAncestor = (BasePageEntry<?>) entry;
-        while(link.startsWith("../") && currentAncestor != null) {
+        while (link.startsWith("../") && currentAncestor != null) {
           link = link.substring(3);
           currentAncestor = entryTree.getParent(currentAncestor);
         }
         String ancestors = "";
-        while(currentAncestor != null) {
-          ancestors = currentAncestor.getPageName().getValue() + 
-              "/" + ancestors;
+        while (currentAncestor != null) {
+          ancestors = currentAncestor.getPageName().getValue() + "/" + ancestors;
           currentAncestor = entryTree.getParent(currentAncestor);
         }
         link = ancestors + link;

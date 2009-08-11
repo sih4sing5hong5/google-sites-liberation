@@ -30,7 +30,7 @@ import java.net.URL;
 public interface SiteImporter {
 
   /**
-   * Imports the site with the given root directory, to the given feed URL, 
+   * Imports the site with the given root directory, to the given site URL, 
    * using the given EntryUploader.
    */
   public void importSite(File rootDirectory, URL siteUrl, 

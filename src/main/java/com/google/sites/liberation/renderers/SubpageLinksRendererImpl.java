@@ -32,7 +32,7 @@ final class SubpageLinksRendererImpl implements SubpageLinksRenderer {
   public XmlElement renderSubpageLinks(List<BasePageEntry<?>> subpages) {
     XmlElement div = new XmlElement("div");
     div.addText("Subpages (" + subpages.size() + "):");
-    for(BasePageEntry<?> subpage : subpages) {
+    for (BasePageEntry<?> subpage : subpages) {
       String href = subpage.getPageName().getValue() + "/index.html";
       div.addText(" ");
       div.addElement(RendererUtils.getHyperLink(href, 

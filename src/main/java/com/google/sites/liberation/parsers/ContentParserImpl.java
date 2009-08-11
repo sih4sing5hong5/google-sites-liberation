@@ -40,7 +40,7 @@ final class ContentParserImpl implements ContentParser {
     checkNotNull(element);
     StringBuilder builder = new StringBuilder();
     NodeList nodeList = element.getChildNodes();
-    for(int i = 0; i < nodeList.getLength(); i++) {
+    for (int i = 0; i < nodeList.getLength(); i++) {
       Node child = nodeList.item(i);
       if (child.getNodeType() == Node.ELEMENT_NODE) {
         builder.append(xmlElementOf((Element) child));
@@ -59,14 +59,14 @@ final class ContentParserImpl implements ContentParser {
   private XmlElement xmlElementOf(Element element) {
     XmlElement xmlElement = new XmlElement(element.getTagName());
     NamedNodeMap attributes = element.getAttributes();
-    for(int i = 0; i < attributes.getLength(); i++) {
+    for (int i = 0; i < attributes.getLength(); i++) {
       Node attribute = attributes.item(i);
       String name = attribute.getNodeName();
       String value = attribute.getNodeValue();
       xmlElement.setAttribute(name, value);
     }
     NodeList nodeList = element.getChildNodes();
-    for(int i = 0; i < nodeList.getLength(); i++) {
+    for (int i = 0; i < nodeList.getLength(); i++) {
       Node child = nodeList.item(i);
       if (child.getNodeType() == Node.ELEMENT_NODE) {
         XmlElement childElement = xmlElementOf((Element) child);

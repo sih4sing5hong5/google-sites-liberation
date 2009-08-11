@@ -34,7 +34,7 @@ final class ParserUtils {
     checkNotNull(element);
     checkNotNull(cls);
     boolean hasClass = false;
-    for(String str : element.getAttribute("class").split(" ")) {
+    for (String str : element.getAttribute("class").split(" ")) {
       if (str.equals(cls)) {
         hasClass = true;
       }

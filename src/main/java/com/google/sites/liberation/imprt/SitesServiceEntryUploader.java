@@ -134,7 +134,7 @@ final class SitesServiceEntryUploader implements EntryUploader {
       query.setParent(parentId.substring(parentId.lastIndexOf('/') + 1));
       query.setKind("comment");
       List<BaseContentEntry<?>> entries = entryDownloader.getEntries(query);
-      for(BaseContentEntry<?> entry : entries) {
+      for (BaseContentEntry<?> entry : entries) {
         String otherContent = entry.getTextContent().getContent().getPlainText();
         if (otherContent.equals(content)) {
           return true;
@@ -157,7 +157,7 @@ final class SitesServiceEntryUploader implements EntryUploader {
   private boolean listItemExists(ListItemEntry listItem, URL feedUrl) {
     try {
       Map<String, String> values = Maps.newHashMap();
-      for(Field field : listItem.getFields()) {
+      for (Field field : listItem.getFields()) {
         values.put(field.getIndex(), field.getValue());
       }
       ContentQuery query = new ContentQuery(feedUrl);
@@ -166,11 +166,11 @@ final class SitesServiceEntryUploader implements EntryUploader {
       query.setParent(parentId.substring(parentId.lastIndexOf('/') + 1));
       query.setKind("listitem");
       List<BaseContentEntry<?>> entries = entryDownloader.getEntries(query);
-      for(BaseContentEntry<?> entry : entries) {
+      for (BaseContentEntry<?> entry : entries) {
         ListItemEntry item = (ListItemEntry) entry;
         if (item.getFields().size() == listItem.getFields().size()) {
           boolean equal = true;
-          for(Field field : item.getFields()) {
+          for (Field field : item.getFields()) {
             if (!values.get(field.getIndex()).equals(field.getValue())) {
               equal = false;
             }

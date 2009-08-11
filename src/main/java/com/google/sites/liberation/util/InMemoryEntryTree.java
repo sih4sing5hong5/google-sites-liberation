@@ -85,7 +85,7 @@ final class InMemoryEntryTree implements EntryTree {
     checkNotNull(parent);
     BaseContentEntry<?> root = subTree.getRoot();
     addEntry(root, parent);
-    for(BaseContentEntry<?> child : subTree.getChildren(root)) {
+    for (BaseContentEntry<?> child : subTree.getChildren(root)) {
       addEntryFromSubTree(child, subTree);
     }
   }
@@ -95,7 +95,7 @@ final class InMemoryEntryTree implements EntryTree {
     checkNotNull(entry);
     checkNotNull(subTree);
     addEntry(entry, subTree.getParent(entry));
-    for(BaseContentEntry<?> child : subTree.getChildren(entry)) {
+    for (BaseContentEntry<?> child : subTree.getChildren(entry)) {
       addEntryFromSubTree(child, subTree);
     }
   }

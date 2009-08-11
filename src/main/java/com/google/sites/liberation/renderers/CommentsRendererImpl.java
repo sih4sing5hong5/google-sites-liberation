@@ -35,7 +35,7 @@ final class CommentsRendererImpl implements CommentsRenderer {
     XmlElement bold = new XmlElement("b");
     bold.addText("Comments (" + comments.size() + ")");
     div.addElement(bold).addElement(new XmlElement("br"));
-    for(BaseContentEntry<?> comment : comments) {
+    for (BaseContentEntry<?> comment : comments) {
       XmlElement commentDiv = RendererUtils.getEntryElement(comment, "div");
       XmlElement author = RendererUtils.getAuthorElement(comment);
       XmlElement updated = RendererUtils.getUpdatedElement(comment);

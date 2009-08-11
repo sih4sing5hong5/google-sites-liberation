@@ -31,6 +31,5 @@ public interface EntryTreeUploader {
    * Uploads all of the entries in the given EntryTree using the given 
    * EntryUploader and retaining the tree structure.
    */
-  void uploadEntryTree(EntryTree entryTree, 
-      EntryUploader entryUploader);
+  void uploadEntryTree(EntryTree entryTree, EntryUploader entryUploader);
 }

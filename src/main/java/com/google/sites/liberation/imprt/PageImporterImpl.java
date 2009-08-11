@@ -91,12 +91,12 @@ final class PageImporterImpl implements PageImporter {
   private EntryTree parseElement(Element element) {
     EntryTree entryTree = null;
     NodeList nodeList = element.getChildNodes();
-    for(int i = 0; (i < nodeList.getLength()) && (entryTree == null); i++) {
+    for (int i = 0; (i < nodeList.getLength()) && (entryTree == null); i++) {
       Node node = nodeList.item(i);
       if (node.getNodeType() == Node.ELEMENT_NODE) {
         Element child = (Element) node;
         boolean isEntry = false;
-        for(String str : child.getAttribute("class").split(" ")) {
+        for (String str : child.getAttribute("class").split(" ")) {
           if (str.equals("hentry")) {
             isEntry = true;
           }

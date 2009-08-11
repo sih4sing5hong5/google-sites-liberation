@@ -52,6 +52,7 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
 
   private static final Logger LOGGER = Logger.getLogger(
       ContinuousContentFeed.class.getCanonicalName());
+  private static final int DEFAULT_RESULTS_PER_REQUEST = 20;
   
   private final EntryDownloader entryDownloader;
   private final URL feedUrl;
@@ -82,7 +83,7 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
   ContinuousContentFeed(SitesService service, URL feedUrl) {
     this.entryDownloader = new SitesServiceEntryDownloader(checkNotNull(service));
     this.feedUrl = checkNotNull(feedUrl);
-    this.resultsPerRequest = 20;
+    this.resultsPerRequest = DEFAULT_RESULTS_PER_REQUEST;
   }
   
   /**

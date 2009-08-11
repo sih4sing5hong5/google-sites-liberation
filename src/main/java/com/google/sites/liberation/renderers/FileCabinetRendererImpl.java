@@ -32,18 +32,18 @@ final class FileCabinetRendererImpl implements FileCabinetRenderer {
   public XmlElement renderFileCabinet( 
       List<AttachmentEntry> attachments) {
     XmlElement table = new XmlElement("table");
-    for(AttachmentEntry attachment : attachments) {
+    for (AttachmentEntry attachment : attachments) {
       XmlElement row = RendererUtils.getEntryElement(attachment, "tr");
       XmlElement titleCell = new XmlElement("td").addElement(
           RendererUtils.getTitleElement(attachment));
       row.addElement(titleCell);
       XmlElement updated = RendererUtils.getUpdatedElement(attachment);
       XmlElement updatedCell = new XmlElement("td");
-      row.addElement((new XmlElement("td")).addElement(updated));
+      row.addElement(new XmlElement("td").addElement(updated));
       XmlElement author = RendererUtils.getAuthorElement(attachment);
-      row.addElement((new XmlElement("td")).addElement(author));
+      row.addElement(new XmlElement("td").addElement(author));
       XmlElement revision = RendererUtils.getRevisionElement(attachment);
-      row.addElement((new XmlElement("td")).addText("(Version ")
+      row.addElement(new XmlElement("td").addText("(Version ")
           .addElement(revision).addText(")"));
       table.addElement(row);
     }

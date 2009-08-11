@@ -22,12 +22,9 @@ import static com.google.sites.liberation.util.EntryType.getType;
 import static com.google.sites.liberation.util.EntryType.isPage;
 
 import com.google.common.collect.Sets;
-import com.google.gdata.data.TextConstruct;
-import com.google.gdata.data.XhtmlTextConstruct;
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
-import com.google.gdata.util.XmlBlob;
 import com.google.inject.Inject;
 import com.google.sites.liberation.util.EntryStore;
 import com.google.sites.liberation.util.EntryStoreFactory;
@@ -79,22 +76,11 @@ final class SiteExporterImpl implements SiteExporter {
     checkNotNull(entries, "entries");
     checkNotNull(rootDirectory, "rootDirectory");
     checkNotNull(siteUrl, "siteUrl");
-    if (rootDirectory.isFile()) {
-      rootDirectory.delete();
-    } else if (rootDirectory.isDirectory()) {
-      for(File file : rootDirectory.listFiles()) {
-        if (file.isFile()) {
-          file.delete();
-        } else if (file.isDirectory()) {
-          deleteDirectory(file);
-        }
-      }
-    }
     boolean someEntries = false;
     Set<BasePageEntry<?>> pages = Sets.newHashSet();
     Set<AttachmentEntry> attachments = Sets.newHashSet();
     EntryStore entryStore = entryStoreFactory.getEntryStore();
-    for(BaseContentEntry<?> entry : entries) {
+    for (BaseContentEntry<?> entry : entries) {
       someEntries = true;
       entryStore.addEntry(entry);
       if (isPage(entry)) {
@@ -107,59 +93,41 @@ final class SiteExporterImpl implements SiteExporter {
       LOGGER.log(Level.WARNING, "No data returned. You may need to provide " +
           "user credentials.");
     }
-    for(BasePageEntry<?> page : pages) {
+    for (BasePageEntry<?> page : pages) {
       fixLinks(page, entryStore, siteUrl);
       exportPage(page, rootDirectory, entryStore);
     }
-    for(AttachmentEntry attachment : attachments) {
+    for (AttachmentEntry attachment : attachments) {
       downloadAttachment(attachment, rootDirectory, entryStore);
     }
   }
   
-  private void deleteDirectory(File directory) {
-    for (File file : directory.listFiles()) {
-      if (file.isFile()) {
-        file.delete();
-      } else if (file.isDirectory()) {
-        deleteDirectory(file);
-      }
-    }
-    directory.delete();
-  }
-  
   /**
    * Changes all of the absolute links to other pages in this site to relative 
-   * links in the given entry's content to other.
+   * links in the given entry's content.
    */
   private void fixLinks(BasePageEntry<?> entry, EntryStore entryStore, 
       URL siteUrl) {
+    fixLinks(entry, entryStore, siteUrl, "href=\"", "\"");
+    fixLinks(entry, entryStore, siteUrl, "href='", "'");
+  }
+  
+  private void fixLinks(BasePageEntry<?> entry, EntryStore entryStore, 
+      URL siteUrl, String prefix, String suffix) {
     String content = EntryUtils.getContent(entry);
     String url = siteUrl.toExternalForm();
     String siteRoot = getSiteRoot(entry, entryStore);
-    int index = content.indexOf("href=\"" + url);
-    while(index != -1) {
-      int startIndex = index + 6;
-      int endIndex = content.indexOf("\"", startIndex + 1);
+    int index = content.indexOf(prefix + url);
+    while (index != -1) {
+      int startIndex = index + prefix.length();
+      int endIndex = content.indexOf(suffix, startIndex + 1);
       String beforeLink = content.substring(0, startIndex);
       String link = content.substring(startIndex + url.length() + 1, endIndex);
       String afterLink = content.substring(endIndex);
       content = beforeLink + siteRoot + link + "/index.html" + afterLink;
-      index = content.indexOf("href=\"" + url);
+      index = content.indexOf(prefix + url);
     }
-    index = content.indexOf("href='" + url);
-    while(index != -1) {
-      int startIndex = index + 6;
-      int endIndex = content.indexOf("'", startIndex + 1);
-      String beforeLink = content.substring(0, startIndex);
-      String link = content.substring(startIndex + url.length() + 1, endIndex);
-      String afterLink = content.substring(endIndex);
-      content = beforeLink + siteRoot + link + "/index.html" + afterLink;
-      index = content.indexOf("href='" + url);
-    }
-    XmlBlob blob = new XmlBlob();
-    blob.setBlob(content);
-    TextConstruct textConstruct = new XhtmlTextConstruct(blob);
-    entry.setContent(textConstruct);
+    EntryUtils.setContent(entry, content);
   }
   
   private String getSiteRoot(BasePageEntry<?> entry, EntryStore entryStore) {

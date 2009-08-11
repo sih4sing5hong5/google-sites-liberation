@@ -31,7 +31,8 @@ import java.net.URL;
 interface SiteExporter {
   
   /**
-   * Exports the site with the given entries to the given root folder.
+   * Exports the site with the given entries and site URL to the given root 
+   * folder.
    */
   void exportSite(Iterable<BaseContentEntry<?>> entries, File folder,
       URL siteUrl);

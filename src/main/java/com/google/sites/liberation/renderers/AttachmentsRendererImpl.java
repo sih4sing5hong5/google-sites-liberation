@@ -35,7 +35,7 @@ final class AttachmentsRendererImpl implements AttachmentsRenderer {
     XmlElement bold = new XmlElement("b");
     bold.addText("Attachments (" + attachments.size() + ")");
     div.addElement(bold).addElement(new XmlElement("br"));
-    for(BaseContentEntry<?> attachment : attachments) {
+    for (BaseContentEntry<?> attachment : attachments) {
       XmlElement attachmentDiv = RendererUtils.getEntryElement(attachment, 
           "div");
       XmlElement link = new XmlElement("a").addElement(
@@ -45,10 +45,9 @@ final class AttachmentsRendererImpl implements AttachmentsRenderer {
       XmlElement updated = RendererUtils.getUpdatedElement(attachment);
       XmlElement author = RendererUtils.getAuthorElement(attachment);
       XmlElement revision = RendererUtils.getRevisionElement(attachment);
-      attachmentDiv.addElement(link);
-      attachmentDiv.addText(" - on ").addElement(updated);
-      attachmentDiv.addText(" by ").addElement(author);
-      attachmentDiv.addText(" (Version ").addElement(revision).addText(")");
+      attachmentDiv.addElement(link).addText(" - on ").addElement(updated)
+          .addText(" by ").addElement(author).addText(" (Version ")
+          .addElement(revision).addText(")");
       div.addElement(new XmlElement("br")).addElement(attachmentDiv);
     }
     return div;

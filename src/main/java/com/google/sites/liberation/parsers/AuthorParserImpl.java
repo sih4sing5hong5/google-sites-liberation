@@ -45,7 +45,7 @@ final class AuthorParserImpl implements AuthorParser {
    */
   private void parseElement(Element element, Person author) {
     NodeList nodeList = element.getChildNodes();
-    for(int i = 0; i < nodeList.getLength(); i++) {
+    for (int i = 0; i < nodeList.getLength(); i++) {
       Node node = nodeList.item(i);
       if (node.getNodeType() == Node.ELEMENT_NODE) {
         Element child = (Element) node;

@@ -20,6 +20,7 @@ import com.google.gdata.data.sites.ListItemEntry;
 import com.google.gdata.data.sites.ListPageEntry;
 import com.google.gdata.data.spreadsheet.Column;
 import com.google.gdata.data.spreadsheet.Field;
+import com.google.gdata.util.common.base.Nullable;
 import com.google.sites.liberation.util.XmlElement;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -35,11 +36,11 @@ final class ListRendererImpl implements ListRenderer {
   
   @Override
   public XmlElement renderList(ListPageEntry entry, 
-      List<ListItemEntry> listItems) {
+      @Nullable List<ListItemEntry> listItems) {
     XmlElement table = new XmlElement("table");
     XmlElement header = new XmlElement("tr");
     header.setAttribute("class", "gs:data");
-    for(Column col : entry.getData().getColumns()) {
+    for (Column col : entry.getData().getColumns()) {
       XmlElement cell = new XmlElement("th");
       cell.setAttribute("class", "gs:column");
       cell.setAttribute("title", col.getIndex());
@@ -54,7 +55,7 @@ final class ListRendererImpl implements ListRenderer {
     header.addElement(revisionCell.addText("Version"));
     table.addElement(header);
     if (listItems != null) {
-      for(ListItemEntry item : listItems) {
+      for (ListItemEntry item : listItems) {
         table.addElement(getRow(item));
       }
     }
@@ -63,12 +64,12 @@ final class ListRendererImpl implements ListRenderer {
   
   private XmlElement getRow(ListItemEntry item) {
     XmlElement element = RendererUtils.getEntryElement(item, "tr");
-    for(Field field : item.getFields()) {
+    for (Field field : item.getFields()) {
       String val;
       if (field.getValue() == null) {
         val = "";
       } else if (field.getValue().equals("on")) {
-        val = "\u2713";
+        val = "\u2713"; //Checkmark
       } else {
         val = StringEscapeUtils.unescapeHtml(field.getValue());
       }
