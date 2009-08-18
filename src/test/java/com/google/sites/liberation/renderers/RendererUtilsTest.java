@@ -36,11 +36,11 @@ public class RendererUtilsTest {
     blob.setBlob(xhtml);
     BaseContentEntry<?> entry = new WebPageEntry();
     entry.setContent(new XhtmlTextConstruct(blob));
-    XmlElement element = RendererUtils.getContentElement(entry);
+    XmlElement element = RendererUtils.getXhtmlContentElement(entry);
     assertEquals("<div class=\"entry-content\">" + xhtml + "</div>", 
         element.toString());
     entry = new WebPageEntry();
-    element = RendererUtils.getContentElement(entry);
+    element = RendererUtils.getXhtmlContentElement(entry);
     assertEquals("<div class=\"entry-content\"></div>", element.toString());
   }
 

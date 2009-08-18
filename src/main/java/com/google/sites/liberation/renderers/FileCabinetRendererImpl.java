@@ -16,7 +16,7 @@
 
 package com.google.sites.liberation.renderers;
 
-import com.google.gdata.data.sites.AttachmentEntry;
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.sites.liberation.util.XmlElement;
 
 import java.util.List;
@@ -30,15 +30,15 @@ final class FileCabinetRendererImpl implements FileCabinetRenderer {
 
   @Override
   public XmlElement renderFileCabinet( 
-      List<AttachmentEntry> attachments) {
+      List<BaseContentEntry<?>> attachments) {
     XmlElement table = new XmlElement("table");
-    for (AttachmentEntry attachment : attachments) {
+    for (BaseContentEntry<?> attachment : attachments) {
       XmlElement row = RendererUtils.getEntryElement(attachment, "tr");
-      XmlElement titleCell = new XmlElement("td").addElement(
-          RendererUtils.getTitleElement(attachment));
-      row.addElement(titleCell);
+      XmlElement link = RendererUtils.getOutOfLineContentElement(attachment);
+      row.addElement(new XmlElement("td").addElement(link));
+      XmlElement summary = RendererUtils.getSummaryElement(attachment);
+      row.addElement(new XmlElement("td").addElement(summary));
       XmlElement updated = RendererUtils.getUpdatedElement(attachment);
-      XmlElement updatedCell = new XmlElement("td");
       row.addElement(new XmlElement("td").addElement(updated));
       XmlElement author = RendererUtils.getAuthorElement(attachment);
       row.addElement(new XmlElement("td").addElement(author));

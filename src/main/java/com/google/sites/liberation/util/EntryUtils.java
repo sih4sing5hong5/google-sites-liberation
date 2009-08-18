@@ -16,15 +16,30 @@
 
 package com.google.sites.liberation.util;
 
+import static com.google.sites.liberation.util.EntryType.COMMENT;
+import static com.google.sites.liberation.util.EntryType.LIST_ITEM;
+import static com.google.sites.liberation.util.EntryType.LIST_PAGE;
+import static com.google.sites.liberation.util.EntryType.getType;
+
+import com.google.common.collect.Maps;
 import com.google.gdata.data.ILink;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.TextConstruct;
 import com.google.gdata.data.XhtmlTextConstruct;
 import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.BasePageEntry;
+import com.google.gdata.data.sites.CommentEntry;
+import com.google.gdata.data.sites.ListItemEntry;
+import com.google.gdata.data.sites.ListPageEntry;
 import com.google.gdata.data.sites.SitesLink;
+import com.google.gdata.data.spreadsheet.Column;
+import com.google.gdata.data.spreadsheet.Data;
+import com.google.gdata.data.spreadsheet.Field;
+import com.google.gdata.data.threading.InReplyTo;
 import com.google.gdata.util.XmlBlob;
 
 import java.util.Comparator;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,15 +73,56 @@ public class EntryUtils {
   }
   
   /**
-   * Returns the given entry's content as a String.
+   * Sets all parent-related fields in the given entry for the given parent. 
    */
-  public static String getContent(BaseContentEntry<?> entry) {
+  public static void setParent(BaseContentEntry<?> entry, 
+      BasePageEntry<?> parent) {
+    entry.addLink(SitesLink.Rel.PARENT, ILink.Type.ATOM, parent.getId());
+    if (getType(entry) == COMMENT) {
+      InReplyTo inReplyTo = new InReplyTo();
+      inReplyTo.setHref(
+          parent.getLink(ILink.Rel.ALTERNATE, "text").getHref()); 
+      inReplyTo.setRef(parent.getId());
+      ((CommentEntry) entry).setInReplyTo(inReplyTo);
+    } else if (getType(entry) == LIST_ITEM) {
+      if (getType(parent) != LIST_PAGE) {
+        throw new IllegalStateException("List items can only be descendents of " 
+            + "list pages!");
+      }
+      ListItemEntry listItem = (ListItemEntry) entry;
+      ListPageEntry listPage = (ListPageEntry) parent;
+      Data data = listPage.getData();
+      Map<String, String> names = Maps.newHashMap();
+      for (Column column : data.getColumns()) {
+        names.put(column.getIndex(), column.getName());
+      }
+      for (Field field : listItem.getFields()) {
+        String name = names.get(field.getIndex());
+        field.setName(name);
+      }
+    }
+  }
+  
+  /**
+   * Returns the given entry's xhtml content as a String.
+   */
+  public static String getXhtmlContent(BaseContentEntry<?> entry) {
     try {
       String content = ((XhtmlTextConstruct)(entry.getTextContent()
           .getContent())).getXhtml().getBlob();
       //This is due to a bug in the GData client: http://b/issue?id=2044419
       while (content.contains("]]>")) {
         content = content.replace("]]>", "]]&gt;");
+      }
+      //This is due to a bug in the Sites client: http://b/issue?id=1993403
+      int startIndex = content.indexOf("<iframe");
+      while (startIndex != -1) {
+        int endIndex = content.indexOf(">", startIndex);
+        if (content.charAt(endIndex - 1) == '/') {
+          content = content.substring(0, endIndex - 1) + "></iframe" 
+              + content.substring(endIndex);
+        }
+        startIndex = content.indexOf("<iframe", endIndex);
       }
       return content;
     } catch(IllegalStateException e) {

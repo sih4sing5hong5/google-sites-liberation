@@ -27,9 +27,7 @@ import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.data.sites.PageName;
 import com.google.gdata.data.sites.WebPageEntry;
 import com.google.gdata.util.ServiceException;
-import com.google.sites.liberation.util.EntryDownloader;
-import com.google.sites.liberation.util.EntryTree;
-import com.google.sites.liberation.util.InMemoryEntryTreeFactory;
+import com.google.sites.liberation.util.EntryProvider;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -41,15 +39,19 @@ import org.junit.Test;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author bsimon@google.com (Benjamin Simon)
  */
-public class SitesServiceEntryUploaderTest {
+public class EntryUploaderImplTest {
 
   private Mockery context;
   private SitesService sitesService;
-  private EntryDownloader entryDownloader;
+  private EntryInserter entryInserter;
+  private EntryProvider entryProvider;
+  private EntryUpdater entryUpdater;
   private EntryUploader entryUploader;
   private URL feedUrl;
   
@@ -59,10 +61,12 @@ public class SitesServiceEntryUploaderTest {
       setImposteriser(ClassImposteriser.INSTANCE);
     }};
     sitesService = context.mock(SitesService.class);
-    entryDownloader = context.mock(EntryDownloader.class);
+    entryInserter = context.mock(EntryInserter.class);
+    entryProvider = context.mock(EntryProvider.class);
+    entryUpdater = context.mock(EntryUpdater.class);
     feedUrl = new URL("http://sites.google.com/feeds/content/site/test");
-    entryUploader = new SitesServiceEntryUploader(sitesService, feedUrl, 
-        entryDownloader);
+    entryUploader = new EntryUploaderImpl(entryInserter, entryProvider, 
+        entryUpdater);
   }
   
   @Test
@@ -79,12 +83,12 @@ public class SitesServiceEntryUploaderTest {
     context.checking(new Expectations() {{
       oneOf (sitesService).getEntry(new URL(id), WebPageEntry.class);
         will(returnValue(oldEntry));
-      oneOf (sitesService).update(new URL(id), newEntry);
+      oneOf (entryUpdater).updateEntry(oldEntry, newEntry, sitesService);
         will(returnValue(returnedEntry));
     }});
     
     assertEquals(returnedEntry, entryUploader.uploadEntry(newEntry, 
-        context.mock(EntryTree.class)));
+        new LinkedList<BasePageEntry<?>>(), feedUrl, sitesService));
   }
   
   @SuppressWarnings("unchecked")
@@ -94,9 +98,8 @@ public class SitesServiceEntryUploaderTest {
     parent.setPageName(new PageName("parent"));
     final BasePageEntry<?> newEntry = new WebPageEntry();
     newEntry.setPageName(new PageName("entry"));
-    final EntryTree entryTree = new InMemoryEntryTreeFactory()
-        .getEntryTree(parent);
-    entryTree.addEntry(newEntry, parent);
+    final List<BasePageEntry<?>> ancestors = Lists.newLinkedList();
+    ancestors.add(parent);
     final BasePageEntry<?> oldEntry = new WebPageEntry();
     final String id = feedUrl.toExternalForm() + "/entry";
     oldEntry.setId(id);
@@ -104,13 +107,15 @@ public class SitesServiceEntryUploaderTest {
     final BaseContentEntry<?> returnedEntry = new WebPageEntry();
     
     context.checking(new Expectations() {{
-      allowing (entryDownloader).getEntries(with(any(ContentQuery.class))); 
+      allowing (entryProvider).getEntries(with(any(ContentQuery.class)), 
+          with(sitesService)); 
           will(returnValue(Lists.newArrayList(oldEntry)));
-      oneOf (sitesService).update(new URL(id), newEntry);
+      oneOf (entryUpdater).updateEntry(oldEntry, newEntry, sitesService);
           will(returnValue(returnedEntry));
     }});
     
-    assertEquals(returnedEntry, entryUploader.uploadEntry(newEntry, entryTree));
+    assertEquals(returnedEntry, entryUploader.uploadEntry(newEntry, ancestors,
+        feedUrl, sitesService));
   }
   
   @Test
@@ -119,9 +124,8 @@ public class SitesServiceEntryUploaderTest {
     parent.setPageName(new PageName("parent"));
     final BasePageEntry<?> newEntry = new WebPageEntry();
     newEntry.setPageName(new PageName("entry"));
-    final EntryTree entryTree = new InMemoryEntryTreeFactory()
-        .getEntryTree(parent);
-    entryTree.addEntry(newEntry, parent);
+    final List<BasePageEntry<?>> ancestors = Lists.newLinkedList();
+    ancestors.add(parent);
     final BasePageEntry<?> oldEntry = new WebPageEntry();
     final String id = feedUrl.toExternalForm() + "/entry";
     oldEntry.setId(id);
@@ -129,12 +133,14 @@ public class SitesServiceEntryUploaderTest {
     final BaseContentEntry<?> returnedEntry = new WebPageEntry();
     
     context.checking(new Expectations() {{
-      allowing (entryDownloader).getEntries(with(any(ContentQuery.class)));
+      allowing (entryProvider).getEntries(with(any(ContentQuery.class)), 
+          with(sitesService));
           will(returnValue(Lists.newArrayList()));
-      oneOf (sitesService).insert(feedUrl, newEntry);
+      oneOf (entryInserter).insertEntry(newEntry, feedUrl, sitesService);
           will(returnValue(returnedEntry));
     }});
     
-    assertEquals(returnedEntry, entryUploader.uploadEntry(newEntry, entryTree));
+    assertEquals(returnedEntry, entryUploader.uploadEntry(newEntry, ancestors,
+        feedUrl, sitesService));
   }
 }

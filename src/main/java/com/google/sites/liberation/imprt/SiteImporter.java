@@ -16,10 +16,12 @@
 
 package com.google.sites.liberation.imprt;
 
+import com.google.gdata.client.sites.SitesService;
+import com.google.gdata.util.common.base.Nullable;
 import com.google.inject.ImplementedBy;
+import com.google.sites.liberation.util.ProgressListener;
 
 import java.io.File;
-import java.net.URL;
 
 /**
  * Imports an entire site from a given directory.
@@ -30,9 +32,16 @@ import java.net.URL;
 public interface SiteImporter {
 
   /**
-   * Imports the site with the given root directory, to the given site URL, 
-   * using the given EntryUploader.
+   * Imports a Site.
+   * 
+   * @param host host serving the site
+   * @param domain the domain of the site, if not the default
+   * @param webspace the webspace (name) of the site
+   * @param importRevisions whether or not to import revisions
+   * @param sitesService SitesService with which to access the site
+   * @param rootDirectory directory in which to export
    */
-  public void importSite(File rootDirectory, URL siteUrl, 
-      EntryUploader entryUploader);
+  public void importSite(String host, @Nullable String domain, String webspace, 
+      boolean importRevisions, SitesService sitesService, File rootDirectory, 
+      ProgressListener progressListener);
 }

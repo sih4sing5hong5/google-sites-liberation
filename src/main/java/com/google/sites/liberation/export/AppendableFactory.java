@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Used to retrieve an Appendable for a given file name.
+ * Returns an Appendable for a given file.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */

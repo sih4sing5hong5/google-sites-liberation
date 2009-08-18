@@ -18,7 +18,6 @@ package com.google.sites.liberation.export;
 
 import com.google.gdata.data.sites.BasePageEntry;
 import com.google.inject.ImplementedBy;
-import com.google.sites.liberation.util.EntryStore;
 
 import java.io.IOException;
 
@@ -33,6 +32,6 @@ interface PageExporter {
   /** 
    * Exports the given page from the given EntryStore to the given Appendable.
    */
-  void exportPage(BasePageEntry<?> entry, EntryStore entryStore, Appendable out) 
-      throws IOException;
+  void exportPage(BasePageEntry<?> entry, EntryStore entryStore, Appendable out,
+      boolean revisionsExported) throws IOException;
 }

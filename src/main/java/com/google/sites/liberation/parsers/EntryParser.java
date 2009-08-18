@@ -16,13 +16,13 @@
 
 package com.google.sites.liberation.parsers;
 
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.inject.ImplementedBy;
-import com.google.sites.liberation.util.EntryTree;
 
 import org.w3c.dom.Element;
 
 /**
- * Parses an html element for entries.
+ * Parses an html element representing an entry.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
@@ -30,8 +30,7 @@ import org.w3c.dom.Element;
 public interface EntryParser {
 
   /**
-   * Returns an EntryTree containing the entry defined by this element as
-   * its root, and non-page sub-entries as descendants.
+   * Returns the entry defined by the given element.
    */
-  EntryTree parseEntry(Element element);
+  BaseContentEntry<?> parseEntry(Element element);
 }

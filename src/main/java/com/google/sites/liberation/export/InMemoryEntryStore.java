@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.util;
+package com.google.sites.liberation.export;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.sites.liberation.util.EntryType.isPage;
 
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
-import com.google.common.base.Preconditions;
+import com.google.sites.liberation.util.EntryUtils;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.HashMultimap;
@@ -41,7 +44,7 @@ final class InMemoryEntryStore implements EntryStore {
       InMemoryEntryStore.class.getCanonicalName());
   
   private final Map<String, BaseContentEntry<?>> entries;
-  private final Set<BaseContentEntry<?>> topLevelEntries;
+  private final Set<BasePageEntry<?>> topLevelEntries;
   private final Multimap<String, BaseContentEntry<?>> children;
   
   /**
@@ -56,13 +59,17 @@ final class InMemoryEntryStore implements EntryStore {
 
   @Override
   public void addEntry(BaseContentEntry<?> entry) {
-    Preconditions.checkNotNull(entry);
+    checkNotNull(entry);
     String id = entry.getId();
     if (id != null && entries.get(id) == null) {
       entries.put(id, entry);
       String parentId = EntryUtils.getParentId(entry);
       if (parentId == null) {
-        topLevelEntries.add(entry);
+        if (isPage(entry)) {
+          topLevelEntries.add((BasePageEntry<?>) entry);
+        } else {
+          LOGGER.log(Level.WARNING, "All non-page entries must have a parent!");
+        }
       } else {
         children.put(parentId, entry);
       }
@@ -73,24 +80,29 @@ final class InMemoryEntryStore implements EntryStore {
   
   @Override
   public Collection<BaseContentEntry<?>> getChildren(String id) {
-    Preconditions.checkNotNull(id);
+    checkNotNull(id);
     return children.get(id);
   }
 
   @Override
   public BaseContentEntry<?> getEntry(String id) {
-    Preconditions.checkNotNull(id);
+    checkNotNull(id);
     return entries.get(id);
   }
   
   @Override
   public BasePageEntry<?> getParent(String id) {
-    Preconditions.checkNotNull(id);
+    checkNotNull(id);
     BaseContentEntry<?> child = getEntry(id);
     String parentId = EntryUtils.getParentId(child);
     if (parentId == null) {
       return null;
     }
     return (BasePageEntry<?>) getEntry(parentId);
+  }
+  
+  @Override
+  public Collection<BasePageEntry<?>> getTopLevelEntries() {
+    return topLevelEntries;
   }
 }

@@ -23,8 +23,6 @@ import com.google.gdata.data.spreadsheet.Field;
 import com.google.gdata.util.common.base.Nullable;
 import com.google.sites.liberation.util.XmlElement;
 
-import org.apache.commons.lang.StringEscapeUtils;
-
 import java.util.List;
 
 /**
@@ -37,9 +35,8 @@ final class ListRendererImpl implements ListRenderer {
   @Override
   public XmlElement renderList(ListPageEntry entry, 
       @Nullable List<ListItemEntry> listItems) {
-    XmlElement table = new XmlElement("table");
-    XmlElement header = new XmlElement("tr");
-    header.setAttribute("class", "gs:data");
+    XmlElement table = new XmlElement("table").setAttribute("border", "1");
+    XmlElement header = new XmlElement("tr").setAttribute("class", "gs:data");
     for (Column col : entry.getData().getColumns()) {
       XmlElement cell = new XmlElement("th");
       cell.setAttribute("class", "gs:column");
@@ -66,17 +63,17 @@ final class ListRendererImpl implements ListRenderer {
     XmlElement element = RendererUtils.getEntryElement(item, "tr");
     for (Field field : item.getFields()) {
       String val;
-      if (field.getValue() == null) {
-        val = "";
+      if (field.getValue() == null || field.getValue().equals("")) {
+        val = "&#160;"; //Equivalent to &nbsp; but XML compliant
       } else if (field.getValue().equals("on")) {
         val = "\u2713"; //Checkmark
       } else {
-        val = StringEscapeUtils.unescapeHtml(field.getValue());
+        val = field.getValue();
       }
       XmlElement cell = new XmlElement("td");
       cell.setAttribute("class", "gs:field");
       cell.setAttribute("title", field.getIndex());
-      cell.addText(val);
+      cell.addXml(val);
       element.addElement(cell);
     }
     XmlElement authorCell = new XmlElement("td");

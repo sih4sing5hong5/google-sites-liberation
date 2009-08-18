@@ -27,8 +27,7 @@ import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.util.ServiceException;
 import com.google.gdata.util.common.base.Pair;
-import com.google.sites.liberation.util.EntryDownloader;
-import com.google.sites.liberation.util.SitesServiceEntryDownloader;
+import com.google.sites.liberation.util.EntryProvider;
 
 import java.io.IOException;
 import java.net.URL;
@@ -52,10 +51,10 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
 
   private static final Logger LOGGER = Logger.getLogger(
       ContinuousContentFeed.class.getCanonicalName());
-  private static final int DEFAULT_RESULTS_PER_REQUEST = 20;
   
-  private final EntryDownloader entryDownloader;
+  private final EntryProvider entryProvider;
   private final URL feedUrl;
+  private final SitesService sitesService;
   private final int resultsPerRequest;
   
   /**
@@ -65,25 +64,13 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
    * <p>This {@code ContinuousContentFeed} will contain all of the valid entries
    * in the feed at {@code feedUrl}.</p>
    */
-  ContinuousContentFeed(EntryDownloader entryDownloader, URL feedUrl,
-      int resultsPerRequest) {
-    this.entryDownloader = checkNotNull(entryDownloader);
+  ContinuousContentFeed(URL feedUrl, EntryProvider entryProvider,
+      SitesService sitesService, int resultsPerRequest) {
+    this.entryProvider = checkNotNull(entryProvider);
     this.feedUrl = checkNotNull(feedUrl);
+    this.sitesService = checkNotNull(sitesService);
     checkArgument(resultsPerRequest > 0);
     this.resultsPerRequest = resultsPerRequest;
-  }
-
-  /**
-   * Creates a new instance of {@code ContinuousContentFeed} for the given
-   * sites service and feed URL.
-   * 
-   * <p>This {@code ContinuousContentFeed} will contain all of the valid entries
-   * in the feed at {@code feedUrl}.</p>
-   */
-  ContinuousContentFeed(SitesService service, URL feedUrl) {
-    this.entryDownloader = new SitesServiceEntryDownloader(checkNotNull(service));
-    this.feedUrl = checkNotNull(feedUrl);
-    this.resultsPerRequest = DEFAULT_RESULTS_PER_REQUEST;
   }
   
   /**
@@ -151,7 +138,7 @@ final class ContinuousContentFeed implements Iterable<BaseContentEntry<?>> {
         do {
           query.setStartIndex(start + numReturned);
           query.setMaxResults(num - numReturned);
-          entries = entryDownloader.getEntries(query);
+          entries = entryProvider.getEntries(query, sitesService);
           numReturned += entries.size();
           itr = Iterators.concat(itr, entries.iterator());
         } while (numReturned < num && entries.size() > 0);

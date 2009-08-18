@@ -14,17 +14,25 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.util;
+package com.google.sites.liberation.export;
+
+import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.inject.ImplementedBy;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
- * Provides new EntryStore's.
+ * Exports the history of a page as html.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-public interface EntryStoreFactory {
+@ImplementedBy(HistoryExporterImpl.class)
+public interface HistoryExporter {
 
   /**
-   * Returns a new EntryStore.
+   * Exports the history given by the list of revisions to the given Appendable.
    */
-  EntryStore getEntryStore();
+  void exportHistory(List<BaseContentEntry<?>> revisions, Appendable out)
+      throws IOException;
 }

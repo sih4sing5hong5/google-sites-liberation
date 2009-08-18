@@ -17,9 +17,15 @@
 package com.google.sites.liberation.renderers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.sites.liberation.util.EntryType.ATTACHMENT;
+import static com.google.sites.liberation.util.EntryType.COMMENT;
+import static com.google.sites.liberation.util.EntryType.WEB_ATTACHMENT;
 import static com.google.sites.liberation.util.EntryType.getType;
+import static com.google.sites.liberation.util.EntryType.isPage;
 
+import com.google.gdata.data.OutOfLineContent;
 import com.google.gdata.data.Person;
+import com.google.gdata.data.TextConstruct;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.sites.liberation.util.EntryUtils;
 import com.google.sites.liberation.util.XmlElement;
@@ -28,12 +34,18 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Provides utility methods to construct various XmlElement's.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
 final class RendererUtils {
+  
+  private static final Logger LOGGER = Logger.getLogger(
+      RendererUtils.class.getCanonicalName());
   
   private static final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
       .appendMonthOfYearShortText()
@@ -66,17 +78,43 @@ final class RendererUtils {
   }
   
   /**
-   * Creates a new hAtom "entry-content" div for the given entry.
+   * Creates a new hAtom "entry-content" div containing the given entry's
+   * xhtml content.
    */
-  static XmlElement getContentElement(BaseContentEntry<?> entry) {
+  static XmlElement getXhtmlContentElement(BaseContentEntry<?> entry) {
     checkNotNull(entry);
     XmlElement element = new XmlElement("div");
     element.setAttribute("class", "entry-content");
-    String xhtmlContent = EntryUtils.getContent(entry);
-    if(xhtmlContent.contains("CDATA")) {
-      System.out.println(xhtmlContent);
+    if (isPage(entry) || getType(entry) == COMMENT) {
+      String xhtmlContent = EntryUtils.getXhtmlContent(entry);
+      element.addXml(xhtmlContent);
+    } else {
+      LOGGER.log(Level.WARNING, "Only pages and comments have xhtml content!");
     }
-    element.addXml(xhtmlContent);
+    return element;
+  }
+  
+  /**
+   * Creates a new hAtom "entry-content entry-title" anchor, containing the 
+   * given entry's out of line content link in the href attribute, and title as
+   * its text.
+   */
+  static XmlElement getOutOfLineContentElement(BaseContentEntry<?> entry) {
+    checkNotNull(entry);
+    XmlElement element = new XmlElement("a");
+    element.setAttribute("class", "entry-content entry-title");
+    String title = entry.getTitle().getPlainText();
+    String href;
+    if (getType(entry) == ATTACHMENT) {
+      href = title;  
+    } else if (getType(entry) == WEB_ATTACHMENT) {
+      href = ((OutOfLineContent) entry.getContent()).getUri();
+    } else {
+      LOGGER.log(Level.WARNING, "Only attachments have out of line content!");
+      href = "";
+    }
+    element.setAttribute("href", href);
+    element.addText(title);
     return element;
   }
   
@@ -126,7 +164,12 @@ final class RendererUtils {
     checkNotNull(entry);
     XmlElement element = new XmlElement("span");
     element.setAttribute("class", "entry-summary");
-    element.addText(entry.getSummary().getPlainText());
+    TextConstruct summary = entry.getSummary();
+    if (summary == null) {
+      element.addText("");
+    } else {
+      element.addText(entry.getSummary().getPlainText());
+    }
     return element;
   }
 
@@ -135,10 +178,15 @@ final class RendererUtils {
    */
   static XmlElement getTitleElement(BaseContentEntry<?> entry) {
     checkNotNull(entry);
-    XmlElement element = new XmlElement("span");
-    element.setAttribute("class", "entry-title");
-    element.addText(entry.getTitle().getPlainText());
-    return element;
+    String title = entry.getTitle().getPlainText();
+    if (getType(entry) == ATTACHMENT) {
+      return getHyperLink(title, title).setAttribute("class", "entry-title");
+    } else if (getType(entry) == WEB_ATTACHMENT) {
+      String href = ((OutOfLineContent) entry.getContent()).getUri();
+      return getHyperLink(href, title).setAttribute("class", "entry-title");
+    }
+    return new XmlElement("span").setAttribute("class", "entry-title")
+        .addText(title);
   }
 
   /**

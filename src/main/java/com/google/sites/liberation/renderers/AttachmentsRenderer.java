@@ -16,7 +16,7 @@
 
 package com.google.sites.liberation.renderers;
 
-import com.google.gdata.data.sites.AttachmentEntry;
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.inject.ImplementedBy;
 import com.google.sites.liberation.util.XmlElement;
 
@@ -34,5 +34,5 @@ public interface AttachmentsRenderer {
    * Returns an XmlElement containing the given attachments, in the same order 
    * as they appear in the list.
    */
-  XmlElement renderAttachments(List<AttachmentEntry> attachments);
+  XmlElement renderAttachments(List<BaseContentEntry<?>> attachments);
 }

@@ -18,21 +18,16 @@ package com.google.sites.liberation.parsers;
 
 import static org.junit.Assert.*;
 
+import com.google.gdata.data.Content;
 import com.google.gdata.data.DateTime;
 import com.google.gdata.data.Person;
-import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.TextConstruct;
-import com.google.gdata.data.TextContent;
-import com.google.gdata.data.XhtmlTextConstruct;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.ListItemEntry;
 import com.google.gdata.data.sites.ListPageEntry;
 import com.google.gdata.data.spreadsheet.Data;
 import com.google.gdata.data.spreadsheet.Field;
-import com.google.gdata.util.XmlBlob;
-import com.google.sites.liberation.util.EntryTree;
 import com.google.sites.liberation.util.EntryType;
-import com.google.sites.liberation.util.InMemoryEntryTreeFactory;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -42,8 +37,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -77,7 +70,7 @@ public class EntryParserImplTest extends AbstractParserImplTest {
     titleParser = context.mock(TitleParser.class);
     updatedParser = context.mock(UpdatedParser.class);
     entryParser = new EntryParserImpl(authorParser, contentParser, dataParser,
-        new InMemoryEntryTreeFactory(), fieldParser, summaryParser, titleParser, 
+        fieldParser, summaryParser, titleParser, 
         updatedParser);
     try {
       document = DocumentBuilderFactory.newInstance()
@@ -108,10 +101,10 @@ public class EntryParserImplTest extends AbstractParserImplTest {
     updatedElement.setAttribute("class", "updated");
     entryElement.appendChild(updatedElement);  
     
-    final Person author = new Person();
-    final TextConstruct content = new XhtmlTextConstruct(new XmlBlob());
-    final TextConstruct summary = new PlainTextConstruct();
-    final TextConstruct title = new PlainTextConstruct();
+    final Person author = context.mock(Person.class);
+    final Content content = context.mock(Content.class);
+    final TextConstruct summary = context.mock(TextConstruct.class, "summary");
+    final TextConstruct title = context.mock(TextConstruct.class, "title");
     final DateTime updated = DateTime.parseDateTime("2009-07-30T15:48:23.975Z");
     
     context.checking(new Expectations() {{
@@ -127,15 +120,13 @@ public class EntryParserImplTest extends AbstractParserImplTest {
         will(returnValue(updated));
     }});
     
-    EntryTree entryTree = entryParser.parseEntry(entryElement);
-    BaseContentEntry<?> root = entryTree.getRoot();
-    assertEquals("http://identification", root.getId());
-    assertTrue(EntryType.getType(root) == EntryType.WEB_PAGE);
-    assertEquals(author, root.getAuthors().get(0));
-    //THIS LINE MAKES ME SO MAD!
-    assertEquals(content, ((TextContent)root.getContent()).getContent());
-    assertEquals(title, root.getTitle());
-    assertEquals(updated, root.getUpdated());
+    BaseContentEntry<?> entry = entryParser.parseEntry(entryElement);
+    assertEquals("http://identification", entry.getId());
+    assertTrue(EntryType.getType(entry) == EntryType.WEB_PAGE);
+    assertEquals(author, entry.getAuthors().get(0));
+    assertEquals(content, entry.getContent());
+    assertEquals(title, entry.getTitle());
+    assertEquals(updated, entry.getUpdated());
   }
   
   @Test
@@ -153,10 +144,9 @@ public class EntryParserImplTest extends AbstractParserImplTest {
         will(returnValue(data));
     }});
     
-    EntryTree entryTree = entryParser.parseEntry(entryElement);
-    BaseContentEntry<?> root = entryTree.getRoot();
-    assertTrue(EntryType.getType(root) == EntryType.LIST_PAGE);
-    assertEquals(data, ((ListPageEntry) root).getData());
+    BaseContentEntry<?> entry = entryParser.parseEntry(entryElement);
+    assertTrue(EntryType.getType(entry) == EntryType.LIST_PAGE);
+    assertEquals(data, ((ListPageEntry) entry).getData());
   }
   
   @Test
@@ -186,16 +176,15 @@ public class EntryParserImplTest extends AbstractParserImplTest {
         will(returnValue(field3));
     }});
     
-    EntryTree entryTree = entryParser.parseEntry(entryElement);
-    BaseContentEntry<?> root = entryTree.getRoot();
-    assertTrue(EntryType.getType(root) == EntryType.LIST_ITEM);
-    assertTrue(((ListItemEntry) root).getFields().contains(field1));
-    assertTrue(((ListItemEntry) root).getFields().contains(field2));
-    assertTrue(((ListItemEntry) root).getFields().contains(field3));
+    BaseContentEntry<?> entry = entryParser.parseEntry(entryElement);
+    assertTrue(EntryType.getType(entry) == EntryType.LIST_ITEM);
+    assertTrue(((ListItemEntry) entry).getFields().contains(field1));
+    assertTrue(((ListItemEntry) entry).getFields().contains(field2));
+    assertTrue(((ListItemEntry) entry).getFields().contains(field3));
   }
   
   @Test
-  public void testChildParsing() {
+  public void testWithChildren() {
     final Element entryElement = document.createElement("div");
     entryElement.setAttribute("class", "hentry listpage");
     final Element attachmentElement1 = document.createElement("span");
@@ -211,23 +200,8 @@ public class EntryParserImplTest extends AbstractParserImplTest {
     listItemElement.setAttribute("class", "hentry listitem");
     entryElement.appendChild(listItemElement);
     
-    EntryTree entryTree = entryParser.parseEntry(entryElement);
-    ListPageEntry root = (ListPageEntry) entryTree.getRoot();
-    Set<BaseContentEntry<?>> children = entryTree.getChildren(root);
-    int numAttachments = 0;
-    int numComments = 0;
-    int numListItems = 0;
-    for(BaseContentEntry<?> child : entryTree.getChildren(root)) {
-      switch(EntryType.getType(child)) {
-        case ATTACHMENT: numAttachments++; break;
-        case COMMENT: numComments++; break;
-        case LIST_ITEM: numListItems++; break;
-        default: fail("There should be no other children.");
-      }
-    }
-    assertEquals(2, numAttachments);
-    assertEquals(1, numComments);
-    assertEquals(1, numListItems);
+    BaseContentEntry<?> entry = entryParser.parseEntry(entryElement);
+    assertEquals(EntryType.getType(entry), EntryType.LIST_PAGE);
   }
   
   @Test
@@ -249,9 +223,9 @@ public class EntryParserImplTest extends AbstractParserImplTest {
     entryElement.appendChild(document.createElement("b")
         .appendChild(document.createElement("i").appendChild(titleElement)));
     
-    final Person author = new Person();
-    final TextConstruct content = new XhtmlTextConstruct(new XmlBlob());
-    final TextConstruct title = new PlainTextConstruct();
+    final Person author = context.mock(Person.class);
+    final Content content = context.mock(Content.class);
+    final TextConstruct title = context.mock(TextConstruct.class);
     
     context.checking(new Expectations() {{
       oneOf (authorParser).parseAuthor(authorElement); 
@@ -262,11 +236,10 @@ public class EntryParserImplTest extends AbstractParserImplTest {
         will(returnValue(title));
     }});
     
-    EntryTree entryTree = entryParser.parseEntry(entryElement);
-    BaseContentEntry<?> root = entryTree.getRoot();
-    assertTrue(EntryType.getType(root) == EntryType.ANNOUNCEMENTS_PAGE);
-    assertEquals(author, root.getAuthors().get(0));
-    assertEquals(content, ((TextContent)root.getContent()).getContent());
-    assertEquals(title, root.getTitle());
+    BaseContentEntry<?> entry = entryParser.parseEntry(entryElement);
+    assertTrue(EntryType.getType(entry) == EntryType.ANNOUNCEMENTS_PAGE);
+    assertEquals(author, entry.getAuthors().get(0));
+    assertEquals(content, entry.getContent());
+    assertEquals(title, entry.getTitle());
   }
 }

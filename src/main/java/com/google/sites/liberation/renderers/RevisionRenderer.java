@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.util;
+package com.google.sites.liberation.renderers;
 
-import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.BasePageEntry;
+import com.google.inject.ImplementedBy;
+import com.google.sites.liberation.util.XmlElement;
 
 /**
- * Implementation of {@link EntryTreeFactory} that returns instances of 
- * {@link InMemoryEntryTree}. 
+ * Renders a revision's main content.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-public class InMemoryEntryTreeFactory implements EntryTreeFactory {
+@ImplementedBy(RevisionRendererImpl.class)
+public interface RevisionRenderer {
 
-  @Override
-  public EntryTree getEntryTree(BaseContentEntry<?> root) {
-    return new InMemoryEntryTree(root);
-  }
+  /**
+   * Returns an XmlElement containing the given revision's xhtml content.
+   */
+  XmlElement renderRevision(BasePageEntry<?> entry);
 }

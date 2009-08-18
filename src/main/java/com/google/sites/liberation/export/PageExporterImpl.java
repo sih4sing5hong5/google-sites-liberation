@@ -23,8 +23,8 @@ import static com.google.sites.liberation.util.EntryType.LIST_PAGE;
 import static com.google.sites.liberation.util.EntryType.getType;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gdata.data.sites.AnnouncementEntry;
-import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.data.sites.CommentEntry;
@@ -42,12 +42,12 @@ import com.google.sites.liberation.renderers.SubpageLinksRenderer;
 import com.google.sites.liberation.renderers.TitleRenderer;
 import com.google.sites.liberation.util.EntryUtils;
 import com.google.sites.liberation.util.XmlElement;
-import com.google.sites.liberation.util.EntryStore;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Implements {@link PageExporter} to export a single page in a 
@@ -96,7 +96,7 @@ final class PageExporterImpl implements PageExporter {
   
   @Override
   public void exportPage(BasePageEntry<?> entry, EntryStore entryStore,
-      Appendable out) throws IOException {
+      Appendable out, boolean revisionsExported) throws IOException {
     checkNotNull(entry, "entry");
     checkNotNull(entryStore, "entryStore");
     checkNotNull(out, "out");
@@ -106,6 +106,12 @@ final class PageExporterImpl implements PageExporter {
     title.addText(entry.getTitle().getPlainText());
     html.addElement(head.addElement(title));
     XmlElement body = new XmlElement("body");
+    XmlElement table = new XmlElement("table").setAttribute("width", "100%");
+    XmlElement row = new XmlElement("tr").setAttribute("valign", "top");
+    XmlElement sideBar = getSideBar(entry, entryStore);
+    row.addElement(new XmlElement("td").addElement(sideBar).setAttribute(
+        "width", "150px"));
+    row.addElement(new XmlElement("td").addXml("&#160;"));
     XmlElement mainDiv = new XmlElement("div");
     mainDiv.setAttribute("class", "hentry " + getType(entry).toString());
     mainDiv.setAttribute("id", entry.getId());
@@ -114,9 +120,9 @@ final class PageExporterImpl implements PageExporter {
       mainDiv.addElement(ancestorLinksRenderer.renderAncestorLinks(ancestors));      
     }
     mainDiv.addElement(titleRenderer.renderTitle(entry));
-    mainDiv.addElement(contentRenderer.renderContent(entry));
+    mainDiv.addElement(contentRenderer.renderContent(entry, revisionsExported));
     List<AnnouncementEntry> announcements = Lists.newArrayList();
-    List<AttachmentEntry> attachments = Lists.newArrayList();
+    List<BaseContentEntry<?>> attachments = Lists.newArrayList();
     List<CommentEntry> comments = Lists.newArrayList();
     List<ListItemEntry> listItems = Lists.newArrayList();
     List<BasePageEntry<?>> subpages = Lists.newArrayList();
@@ -125,7 +131,8 @@ final class PageExporterImpl implements PageExporter {
         case ANNOUNCEMENT:
           announcements.add((AnnouncementEntry) child); break;
         case ATTACHMENT:
-          attachments.add((AttachmentEntry) child); break;
+        case WEB_ATTACHMENT:
+          attachments.add(child); break;
         case COMMENT:
           comments.add((CommentEntry) child); break;
         case LIST_ITEM:
@@ -160,8 +167,40 @@ final class PageExporterImpl implements PageExporter {
       mainDiv.addElement(new XmlElement("hr"));
       mainDiv.addElement(commentsRenderer.renderComments(comments));
     }
-    html.addElement(body.addElement(mainDiv));
+    row.addElement(new XmlElement("td").addElement(mainDiv));
+    html.addElement(body.addElement(table.addElement(row)));
     html.appendTo(out);
+  }
+  
+  private XmlElement getSideBar(BasePageEntry<?> entry, EntryStore entryStore) {
+    XmlElement table = new XmlElement("table");
+    table.addElement(new XmlElement("tr").addElement(new XmlElement("th")
+        .addText("Navigation").setAttribute("align", "left")));
+    Set<BasePageEntry<?>> pages = Sets.newTreeSet(titleComparator);
+    pages.addAll(entryStore.getTopLevelEntries());
+    String pathToRoot = getPathToRoot(entry, entryStore);
+    for (BasePageEntry<?> page : pages) {
+      String text = page.getTitle().getPlainText();
+      if (page.equals(entry)) {
+        table.addElement(new XmlElement("tr").addElement(new XmlElement("td")
+            .addElement(new XmlElement("small").addText(text))));
+      } else {
+        String href = pathToRoot + page.getPageName().getValue() + "/index.html";
+        XmlElement link = new XmlElement("a").addText(text)
+            .setAttribute("href", href);
+        table.addElement(new XmlElement("tr").addElement(new XmlElement("td")
+            .addElement(new XmlElement("small").addElement(link))));
+      }
+    }
+    return table;
+  }
+  
+  private String getPathToRoot(BasePageEntry<?> entry, EntryStore entryStore) {
+    BasePageEntry<?> parent = entryStore.getParent(entry.getId());
+    if (parent == null) {
+      return "../";
+    }
+    return getPathToRoot(parent, entryStore) + "../";
   }
   
   private List<BasePageEntry<?>> getAncestors(BasePageEntry<?> entry,

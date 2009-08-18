@@ -40,7 +40,7 @@ final class CommentsRendererImpl implements CommentsRenderer {
       XmlElement author = RendererUtils.getAuthorElement(comment);
       XmlElement updated = RendererUtils.getUpdatedElement(comment);
       XmlElement revision = RendererUtils.getRevisionElement(comment);
-      XmlElement content = RendererUtils.getContentElement(comment);
+      XmlElement content = RendererUtils.getXhtmlContentElement(comment);
       commentDiv.addElement(author).addText(" - ").addElement(updated);
       commentDiv.addText(" (Version ").addElement(revision).addText(")");
       commentDiv.addElement(new XmlElement("br")).addElement(content);

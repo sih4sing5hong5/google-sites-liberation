@@ -35,7 +35,7 @@ final class AnnouncementsRendererImpl implements AnnouncementsRenderer {
     for (AnnouncementEntry announcement : announcements) {
       div.addElement(new XmlElement("hr"));
       XmlElement announceDiv = RendererUtils.getEntryElement(announcement, 
-          "div");
+          "blockquote");
       XmlElement title = new XmlElement("b");
       String href = announcement.getPageName().getValue() + "/index.html";
       XmlElement titleLink = new XmlElement("a").addElement(
@@ -48,9 +48,9 @@ final class AnnouncementsRendererImpl implements AnnouncementsRenderer {
       info.addText("posted by ").addElement(author);
       XmlElement updated = RendererUtils.getUpdatedElement(announcement);
       info.addText(" on ").addElement(updated);
-      announceDiv.addElement(info);
-      XmlElement mainHtml = RendererUtils.getContentElement(announcement);
-      announceDiv.addElement(new XmlElement("blockquote").addElement(mainHtml));
+      announceDiv.addElement(info).addElement(new XmlElement("br"));
+      XmlElement mainHtml = RendererUtils.getXhtmlContentElement(announcement);
+      announceDiv.addElement(mainHtml);
       div.addElement(announceDiv);
     }
     return div;

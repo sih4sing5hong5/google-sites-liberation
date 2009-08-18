@@ -2,21 +2,21 @@ package com.google.sites.liberation.parsers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.sites.liberation.parsers.ParserUtils.hasClass;
-import static com.google.sites.liberation.util.EntryType.isPage;
+import static com.google.sites.liberation.util.EntryType.getType;
+import static com.google.sites.liberation.util.EntryType.LIST_ITEM;
+import static com.google.sites.liberation.util.EntryType.LIST_PAGE;
 
 import com.google.gdata.data.sites.AnnouncementEntry;
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.gdata.data.sites.BaseContentEntry;
-import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.data.sites.CommentEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.gdata.data.sites.ListItemEntry;
 import com.google.gdata.data.sites.ListPageEntry;
+import com.google.gdata.data.sites.WebAttachmentEntry;
 import com.google.gdata.data.sites.WebPageEntry;
 import com.google.inject.Inject;
-import com.google.sites.liberation.util.EntryTree;
-import com.google.sites.liberation.util.EntryTreeFactory;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -26,7 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Implements EntryParser to parse an html element representing an entry.
+ * Parses an html element representing an entry.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
@@ -38,7 +38,6 @@ final class EntryParserImpl implements EntryParser {
   private final AuthorParser authorParser;
   private final ContentParser contentParser;
   private final DataParser dataParser;
-  private final EntryTreeFactory entryTreeFactory;
   private final FieldParser fieldParser;
   private final SummaryParser summaryParser;
   private final TitleParser titleParser;
@@ -52,7 +51,6 @@ final class EntryParserImpl implements EntryParser {
       AuthorParser authorParser,
       ContentParser contentParser,
       DataParser dataParser,
-      EntryTreeFactory entryTreeFactory,
       FieldParser fieldParser,
       SummaryParser summaryParser,
       TitleParser titleParser,
@@ -60,63 +58,73 @@ final class EntryParserImpl implements EntryParser {
     this.authorParser = checkNotNull(authorParser);
     this.contentParser = checkNotNull(contentParser);
     this.dataParser = checkNotNull(dataParser);
-    this.entryTreeFactory = checkNotNull(entryTreeFactory);
     this.fieldParser = checkNotNull(fieldParser);
     this.summaryParser = checkNotNull(summaryParser);
     this.titleParser = checkNotNull(titleParser);
     this.updatedParser = checkNotNull(updatedParser);
   }
   
+  /**
+   * Parses the given element, returning an EntryTree with the first entry
+   * encountered as the root, and enclosing non-page entries as children.
+   */
   @Override
-  public EntryTree parseEntry(Element element) {
-    checkNotNull(element);
+  public BaseContentEntry<?> parseEntry(Element element) {
     BaseContentEntry<?> entry = getEntry(element);
-    EntryTree entryTree = entryTreeFactory.getEntryTree(entry);
-    parseElement(element, entry, entryTree);
-    return entryTree;
+    parseElement(element, entry);
+    return entry;
   }
   
   /**
-   * Parses the given element, populating the given entry with its data, and
-   * adding its descendants to the given entryTree.
+   * Parses the given element, populating the given entry with its data.
    */
-  private void parseElement(Element element, BaseContentEntry<?> entry,
-      EntryTree entryTree) {
+  private void parseElement(Element element, BaseContentEntry<?> entry) {
     NodeList nodeList = element.getChildNodes();
     for (int i = 0; i < nodeList.getLength(); i++) {
       Node node = nodeList.item(i);
       if (node.getNodeType() == Node.ELEMENT_NODE) {
         Element child = (Element) node;
-        if (hasClass(child, "hentry")) {
-          if (!isPage(getEntry(child))) {
-            entryTree.addSubTree(parseEntry(child), (BasePageEntry<?>) 
-                entryTree.getRoot());
+        if (!hasClass(child, "hentry") && !child.getTagName().equals("q")
+            && !child.getTagName().equals("blockquote")) {
+          boolean parserDeeper = true;
+          if (hasClass(child, "entry-title")) {
+            entry.setTitle(titleParser.parseTitle(child));
+            parserDeeper = false;
+          } 
+          if (hasClass(child, "entry-content")) {
+            entry.setContent(contentParser.parseContent(child));
+            parserDeeper = false;
+          } 
+          if (hasClass(child, "updated")) {
+            entry.setUpdated(updatedParser.parseUpdated(child));
+            parserDeeper = false;
+          } 
+          if (hasClass(child, "vcard")) {
+            entry.getAuthors().add(authorParser.parseAuthor(child));
+            parserDeeper = false;
+          } 
+          if (hasClass(child, "entry-summary")) {
+            entry.setSummary(summaryParser.parseSummary(child));
+            parserDeeper = false;
+          } 
+          if (hasClass(child, "gs:data")) {
+            if (getType(entry) == LIST_PAGE) {
+              ((ListPageEntry) entry).setData(dataParser.parseData(child));
+            }
+            parserDeeper = false;
+          } 
+          if (hasClass(child, "gs:field")) {
+            if (getType(entry) == LIST_ITEM) {
+              ((ListItemEntry) entry).addField(fieldParser.parseField(child));
+            }
+            parserDeeper = false;
           }
-        } else if (hasClass(child, "entry-title")) {
-          entry.setTitle(titleParser.parseTitle(child));
-        } else if (hasClass(child, "entry-content")) {
-          entry.setContent(contentParser.parseContent(child));
-        } else if (hasClass(child, "updated")) {
-          entry.setUpdated(updatedParser.parseUpdated(child));
-        } else if (hasClass(child, "vcard")) {
-          entry.getAuthors().add(authorParser.parseAuthor(child));
-        } else if (hasClass(child, "entry-summary")) {
-          entry.setSummary(summaryParser.parseSummary(child));
-        } else if (hasClass(child, "gs:data")) {
-          if (entry instanceof ListPageEntry) {
-            ((ListPageEntry) entry).setData(dataParser.parseData(child));
-          }
-        } else if (hasClass(child, "gs:field")) {
-          if (entry instanceof ListItemEntry) {
-            ((ListItemEntry) entry).addField(fieldParser.parseField(child));
-          }
-        } else {
-          parseElement(child, entry, entryTree);
+          parseElement(child, entry);
         }
       }
     }
   }
-
+  
   /**
    * Returns an appropriate BaseContentEntry for the given element that 
    * represents the entry. This method only parses the element's root tag, not
@@ -138,6 +146,8 @@ final class EntryParserImpl implements EntryParser {
       entry = new ListItemEntry();
     } else if (hasClass(element, "listpage")) {
       entry = new ListPageEntry();
+    } else if (hasClass(element, "webattachment")) {
+      entry = new WebAttachmentEntry();
     } else if (hasClass(element, "webpage")) {
       entry = new WebPageEntry();
     } else {

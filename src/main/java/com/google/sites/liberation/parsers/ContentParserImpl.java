@@ -18,7 +18,9 @@ package com.google.sites.liberation.parsers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.gdata.data.TextConstruct;
+import com.google.gdata.data.Content;
+import com.google.gdata.data.OutOfLineContent;
+import com.google.gdata.data.TextContent;
 import com.google.gdata.data.XhtmlTextConstruct;
 import com.google.gdata.util.XmlBlob;
 import com.google.sites.liberation.util.XmlElement;
@@ -36,21 +38,29 @@ import org.w3c.dom.NodeList;
 final class ContentParserImpl implements ContentParser {
 
   @Override
-  public TextConstruct parseContent(Element element) {
+  public Content parseContent(Element element) {
     checkNotNull(element);
-    StringBuilder builder = new StringBuilder();
-    NodeList nodeList = element.getChildNodes();
-    for (int i = 0; i < nodeList.getLength(); i++) {
-      Node child = nodeList.item(i);
-      if (child.getNodeType() == Node.ELEMENT_NODE) {
-        builder.append(xmlElementOf((Element) child));
-      } else if (child.getNodeType() == Node.TEXT_NODE) {
-        builder.append(child.getNodeValue());
+    String href = element.getAttribute("href");
+    if (href.equals("")) {
+      StringBuilder builder = new StringBuilder();
+      NodeList nodeList = element.getChildNodes();
+      for (int i = 0; i < nodeList.getLength(); i++) {
+        Node child = nodeList.item(i);
+        if (child.getNodeType() == Node.ELEMENT_NODE) {
+          builder.append(xmlElementOf((Element) child));
+        } else if (child.getNodeType() == Node.TEXT_NODE) {
+          builder.append(child.getNodeValue());
+        }
       }
+      XmlBlob xmlBlob = new XmlBlob();
+      xmlBlob.setBlob(builder.toString());
+      TextContent content = new TextContent();
+      content.setContent(new XhtmlTextConstruct(xmlBlob));
+      return content;
     }
-    XmlBlob xmlBlob = new XmlBlob();
-    xmlBlob.setBlob(builder.toString());
-    return new XhtmlTextConstruct(xmlBlob);
+    OutOfLineContent content = new OutOfLineContent();
+    content.setUri(href);
+    return content;
   }
   
   /**

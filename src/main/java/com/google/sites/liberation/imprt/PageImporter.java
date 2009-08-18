@@ -16,13 +16,16 @@
 
 package com.google.sites.liberation.imprt;
 
+import com.google.gdata.client.sites.SitesService;
+import com.google.gdata.data.sites.BasePageEntry;
 import com.google.inject.ImplementedBy;
-import com.google.sites.liberation.util.EntryTree;
 
-import org.w3c.dom.Document;
+import java.io.File;
+import java.net.URL;
+import java.util.List;
 
 /**
- * Parses a single file representing a page in a site.
+ * Parses a page and (possibly) its revisions and uploads them a feed.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
@@ -30,9 +33,18 @@ import org.w3c.dom.Document;
 public interface PageImporter {
 
   /**
-   * Parses the given document, returning an EntryTree containing a BasePageEntry
-   * as the root, and its comments and attachments as children. Returns null
-   * if the document does not contain a valid entry.
+   * Parses a page and uploads it as well as its comments, attachments,
+   * list items, and possibly revisions to a feed.
+   * 
+   * @param directory directory of the page
+   * @param importRevisions whether on not revisions should also be imported
+   * @param ancestors the pages ancestors, its parent as the last entry, etc.
+   * @param feedUrl the feedUrl to upload the entries to
+   * @param siteUrl the siteUrl the page will exist at
+   * @param sitesService SitesService to use for uploading
+   * @return the BasePageEntry returned by the server
    */
-  EntryTree importPage(Document document);
+  BasePageEntry<?> importPage(File directory, boolean importRevisions,
+      List<BasePageEntry<?>> ancestors, URL feedUrl, URL siteUrl, 
+      SitesService sitesService);
 }

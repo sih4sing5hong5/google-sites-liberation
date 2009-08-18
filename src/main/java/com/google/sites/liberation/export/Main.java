@@ -17,21 +17,16 @@
 package com.google.sites.liberation.export;
 
 import com.google.gdata.client.sites.SitesService;
-import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.util.ServiceException;
-import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.sites.liberation.util.EntryStoreFactory;
-import com.google.sites.liberation.util.InMemoryEntryStoreFactory;
+import com.google.sites.liberation.util.StdOutProgressListener;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,44 +50,33 @@ public class Main {
   @Option(name="-d", usage="domain of site")
   private String domain = null;
   
-  @Option(name="-n", usage="name of site")
-  private String name = null;
+  @Option(name="-w", usage="webspace of site")
+  private String webspace = null;
+  
+  @Option(name="-r", usage="export revisions as well as current content")
+  private boolean exportRevisions = false;
   
   @Option(name="-f", usage="directory in which to export")
-  private File rootDirectory = new File("");
+  private File directory = new File("");
   
-  // TODO(bsimon): Remove once no longer testing locally.
-  @Option(name="-s", usage="server")
-  private String server = "sites.google.com";
+  @Option(name="-h", usage="host")
+  private String host = "sites.google.com";
   
   private void doMain(String[] args) {
     CmdLineParser parser = new CmdLineParser(this);
-    Injector injector = Guice.createInjector(new ExportModule());
+    Injector injector = Guice.createInjector(new SiteExporterModule());
     SiteExporter siteExporter = injector.getInstance(SiteExporter.class);
     try {
       parser.parseArgument(args);
-      if (name == null) {
-        throw new CmdLineException("Name of site not specified!");
+      if (webspace == null) {
+        throw new CmdLineException("Webspace of site not specified!");
       }
-      SitesService service = new SitesService("google-sites-liberation");
+      SitesService sitesService = new SitesService("google-sites-liberation");
       if (username != null && password != null) {
-        service.setUserCredentials(username, password);
+        sitesService.setUserCredentials(username, password);
       }
-      String feedUrl;
-      String siteUrl;
-      if (domain == null) {
-        feedUrl = "http://" + server + "/feeds/content/site/" + name;
-        siteUrl = "http://" + server + "/site/" + name;
-      } else {
-        feedUrl = "http://" + server + "/feeds/content/" + domain + '/' + name;
-        siteUrl = "http://" + server + "/a/" + domain + "/" + name;
-      }
-      Iterable<BaseContentEntry<?>> entries = 
-        new ContinuousContentFeed(service, new URL(feedUrl));
-      siteExporter.exportSite(entries, rootDirectory, new URL(siteUrl));
-    } catch (MalformedURLException e) {
-      LOGGER.log(Level.SEVERE, e.getMessage());
-      throw new RuntimeException(e);
+      siteExporter.exportSite(host, domain, webspace, exportRevisions,
+          sitesService, directory, new StdOutProgressListener());
     } catch (CmdLineException e) {
       LOGGER.log(Level.SEVERE, e.getMessage());
       parser.printUsage(System.err);
@@ -108,19 +92,5 @@ public class Main {
    */
   public static void main(String[] args) {
     new Main().doMain(args);
-  }
-  
-  /**
-   * GUICE module defining default bindings.
-   * 
-   * @author bsimon@google.com (Benjamin Simon)
-   */
-  private class ExportModule extends AbstractModule {
-
-    @Override
-    protected void configure() {
-      bind(EntryStoreFactory.class).to(InMemoryEntryStoreFactory.class);
-      bind(AppendableFactory.class).to(BufferedWriterFactory.class);
-    }
   }
 }

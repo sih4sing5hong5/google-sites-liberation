@@ -17,26 +17,31 @@
 package com.google.sites.liberation.imprt;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.sites.liberation.util.EntryType.getType;
+import static com.google.sites.liberation.util.EntryType.isPage;
+import static com.google.sites.liberation.util.EntryType.ATTACHMENT;
 
-import com.google.gdata.data.PlainTextConstruct;
-import com.google.gdata.data.TextConstruct;
-import com.google.gdata.data.sites.WebPageEntry;
+import com.google.common.collect.Lists;
+import com.google.gdata.client.sites.SitesService;
+import com.google.gdata.data.Content;
+import com.google.gdata.data.OutOfLineContent;
+import com.google.gdata.data.media.MediaFileSource;
+import com.google.gdata.data.media.MediaSource;
+import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.data.sites.BasePageEntry;
+import com.google.gdata.data.sites.PageName;
 import com.google.inject.Inject;
-import com.google.sites.liberation.parsers.ContentParser;
-import com.google.sites.liberation.parsers.EntryParser;
-import com.google.sites.liberation.util.EntryTree;
-import com.google.sites.liberation.util.EntryTreeFactory;
+import com.google.sites.liberation.parsers.PageParser;
+import com.google.sites.liberation.util.EntryUtils;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
+import java.io.File;
+import java.net.URL;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Implements {@link PageImporter} to parse a single file as a page in a site.
+ * Parses a page and its children and uploads them to a feed.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
@@ -45,69 +50,96 @@ final class PageImporterImpl implements PageImporter {
   private static final Logger LOGGER = Logger.getLogger(
       PageImporterImpl.class.getCanonicalName());
   
-  private final ContentParser contentParser;
-  private final EntryParser entryParser;
-  private final EntryTreeFactory entryTreeFactory;
+  private final EntryUpdater entryUpdater;
+  private final EntryUploader entryUploader;
+  private final PageParser pageParser;
+  private final RelativeLinkConverter linkConverter;
+  private final RevisionsImporter revisionsImporter;
   
   /**
    * Creates a new PageImporterImpl with the given dependencies.
    */
   @Inject
-  PageImporterImpl(ContentParser contentParser, 
-      EntryParser elementParser,
-      EntryTreeFactory entryTreeFactory) {
-    this.contentParser = checkNotNull(contentParser);
-    this.entryParser = checkNotNull(elementParser);
-    this.entryTreeFactory = checkNotNull(entryTreeFactory);
+  PageImporterImpl(EntryUpdater entryUpdater,
+      EntryUploader entryUploader,
+      PageParser pageParser,
+      RelativeLinkConverter linkConverter,
+      RevisionsImporter revisionsImporter) {
+    this.entryUpdater = checkNotNull(entryUpdater);
+    this.entryUploader = checkNotNull(entryUploader);
+    this.pageParser = checkNotNull(pageParser);
+    this.linkConverter = checkNotNull(linkConverter);
+    this.revisionsImporter = checkNotNull(revisionsImporter);
   }
   
   @Override
-  public EntryTree importPage(Document document) {
-    checkNotNull(document);
-    Element docElement = document.getDocumentElement();
-    EntryTree entryTree = parseElement(docElement);
-    //If there is no "hentry" element, then the whole body is taken as the
-    //the content for a webpage.
-    if (entryTree == null) {
-      NodeList nodeList = docElement.getElementsByTagName("body");
-      if (nodeList.getLength() == 0) {
-        LOGGER.log(Level.WARNING, "Invalid document!");        
-        return null;
-      }
-      Element body = (Element) nodeList.item(0);
-      TextConstruct content = contentParser.parseContent(body);
-      WebPageEntry webPage = new WebPageEntry();
-      webPage.setTitle(new PlainTextConstruct(""));
-      webPage.setContent(content);
-      entryTree = entryTreeFactory.getEntryTree(webPage);
+  public BasePageEntry<?> importPage(File directory, boolean importRevisions, 
+      List<BasePageEntry<?>> ancestors, URL feedUrl, URL siteUrl, 
+      SitesService sitesService) {
+    checkNotNull(directory);
+    File file = new File(directory, "index.html");
+    if (!file.isFile()) {
+      LOGGER.log(Level.WARNING, "No valid file in directory: " + directory);
+      return null;
     }
-    return entryTree;
+    List<BaseContentEntry<?>> entries = pageParser.parsePage(file);
+    BasePageEntry<?> page = getFirstPageEntry(entries);
+    if (page == null) {
+      LOGGER.log(Level.WARNING, "No valid page entry!");
+      return null;
+    }
+    //TODO(jlueck): Remove the toLowerCase() call once Watercress release is in dogfood.
+    page.setPageName(new PageName(directory.getName().toLowerCase()));
+    linkConverter.convertLinks(page, ancestors, siteUrl);
+    if (!ancestors.isEmpty()) {
+      EntryUtils.setParent(page, ancestors.get(ancestors.size() - 1));
+    }
+    BasePageEntry<?> returnedEntry = null;
+    if (importRevisions && new File(directory, "_revisions").isDirectory()) {
+      returnedEntry = revisionsImporter.importRevisions(
+          directory, ancestors, feedUrl, siteUrl, sitesService);
+    }
+    if (returnedEntry == null) {
+      returnedEntry = (BasePageEntry<?>) entryUploader.uploadEntry(
+          page, ancestors, feedUrl, sitesService);
+    } else {
+      returnedEntry = (BasePageEntry<?>) entryUpdater.updateEntry(
+          returnedEntry, page, sitesService);
+    }
+    List<BasePageEntry<?>> newAncestors = Lists.newLinkedList(ancestors);
+    newAncestors.add(returnedEntry);
+    for (BaseContentEntry<?> child : getNonPageEntries(entries)) {
+      if (getType(child) == ATTACHMENT) {
+        String src = ((OutOfLineContent) child.getContent()).getUri();
+        File attachmentFile = new File(directory.getParentFile(), src);
+        MediaSource mediaSource = new MediaFileSource(attachmentFile, 
+            "application/octet-stream");
+        child.setContent((Content) null);
+        child.setMediaSource(mediaSource);          
+      }
+      EntryUtils.setParent(child, page);
+      entryUploader.uploadEntry(child, newAncestors, feedUrl, sitesService);
+    }
+    return returnedEntry;
   }
   
-  /**
-   * Parses the given element, returning an EntryTree with the first entry
-   * encountered as the root.
-   */
-  private EntryTree parseElement(Element element) {
-    EntryTree entryTree = null;
-    NodeList nodeList = element.getChildNodes();
-    for (int i = 0; (i < nodeList.getLength()) && (entryTree == null); i++) {
-      Node node = nodeList.item(i);
-      if (node.getNodeType() == Node.ELEMENT_NODE) {
-        Element child = (Element) node;
-        boolean isEntry = false;
-        for (String str : child.getAttribute("class").split(" ")) {
-          if (str.equals("hentry")) {
-            isEntry = true;
-          }
-        }
-        if (isEntry) {
-          entryTree = entryParser.parseEntry(child);
-        } else {
-          entryTree = parseElement(child);
-        }
+  private BasePageEntry<?> getFirstPageEntry(List<BaseContentEntry<?>> entries) {
+    for (BaseContentEntry<?> entry : entries) {
+      if (isPage(entry)) {
+        return (BasePageEntry<?>) entry;
       }
     }
-    return entryTree;
+    return null;
+  }
+  
+  private List<BaseContentEntry<?>> getNonPageEntries(
+      List<BaseContentEntry<?>> entries) {
+    List<BaseContentEntry<?>> children = Lists.newLinkedList();
+    for (BaseContentEntry<?> entry : entries) {
+      if (!isPage(entry)) {
+        children.add(entry);
+      }
+    }
+    return children;
   }
 }

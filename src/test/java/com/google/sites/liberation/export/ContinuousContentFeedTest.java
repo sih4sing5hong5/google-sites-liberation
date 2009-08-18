@@ -20,10 +20,11 @@ import static org.junit.Assert.*;
 
 import com.google.common.collect.Lists;
 import com.google.gdata.client.Query;
+import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.WebPageEntry;
 import com.google.gdata.util.ServiceException;
-import com.google.sites.liberation.util.EntryDownloader;
+import com.google.sites.liberation.util.EntryProvider;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -40,42 +41,22 @@ import java.util.List;
 public class ContinuousContentFeedTest {
   
   private URL url;
+  private SitesService sitesService;
   private final BaseContentEntry<?> serviceExceptionEntry = new WebPageEntry();
   private final BaseContentEntry<?> ioExceptionEntry = new WebPageEntry();
   
   @Before
   public void initUrl() throws MalformedURLException {
     url = new URL("http://test.com");
-  }
-  
-  @Test
-  public void testArguments() {
-    EntryDownloader entryDownloader = new FakeEntryDownloader(
-        new ArrayList<BaseContentEntry<?>>(), 5);
-    try {
-      new ContinuousContentFeed(null, url, 5);
-      fail("Should throw NullPointerException!");
-    } catch (NullPointerException e) {}
-    try {
-      new ContinuousContentFeed(entryDownloader, null, 5);
-      fail("Should throw NullPointerException!");
-    } catch (NullPointerException e) {}
-    try {
-      new ContinuousContentFeed(null, url);
-      fail("Should throw NullPointerException!");
-    } catch (NullPointerException e) {}
-    try {
-      new ContinuousContentFeed(entryDownloader, url, -3);
-      fail("Should throw IllegalArgumentException!");
-    } catch (IllegalArgumentException e) {}
+    sitesService = new SitesService("");
   }
   
   @Test
   public void testEmptyFeed() {
-    EntryDownloader entryDownloader = new FakeEntryDownloader(
+    EntryProvider entryProvider = new FakeEntryDownloader(
         new ArrayList<BaseContentEntry<?>>(), 5);
-    ContinuousContentFeed feed = new ContinuousContentFeed(
-        entryDownloader, url, 3);
+    ContinuousContentFeed feed = 
+        new ContinuousContentFeed(url, entryProvider, sitesService, 3);
     for(BaseContentEntry<?> entry : feed) {
       fail("There should be no entries!");
     }
@@ -85,9 +66,9 @@ public class ContinuousContentFeedTest {
   public void testClientLimitsNumPerRequest() {
     List<BaseContentEntry<?>> entries = Lists.newArrayList();
     addNormalEntries(entries, 32);
-    EntryDownloader entryDownloader = new FakeEntryDownloader(entries, 5);
-    ContinuousContentFeed feed = new ContinuousContentFeed(
-        entryDownloader, url, 3);
+    EntryProvider entryProvider = new FakeEntryDownloader(entries, 5);
+    ContinuousContentFeed feed = 
+        new ContinuousContentFeed(url, entryProvider, sitesService, 3);
     List<BaseContentEntry<?>> newEntries = Lists.newArrayList(feed);
     assertEquals(entries, newEntries);
   }
@@ -101,9 +82,9 @@ public class ContinuousContentFeedTest {
     addIoExceptions(entries, 1);
     addNormalEntries(entries, 4);
     addIoExceptions(entries, 3);
-    EntryDownloader entryDownloader = new FakeEntryDownloader(entries, 5);
-    ContinuousContentFeed feed = new ContinuousContentFeed(
-        entryDownloader, url, 4);
+    EntryProvider entryProvider = new FakeEntryDownloader(entries, 5);
+    ContinuousContentFeed feed = 
+        new ContinuousContentFeed(url, entryProvider, sitesService, 4);
     List<BaseContentEntry<?>> newEntries = Lists.newArrayList(feed);
     while(entries.remove(serviceExceptionEntry)) {}
     while(entries.remove(ioExceptionEntry)) {}
@@ -114,9 +95,9 @@ public class ContinuousContentFeedTest {
   public void testServerLimitsNumPerRequest() {
     List<BaseContentEntry<?>> entries = Lists.newArrayList();
     addNormalEntries(entries, 45);
-    EntryDownloader entryDownloader = new FakeEntryDownloader(entries, 5);
-    ContinuousContentFeed feed = new ContinuousContentFeed(
-        entryDownloader, url, 7);
+    EntryProvider entryProvider = new FakeEntryDownloader(entries, 5);
+    ContinuousContentFeed feed = 
+        new ContinuousContentFeed(url, entryProvider, sitesService, 7);
     List<BaseContentEntry<?>> newEntries = Lists.newArrayList(feed);
     assertEquals(entries, newEntries);
   }
@@ -131,9 +112,9 @@ public class ContinuousContentFeedTest {
     addIoExceptions(entries, 3);
     addServiceExceptions(entries, 1);
     addNormalEntries(entries, 20);
-    EntryDownloader entryDownloader = new FakeEntryDownloader(entries, 5);
-    ContinuousContentFeed feed = new ContinuousContentFeed(
-        entryDownloader, url, 8);
+    EntryProvider entryProvider = new FakeEntryDownloader(entries, 5);
+    ContinuousContentFeed feed = 
+        new ContinuousContentFeed(url, entryProvider, sitesService, 8);
     List<BaseContentEntry<?>> newEntries = Lists.newArrayList(feed);
     while(entries.remove(serviceExceptionEntry)) {}
     while(entries.remove(ioExceptionEntry)) {}
@@ -144,9 +125,9 @@ public class ContinuousContentFeedTest {
   public void testNothingLimitsNumPerRequest() {
     List<BaseContentEntry<?>> entries = Lists.newArrayList();
     addNormalEntries(entries, 28);
-    EntryDownloader entryDownloader = new FakeEntryDownloader(entries, 100);
-    ContinuousContentFeed feed = new ContinuousContentFeed(
-        entryDownloader, url, 100);
+    EntryProvider entryProvider = new FakeEntryDownloader(entries, 100);
+    ContinuousContentFeed feed = 
+        new ContinuousContentFeed(url, entryProvider, sitesService, 100);
     List<BaseContentEntry<?>> newEntries = Lists.newArrayList(feed);
     assertEquals(entries, newEntries);
   }
@@ -160,9 +141,9 @@ public class ContinuousContentFeedTest {
     addNormalEntries(entries, 20);
     addServiceExceptions(entries, 4);
     addNormalEntries(entries, 1);
-    EntryDownloader entryDownloader = new FakeEntryDownloader(entries, 100);
-    ContinuousContentFeed feed = new ContinuousContentFeed(
-        entryDownloader, url, 100);
+    EntryProvider entryProvider = new FakeEntryDownloader(entries, 100);
+    ContinuousContentFeed feed = 
+        new ContinuousContentFeed(url, entryProvider, sitesService, 100);
     List<BaseContentEntry<?>> newEntries = Lists.newArrayList(feed);
     while(entries.remove(serviceExceptionEntry)) {}
     while(entries.remove(ioExceptionEntry)) {}
@@ -187,7 +168,7 @@ public class ContinuousContentFeedTest {
     }
   }
   
-  private class FakeEntryDownloader implements EntryDownloader {
+  private class FakeEntryDownloader implements EntryProvider {
     
     private final int maxResultsPerRequest;
     private final List<BaseContentEntry<?>> entries;
@@ -197,7 +178,7 @@ public class ContinuousContentFeedTest {
       this.entries = entries;
     }
     
-    public List<BaseContentEntry<?>> getEntries(Query query) 
+    public List<BaseContentEntry<?>> getEntries(Query query, SitesService sitesService) 
         throws ServiceException, IOException {
       int fromIndex = query.getStartIndex() - 1;
       int max = Math.min(maxResultsPerRequest, query.getMaxResults());

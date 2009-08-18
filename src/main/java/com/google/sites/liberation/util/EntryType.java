@@ -27,6 +27,7 @@ import com.google.gdata.data.sites.CommentEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.gdata.data.sites.ListItemEntry;
 import com.google.gdata.data.sites.ListPageEntry;
+import com.google.gdata.data.sites.WebAttachmentEntry;
 import com.google.gdata.data.sites.WebPageEntry;
 
 /**
@@ -42,6 +43,7 @@ public enum EntryType {
   FILE_CABINET_PAGE,
   LIST_ITEM,
   LIST_PAGE,
+  WEB_ATTACHMENT,
   WEB_PAGE,
   OTHER;
   
@@ -55,6 +57,7 @@ public enum EntryType {
       case FILE_CABINET_PAGE: return "filecabinet";
       case LIST_ITEM: return "listitem";
       case LIST_PAGE: return "listpage";
+      case WEB_ATTACHMENT: return "webattachment";
       case WEB_PAGE: return "webpage";
       default: return "other";
     }
@@ -85,6 +88,9 @@ public enum EntryType {
     }
     if (entry instanceof ListPageEntry) {
       return EntryType.LIST_PAGE;
+    }
+    if (entry instanceof WebAttachmentEntry) {
+      return EntryType.WEB_ATTACHMENT;
     }
     if (entry instanceof WebPageEntry) {
       return EntryType.WEB_PAGE;

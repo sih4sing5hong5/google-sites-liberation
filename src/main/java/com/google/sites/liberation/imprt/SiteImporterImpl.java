@@ -1,30 +1,20 @@
 package com.google.sites.liberation.imprt;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.sites.liberation.util.EntryType.isPage;
 
-import com.google.gdata.data.TextConstruct;
-import com.google.gdata.data.XhtmlTextConstruct;
-import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.common.collect.Lists;
+import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.data.sites.BasePageEntry;
-import com.google.gdata.data.sites.PageName;
-import com.google.gdata.util.XmlBlob;
+import com.google.gdata.util.common.base.Nullable;
 import com.google.inject.Inject;
-import com.google.sites.liberation.util.EntryTree;
-import com.google.sites.liberation.util.EntryUtils;
-
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
+import com.google.sites.liberation.util.ProgressListener;
 
 import java.io.File;
-import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Implements {@link SiteImporter} to import an entire site.
@@ -36,140 +26,78 @@ final class SiteImporterImpl implements SiteImporter {
   private static final Logger LOGGER = Logger.getLogger(
       SiteImporterImpl.class.getCanonicalName());
   
-  private final EntryTreeUploader entryTreeUploader;
   private final PageImporter pageImporter;
   
   /**
    * Creates a new SiteImporterImpl with the given dependencies.
    */
   @Inject
-  SiteImporterImpl(EntryTreeUploader entryTreeUploader,
-      PageImporter pageImporter) {
-    this.entryTreeUploader = checkNotNull(entryTreeUploader);
+  SiteImporterImpl(PageImporter pageImporter) {
     this.pageImporter = checkNotNull(pageImporter);
   }
   
   @Override
-  public void importSite(File rootDirectory, URL siteUrl, 
-      EntryUploader entryUploader) {
-    if (rootDirectory.isDirectory()) {
-      for (File subDirectory : rootDirectory.listFiles()) {
-        if (subDirectory.isDirectory()) {
-          EntryTree entryTree = importPage(subDirectory);
-          if (entryTree != null) {
-            fixLinks(entryTree, siteUrl);
-            entryTreeUploader.uploadEntryTree(entryTree, entryUploader);
-          }
-        }
-      }
-    } else {
-      LOGGER.log(Level.WARNING, "Invalid directory!");
-      return;
-    }
-  }
-  
-  /**
-   * Returns an EntryTree representing the page in the given directory
-   * and all its children.
-   */
-  private EntryTree importPage(File pageDirectory) {
-    File page = new File(pageDirectory, "index.html");
-    if (!page.isFile()) {
-      return null;
-    }
-    Document document;
+  public void importSite(String host, @Nullable String domain, String webspace, 
+      boolean importRevisions, SitesService sitesService, File rootDirectory, 
+      ProgressListener progressListener) {
+    URL feedUrl;
+    URL siteUrl;
     try {
-      DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance()
-          .newDocumentBuilder();
-      document = docBuilder.parse(page);
-    } catch (IOException e) {
-      String message = "Error importing from " + pageDirectory.getPath();
-      LOGGER.log(Level.WARNING, message, e);
-      return null;
-    } catch (ParserConfigurationException e) {
-      String message = "Error importing from " + pageDirectory.getPath();
-      LOGGER.log(Level.WARNING, message, e);
-      return null;
-    } catch (SAXException e) {
-      String message = "Error importing from " + pageDirectory.getPath();
-      LOGGER.log(Level.WARNING, message, e);
-      return null;
+      if (domain == null) {
+        feedUrl = new URL("http://" + host + "/feeds/content/site/" + webspace);
+        siteUrl = new URL("http://" + host + "/site/" + webspace);
+      } else {
+        feedUrl = new URL("http://" + host + "/feeds/content/" + domain + "/" + webspace);
+        siteUrl = new URL("http://" + host + "/a/" + domain + "/" + webspace);
+      }
+    } catch (MalformedURLException e) {
+      LOGGER.log(Level.WARNING, "Invalid host, domain, or webspace!");
+      throw new RuntimeException(e);
     }
-    EntryTree entryTree = pageImporter.importPage(document);
-    if (entryTree == null) {
-      return null;
-    }
-    BasePageEntry<?> pageEntry = (BasePageEntry<?>) entryTree.getRoot();
-    pageEntry.setPageName(new PageName(pageDirectory.getName()));
-    for (File subDirectory : pageDirectory.listFiles()) {
-      if (subDirectory.isDirectory()) {
-        EntryTree subTree = importPage(subDirectory);
-        if (subTree != null) {
-          entryTree.addSubTree(subTree, 
-              (BasePageEntry<?>) entryTree.getRoot());
-        }
+    progressListener.setStatus("Scanning directory.");
+    int numPages = getNumPages(rootDirectory);
+    List<BasePageEntry<?>> ancestors = Lists.newLinkedList();
+    for (File subDirectory : rootDirectory.listFiles()) {
+      if (subDirectory.isDirectory()
+          && !subDirectory.getName().startsWith("_")) {
+        importPage(subDirectory, importRevisions, ancestors, feedUrl, siteUrl, 
+            sitesService, progressListener, numPages);
       }
     }
-    return entryTree;
+    progressListener.setStatus("Import complete.");
   }
   
-  /**
-   * Converts all of the relative links in all of the entries in the given 
-   * EntryTree to absolute links, assuming that the root of the EntryTree
-   * exists at the given siteUrl.
-   */
-  private void fixLinks(EntryTree entryTree, URL siteUrl) {
-    fixLinks(entryTree.getRoot(), entryTree, siteUrl, "href=\"", "\"");
-    fixLinks(entryTree.getRoot(), entryTree, siteUrl, "href='", "'");
+  private void importPage(File pageDirectory, boolean importRevisions,
+      List<BasePageEntry<?>> ancestors, URL feedUrl, URL siteUrl, 
+      SitesService sitesService, ProgressListener progressListener, int numPages) {
+    File file = new File(pageDirectory, "index.html");
+    if (file.isFile()) {
+      progressListener.setStatus("Importing page: " + pageDirectory.getName());
+      BasePageEntry<?> page = pageImporter.importPage(pageDirectory, 
+          importRevisions, ancestors, feedUrl, siteUrl, sitesService);
+      progressListener.setProgress(progressListener.getProgress() + 1.0/numPages);
+      List<BasePageEntry<?>> newAncestors = Lists.newLinkedList(ancestors);
+      newAncestors.add(page);
+      for (File subDirectory : pageDirectory.listFiles()) {
+        if (subDirectory.isDirectory() 
+            && !subDirectory.getName().startsWith("_")) {
+          importPage(subDirectory, importRevisions, newAncestors, feedUrl, 
+              siteUrl, sitesService, progressListener, numPages);
+        }
+      }
+    }
   }
   
-  /**
-   * Converts the relative links in the content of the given entry and
-   * recursively on all of its children. A link is defined by the given
-   * prefix and suffix. 
-   */
-  private void fixLinks(BaseContentEntry<?> entry, EntryTree entryTree,
-      URL siteUrl, String prefix, String suffix) {
-    if (!isPage(entry)) {
-      return;
-    }
-    String content = EntryUtils.getContent(entry);
-    String url = siteUrl.toExternalForm();
-    int index = content.indexOf(prefix + "../");
-    while (index != -1) {
-      int startIndex = index + prefix.length();
-      int endIndex = content.indexOf(suffix, startIndex);
-      if (endIndex == -1) {
-        break;
-      }
-      String link = content.substring(startIndex, endIndex);
-      if (link.startsWith("../")) {
-        BasePageEntry<?> currentAncestor = (BasePageEntry<?>) entry;
-        while (link.startsWith("../") && currentAncestor != null) {
-          link = link.substring(3);
-          currentAncestor = entryTree.getParent(currentAncestor);
+  private int getNumPages(File directory) {
+    int num = 0;
+    for (File subDirectory : directory.listFiles()) {
+      if (subDirectory.isDirectory() 
+          && !subDirectory.getName().startsWith("_")) {
+        if (new File(subDirectory, "index.html").isFile()) {
+          num += 1 + getNumPages(subDirectory);
         }
-        String ancestors = "";
-        while (currentAncestor != null) {
-          ancestors = currentAncestor.getPageName().getValue() + "/" + ancestors;
-          currentAncestor = entryTree.getParent(currentAncestor);
-        }
-        link = ancestors + link;
       }
-      if (link.endsWith("/index.html")) {
-        link = link.substring(0, link.lastIndexOf("/index.html"));
-      }
-      String beforeLink = content.substring(0, startIndex);
-      String afterLink = content.substring(endIndex);
-      content = beforeLink + url + "/" + link + afterLink;
-      index = content.indexOf(prefix + "../");
     }
-    XmlBlob blob = new XmlBlob();
-    blob.setBlob(content);
-    TextConstruct textConstruct = new XhtmlTextConstruct(blob);
-    entry.setContent(textConstruct);
-    for (BaseContentEntry<?> child : entryTree.getChildren(entry)) {
-      fixLinks(child, entryTree, siteUrl, prefix, suffix);
-    }
+    return num;
   }
 }

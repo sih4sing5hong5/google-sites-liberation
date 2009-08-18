@@ -14,22 +14,17 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.imprt;
-
-import com.google.inject.ImplementedBy;
-import com.google.sites.liberation.util.EntryTree;
+package com.google.sites.liberation.export;
 
 /**
- * Uploads entries to a given feed URL.
+ * Provides new EntryStore's.
  * 
- * @author bsimon@google.com (Benjamin)
+ * @author bsimon@google.com (Benjamin Simon)
  */
-@ImplementedBy(EntryTreeUploaderImpl.class)
-public interface EntryTreeUploader {
+public interface EntryStoreFactory {
 
   /**
-   * Uploads all of the entries in the given EntryTree using the given 
-   * EntryUploader and retaining the tree structure.
+   * Returns a new EntryStore.
    */
-  void uploadEntryTree(EntryTree entryTree, EntryUploader entryUploader);
+  EntryStore getEntryStore();
 }

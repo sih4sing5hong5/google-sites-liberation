@@ -18,6 +18,7 @@ package com.google.sites.liberation.parsers;
 
 import static org.junit.Assert.*;
 
+import com.google.gdata.data.TextContent;
 import com.google.gdata.data.XhtmlTextConstruct;
 
 import org.junit.Before;
@@ -37,36 +38,36 @@ public class ContentParserImplTest extends AbstractParserImplTest {
   }
   
   @Test
-  public void testNormalContent() {
+  public void testNormalXhtmlContent() {
     String content = "<h4>This is content!</h4>" +
     		         "This is some text inside the content." +
     		         " <a href=\"mysite.com\">And this is a link</a> " +
     		         "<b><i><span>And this is interesting!</span></i></b>";
     String html = "<div class=\"entry-content\">" + content + "</div>";
     Element element = getElement(html);
-    XhtmlTextConstruct construct = (XhtmlTextConstruct) parser.parseContent(
-        element);
+    XhtmlTextConstruct construct = (XhtmlTextConstruct) ((TextContent) 
+        parser.parseContent(element)).getContent();
     String parsed = construct.getXhtml().getBlob();
     assertTrue(parsed.contains(content));
   }
   
   @Test
-  public void testJustText() {
+  public void testJustTextXhtmlContent() {
     String content = "This is some text.";
     String html = "<div class=\"entry-content\">" + content + "</div>";
     Element element = getElement(html);
-    XhtmlTextConstruct construct = (XhtmlTextConstruct) parser.parseContent(
-        element);
+    XhtmlTextConstruct construct = (XhtmlTextConstruct) ((TextContent) 
+        parser.parseContent(element)).getContent();
     String parsed = construct.getXhtml().getBlob();
     assertTrue(parsed.contains(content));
   }
   
   @Test
-  public void testEmpty() {
+  public void testEmptyXhtmlContent() {
     String html = "<div class=\"entry-content\" />";
     Element element = getElement(html);
-    XhtmlTextConstruct construct = (XhtmlTextConstruct) parser.parseContent(
-        element);
+    XhtmlTextConstruct construct = (XhtmlTextConstruct) ((TextContent) 
+        parser.parseContent(element)).getContent();
     String parsed = construct.getXhtml().getBlob();
     assertTrue(construct.getPlainText().equals(""));
   }

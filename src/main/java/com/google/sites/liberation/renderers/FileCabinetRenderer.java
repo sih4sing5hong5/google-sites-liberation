@@ -16,7 +16,7 @@
 
 package com.google.sites.liberation.renderers;
 
-import com.google.gdata.data.sites.AttachmentEntry;
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.inject.ImplementedBy;
 import com.google.sites.liberation.util.XmlElement;
 
@@ -33,5 +33,5 @@ public interface FileCabinetRenderer {
   /**
    * Returns an XmlElement containing the given attachments as a file cabinet.
    */
-  XmlElement renderFileCabinet(List<AttachmentEntry> attachments);
+  XmlElement renderFileCabinet(List<BaseContentEntry<?>> attachments);
 }

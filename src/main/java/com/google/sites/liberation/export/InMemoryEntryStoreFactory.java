@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.util;
+package com.google.sites.liberation.export;
 
 /**
  * Provides new InMemoryEntryStore's.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-public class InMemoryEntryStoreFactory implements EntryStoreFactory {
+final class InMemoryEntryStoreFactory implements EntryStoreFactory {
 
   /**
    * Returns a new InMemoryEntryStore.

@@ -16,19 +16,27 @@
 
 package com.google.sites.liberation.imprt;
 
+import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.data.sites.BaseContentEntry;
-import com.google.sites.liberation.util.EntryTree;
+import com.google.gdata.data.sites.BasePageEntry;
+import com.google.inject.ImplementedBy;
+
+import java.net.URL;
+import java.util.List;
 
 /**
- * Uploads an entry to a given feed URL.
+ * Uploads (updates if possible, otherwise inserts) an entry to a given feed URL.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
+@ImplementedBy(EntryUploaderImpl.class)
 public interface EntryUploader {
 
   /**
-   * Uploads the given entry belonging to the given EntryTree.
+   * Uploads the given entry which has the given ancestors to the given
+   * URL, using the given SitesService. The entry will be updated if at all
+   * possible, otherwise it will be inserted.
    */
   BaseContentEntry<?> uploadEntry(BaseContentEntry<?> entry, 
-      EntryTree entryTree);
+      List<BasePageEntry<?>> ancestors, URL feedUrl, SitesService sitesService);
 }

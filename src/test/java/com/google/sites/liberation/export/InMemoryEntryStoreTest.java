@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.util;
+package com.google.sites.liberation.export;
 
 import static org.junit.Assert.*;
 
 import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.WebPageEntry;
+import com.google.sites.liberation.export.EntryStore;
+import com.google.sites.liberation.export.InMemoryEntryStore;
+import com.google.sites.liberation.util.EntryUtils;
 
 import org.junit.Before;
 import org.junit.Test;

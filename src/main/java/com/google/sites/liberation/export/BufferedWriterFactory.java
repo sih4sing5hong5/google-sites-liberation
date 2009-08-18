@@ -32,9 +32,6 @@ import java.io.OutputStreamWriter;
  */
 final class BufferedWriterFactory implements AppendableFactory {
   
-  /**
-   * Returns an Appendable corresponding to the given file name.
-   */
   @Override
   public Appendable getAppendable(File file) throws IOException {
     checkNotNull(file);

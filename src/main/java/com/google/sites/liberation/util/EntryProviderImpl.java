@@ -21,8 +21,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.Lists;
 import com.google.gdata.client.Query;
 import com.google.gdata.client.sites.SitesService;
-import com.google.gdata.data.BaseEntry;
-import com.google.gdata.data.Kind.AdaptorException;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.ContentFeed;
 import com.google.gdata.util.ServiceException;
@@ -31,34 +29,29 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Implements {@link EntryDownloader} to provide entries for a given
+ * Implements {@link EntryProvider} to provide entries for a given
  * query using a SitesService.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-public final class SitesServiceEntryDownloader implements EntryDownloader {
-
-  SitesService service;
-  
-  /**
-   * Creates a new SitesServiceEntryProvider that uses the given service.
-   */
-  public SitesServiceEntryDownloader(SitesService service) {
-    this.service = checkNotNull(service);
-  }
+public final class EntryProviderImpl implements EntryProvider {
   
   @SuppressWarnings("unchecked")
   @Override
-  public List<BaseContentEntry<?>> getEntries(Query query) 
-      throws IOException, ServiceException {
-    List<BaseEntry> baseEntries = 
-        service.getFeed(query, ContentFeed.class).getEntries();
+  public List<BaseContentEntry<?>> getEntries(Query query, 
+      SitesService sitesService) throws IOException, ServiceException {
+    checkNotNull(query, "query");
+    checkNotNull(sitesService, "sitesService");
+    List<BaseContentEntry> baseEntries = 
+        sitesService.getFeed(query, ContentFeed.class).getEntries();
     List<BaseContentEntry<?>> adaptedEntries = Lists.newLinkedList();
-    for (BaseEntry entry : baseEntries) {
-      try {
-        adaptedEntries.add((BaseContentEntry<?>) entry.getAdaptedEntry());
-      } catch (AdaptorException e) {
-        adaptedEntries.add((BaseContentEntry<?>) entry);
+    for (BaseContentEntry entry : baseEntries) {
+      BaseContentEntry<?> adaptedEntry = 
+          (BaseContentEntry<?>) entry.getAdaptedEntry();
+      if (adaptedEntry == null) {
+        adaptedEntries.add(entry);
+      } else {
+        adaptedEntries.add(adaptedEntry);
       }
     }
     return adaptedEntries;

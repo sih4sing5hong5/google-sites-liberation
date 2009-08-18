@@ -16,7 +16,7 @@
 
 package com.google.sites.liberation.parsers;
 
-import com.google.gdata.data.TextConstruct;
+import com.google.gdata.data.Content;
 import com.google.inject.ImplementedBy;
 
 import org.w3c.dom.Element;
@@ -30,8 +30,8 @@ import org.w3c.dom.Element;
 public interface ContentParser {
 
   /**
-   * Returns a TextConstruct containing any content defined by the given 
+   * Returns a Content object containing the content defined by the given 
    * element.
    */
-  TextConstruct parseContent(Element element);
+  Content parseContent(Element element);
 }

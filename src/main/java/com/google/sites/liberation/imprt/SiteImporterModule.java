@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.util;
+package com.google.sites.liberation.imprt;
 
-import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.inject.AbstractModule;
 
 /**
- * Constructs new instances of {@link EntryTree}.
- * 
- * @author bsimon@google.com (Benjamin Simon)
+ * GUICE module defining default bindings.
  */
-public interface EntryTreeFactory {
+public class SiteImporterModule extends AbstractModule {
 
-  /**
-   * Returns a new EntryTree with the given root entry.
-   */
-  EntryTree getEntryTree(BaseContentEntry<?> root);
+  @Override
+  protected void configure() {
+    
+  }
 }

@@ -14,25 +14,18 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.util;
+package com.google.sites.liberation.export;
 
-import com.google.gdata.client.Query;
-import com.google.gdata.data.sites.BaseContentEntry;
-import com.google.gdata.util.ServiceException;
-
-import java.io.IOException;
-import java.util.List;
+import com.google.inject.AbstractModule;
 
 /**
- * Returns a list of {@code BaseContentEntry}'s for a given 
- * query.
- * 
- * @author bsimon@google.com (Benjamin Simon)
+ * GUICE module defining default bindings.
  */
-public interface EntryDownloader {
-  
-  /**
-   * Returns list of entries for the given query.
-   */
-  List<BaseContentEntry<?>> getEntries(Query query) throws IOException, ServiceException;
+public class SiteExporterModule extends AbstractModule {
+
+  @Override
+  protected void configure() {
+    bind(EntryStoreFactory.class).to(InMemoryEntryStoreFactory.class);
+    bind(AppendableFactory.class).to(BufferedWriterFactory.class);
+  }
 }

@@ -27,18 +27,26 @@ import com.google.sites.liberation.util.XmlElement;
 final class ContentRendererImpl implements ContentRenderer {
 
   @Override
-  public XmlElement renderContent(BasePageEntry<?> entry) {
+  public XmlElement renderContent(BasePageEntry<?> entry, 
+      boolean revisionsExported) {
     XmlElement div = new XmlElement("div");
-    div.addElement(RendererUtils.getContentElement(entry));
+    div.addElement(RendererUtils.getXhtmlContentElement(entry));
     div.addElement(new XmlElement("br"));
     XmlElement info = new XmlElement("small");
     info.addText("Updated on ");
     info.addElement(RendererUtils.getUpdatedElement(entry));
     info.addText(" by ");
     info.addElement(RendererUtils.getAuthorElement(entry));
-    info.addText(" (Version ");
-    info.addElement(RendererUtils.getRevisionElement(entry));
-    info.addText(")");
+    if (revisionsExported) {
+      info.addText(" (");
+      XmlElement historyLink = new XmlElement("a");
+      historyLink.addText("Version ").addElement(
+          RendererUtils.getRevisionElement(entry));
+      historyLink.setAttribute("href", "history.html");
+      info.addElement(historyLink).addText(")");
+    } else {
+      info.addText(" (Version " + RendererUtils.getRevisionElement(entry) + ")");
+    }
     div.addElement(info);
     div.addElement(new XmlElement("br"));
     return div;

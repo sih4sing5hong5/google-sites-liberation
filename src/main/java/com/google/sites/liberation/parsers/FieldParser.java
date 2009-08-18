@@ -30,7 +30,7 @@ import org.w3c.dom.Element;
 public interface FieldParser {
 
   /**
-   * Returns a Field object containging any field information in the given 
+   * Returns a Field object containing any field information in the given 
    * element.
    */
   Field parseField(Element element);

@@ -33,12 +33,11 @@ final class ParserUtils {
   static boolean hasClass(Element element, String cls) {
     checkNotNull(element);
     checkNotNull(cls);
-    boolean hasClass = false;
     for (String str : element.getAttribute("class").split(" ")) {
       if (str.equals(cls)) {
-        hasClass = true;
+        return true;
       }
     }
-    return hasClass;
+    return false;
   }
 }

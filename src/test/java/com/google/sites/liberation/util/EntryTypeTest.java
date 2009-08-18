@@ -25,6 +25,7 @@ import com.google.gdata.data.sites.CommentEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.gdata.data.sites.ListItemEntry;
 import com.google.gdata.data.sites.ListPageEntry;
+import com.google.gdata.data.sites.WebAttachmentEntry;
 import com.google.gdata.data.sites.WebPageEntry;
 import org.junit.Test;
 
@@ -49,6 +50,8 @@ public class EntryTypeTest {
         EntryType.LIST_ITEM);
     assertEquals(EntryType.getType(new ListPageEntry()), 
         EntryType.LIST_PAGE);
+    assertEquals(EntryType.getType(new WebAttachmentEntry()), 
+        EntryType.WEB_ATTACHMENT);
     assertEquals(EntryType.getType(new WebPageEntry()), 
         EntryType.WEB_PAGE);
   }

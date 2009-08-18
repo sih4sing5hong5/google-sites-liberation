@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.sites.liberation.util;
+package com.google.sites.liberation.export;
 
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
@@ -28,7 +28,7 @@ import java.util.Collection;
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-public interface EntryStore {
+interface EntryStore {
 
   /**
    * Stores the given content entry.
@@ -52,4 +52,10 @@ public interface EntryStore {
    * given {@code id}.
    */
   Collection<BaseContentEntry<?>> getChildren(String id);
+  
+  /**
+   * Returns a collection containing all of the top level entries in this
+   * store.
+   */
+  Collection<BasePageEntry<?>> getTopLevelEntries();
 }

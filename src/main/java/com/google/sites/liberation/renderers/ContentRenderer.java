@@ -29,7 +29,7 @@ import com.google.sites.liberation.util.XmlElement;
 public interface ContentRenderer {
 
   /**
-   * Returns an XmlElement containing the given entry's content.
+   * Returns an XmlElement containing the given entry's xhtml content.
    */
-  XmlElement renderContent(BasePageEntry<?> entry);
+  XmlElement renderContent(BasePageEntry<?> entry, boolean revisionsExported);
 }

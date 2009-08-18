@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.data.ILink;
 import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.XhtmlTextConstruct;
@@ -32,15 +33,12 @@ import com.google.gdata.data.sites.PageName;
 import com.google.gdata.data.sites.SitesLink;
 import com.google.gdata.data.sites.WebPageEntry;
 import com.google.gdata.util.XmlBlob;
-import com.google.sites.liberation.util.EntryStore;
-import com.google.sites.liberation.util.EntryStoreFactory;
+import com.google.sites.liberation.util.ProgressListener;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.jmock.integration.junit4.JMock;
 import org.jmock.integration.junit4.JUnit4Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
 
@@ -54,34 +52,44 @@ import java.util.Map;
 /**
  * @author bsimon@google.com (Benjamin Simon)
  */
-@RunWith(JMock.class)
 public class SiteExporterImplTest {
   
   private Mockery context;
+  private AbsoluteLinkConverter linkConverter;
   private AppendableFactory appendableFactory;
   private AttachmentDownloader attachmentDownloader;
   private EntryStore entryStore;
   private EntryStoreFactory entryStoreFactory;
+  private FeedProvider feedProvider;
   private PageExporter pageExporter;
+  private ProgressListener progressListener;
+  private RevisionsExporter revisionsExporter;
   private SiteExporter siteExporter;
+  private SitesService sitesService;
   private Collection<BaseContentEntry<?>> entries;
+  private URL feedUrl;
   private Map<AttachmentEntry, File> downloaded;
-  private URL siteUrl;
   
   @Before
   public void before() throws MalformedURLException {
     context = new JUnit4Mockery() {{
       setImposteriser(ClassImposteriser.INSTANCE);
     }};
+    linkConverter = context.mock(AbsoluteLinkConverter.class);
     appendableFactory = context.mock(AppendableFactory.class);
-    attachmentDownloader = new MockDownloader();
+    attachmentDownloader = new FakeDownloader();
     entryStore = context.mock(EntryStore.class);
     entryStoreFactory = context.mock(EntryStoreFactory.class);
+    feedProvider = context.mock(FeedProvider.class);
     pageExporter = context.mock(PageExporter.class);
-    siteExporter = new SiteExporterImpl(appendableFactory, attachmentDownloader,
-        entryStoreFactory, pageExporter);
+    progressListener = context.mock(ProgressListener.class);
+    revisionsExporter = context.mock(RevisionsExporter.class);
+    siteExporter = new SiteExporterImpl(linkConverter, appendableFactory, 
+        attachmentDownloader, entryStoreFactory, feedProvider, pageExporter, 
+        revisionsExporter);
+    sitesService = new SitesService("");
     entries = Sets.newHashSet();
-    siteUrl = new URL("http://test.com");
+    feedUrl = new URL("http://host/feeds/content/domain/webspace");
   }
   
   @Test
@@ -89,9 +97,12 @@ public class SiteExporterImplTest {
     context.checking(new Expectations() {{
       allowing (entryStoreFactory).getEntryStore(); 
           will(returnValue(entryStore));
+      allowing (progressListener).setStatus(with(any(String.class)));
+      allowing (feedProvider).getEntries(feedUrl, sitesService);
+          will(returnValue(entries));
     }});
     
-    siteExporter.exportSite(entries, new File("path"), siteUrl);
+    export(false);
   }
   
   @Test
@@ -109,16 +120,24 @@ public class SiteExporterImplTest {
     context.checking(new Expectations() {{
       allowing (entryStoreFactory).getEntryStore(); 
           will(returnValue(entryStore));
+      allowing (feedProvider).getEntries(feedUrl, sitesService);
+          will(returnValue(entries));
       allowing (entryStore).getEntry("1"); will(returnValue(page));
       allowing (entryStore).getParent("1"); will(returnValue(null));
+      allowing (progressListener).setStatus(with(any(String.class)));
+      allowing (progressListener).setProgress(with(any(Double.class)));
       oneOf (entryStore).addEntry(page);
       oneOf (appendableFactory).getAppendable(
           new File("path/Page-1/index.html"));
           will(returnValue(out));
-      oneOf (pageExporter).exportPage(page, entryStore, out);
+      oneOf (linkConverter).convertLinks(page, entryStore, 
+          new URL("http://host/a/domain/webspace"));
+      oneOf (pageExporter).exportPage(page, entryStore, out, true);
+      oneOf (revisionsExporter).exportRevisions(page, new File("path/Page-1"), 
+          sitesService);
     }});
     
-    siteExporter.exportSite(entries, new File("path"), siteUrl);
+    export(true);
   }
   
   @Test
@@ -141,19 +160,25 @@ public class SiteExporterImplTest {
     context.checking(new Expectations() {{
       allowing (entryStoreFactory).getEntryStore(); 
           will(returnValue(entryStore));
+      allowing (feedProvider).getEntries(feedUrl, sitesService);
+          will(returnValue(entries));
       allowing (entryStore).getEntry("1"); will(returnValue(page));
       allowing (entryStore).getParent("1"); will(returnValue(null));
       allowing (entryStore).getEntry("2"); will(returnValue(attachment));
       allowing (entryStore).getParent("2"); will(returnValue(page));
+      allowing (progressListener).setStatus(with(any(String.class)));
+      allowing (progressListener).setProgress(with(any(Double.class)));
       oneOf (entryStore).addEntry(page);
       oneOf (entryStore).addEntry(attachment);
       oneOf (appendableFactory).getAppendable(
           new File("path/Page-1/index.html"));
           will(returnValue(out));
-      oneOf (pageExporter).exportPage(page, entryStore, out);
+      oneOf (linkConverter).convertLinks(page, entryStore, 
+          new URL("http://host/a/domain/webspace"));
+      oneOf (pageExporter).exportPage(page, entryStore, out, false);
     }});
     
-    siteExporter.exportSite(entries, new File("path"), siteUrl);
+    export(false);
     assertTrue(downloaded.get(attachment).equals(
         new File("path/Page-1/attach this.wow")));
   }
@@ -198,6 +223,8 @@ public class SiteExporterImplTest {
     context.checking(new Expectations() {{
       allowing (entryStoreFactory).getEntryStore(); 
           will(returnValue(entryStore));
+      allowing (feedProvider).getEntries(feedUrl, sitesService);
+          will(returnValue(entries));
       allowing (entryStore).getEntry("1"); will(returnValue(page1));
       allowing (entryStore).getEntry("2"); will(returnValue(attachment1));
       allowing (entryStore).getEntry("3"); will(returnValue(page2));
@@ -208,6 +235,8 @@ public class SiteExporterImplTest {
       allowing (entryStore).getParent("3"); will(returnValue(page1));
       allowing (entryStore).getParent("4"); will(returnValue(page1));
       allowing (entryStore).getParent("5"); will(returnValue(page2));
+      allowing (progressListener).setStatus(with(any(String.class)));
+      allowing (progressListener).setProgress(with(any(Double.class)));
       oneOf (entryStore).addEntry(page1);
       oneOf (entryStore).addEntry(attachment1);
       oneOf (entryStore).addEntry(page2);
@@ -219,11 +248,19 @@ public class SiteExporterImplTest {
       oneOf (appendableFactory).getAppendable(
           new File("path/Page-1/Page-2/index.html"));
           will(returnValue(out2));
-      oneOf (pageExporter).exportPage(page1, entryStore, out1);
-      oneOf (pageExporter).exportPage(page2, entryStore, out2);
+      oneOf (linkConverter).convertLinks(page1, entryStore, 
+          new URL("http://host/a/domain/webspace"));
+      oneOf (linkConverter).convertLinks(page2, entryStore, 
+          new URL("http://host/a/domain/webspace"));
+      oneOf (pageExporter).exportPage(page1, entryStore, out1, true);
+      oneOf (pageExporter).exportPage(page2, entryStore, out2, true);
+      oneOf (revisionsExporter).exportRevisions(page1, new File("path/Page-1"), 
+          sitesService);
+      oneOf (revisionsExporter).exportRevisions(page2, 
+          new File("path/Page-1/Page-2"), sitesService);
     }});
     
-    siteExporter.exportSite(entries, new File("path"), siteUrl);
+    export(true);
     assertTrue(downloaded.get(attachment1).equals(
         new File("path/Page-1/attach this.wow")));
     assertTrue(downloaded.get(attachment2).equals(
@@ -232,18 +269,24 @@ public class SiteExporterImplTest {
         new File("path/Page-1/Page-2/document.doc")));
   }
   
+  private void export(boolean exportRevisions) {
+    siteExporter.exportSite("host", "domain", "webspace", exportRevisions, 
+        sitesService, new File("path"), progressListener);
+  }
+  
   /**
    * This class was needed because mocking the AttachmentDownloader with JMock
    * kept non-sensically failing (Greg agreed).
    */
-  private class MockDownloader implements AttachmentDownloader {
+  private class FakeDownloader implements AttachmentDownloader {
     
-    MockDownloader() {
+    FakeDownloader() {
       downloaded = Maps.newHashMap();
     }
     
     @Override
-    public void download(AttachmentEntry attachment, File file) {
+    public void download(AttachmentEntry attachment, File file, 
+        SitesService sitesService) {
       downloaded.put(attachment, file);
     }
   }

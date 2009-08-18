@@ -18,14 +18,18 @@ package com.google.sites.liberation.export;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.gdata.client.sites.SitesService;
+import com.google.gdata.data.MediaContent;
+import com.google.gdata.data.OutOfLineContent;
+import com.google.gdata.data.media.MediaSource;
 import com.google.gdata.data.sites.AttachmentEntry;
+import com.google.gdata.util.ServiceException;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,23 +48,29 @@ final class AttachmentDownloaderImpl implements AttachmentDownloader {
    * Downloads the given attachment to the given file name.
    */
   @Override
-  public void download(AttachmentEntry attachment, File file)
-      throws IOException {
+  public void download(AttachmentEntry attachment, File file, 
+      SitesService sitesService) {
     checkNotNull(attachment);
     checkNotNull(file);
-    LOGGER.log(Level.WARNING, 
-        "Attachment downloads are not supported at this time.");
-    /* TODO(bsimon): Add back in when attachments are working.
-    URL url = new URL(attachment.getEnclosureLink().getHref());
-    InputStream in = url.openStream();
-    OutputStream out = new FileOutputStream(file);
-    byte[] buf = new byte[4*1024];
-    int bytesRead;
-    while((bytesRead = in.read(buf)) != -1) {
-      out.write(buf, 0, bytesRead);
+    MediaContent mediaContent = new MediaContent();
+    mediaContent.setUri(((OutOfLineContent) attachment.getContent()).getUri());
+    try {
+      MediaSource mediaSource = sitesService.getMedia(mediaContent);
+      InputStream inStream = mediaSource.getInputStream();
+      OutputStream outStream = new FileOutputStream(file);
+      byte[] buf = new byte[4*1024];
+      int bytesRead;
+      while((bytesRead = inStream.read(buf)) != -1) {
+        outStream.write(buf, 0, bytesRead);
+      }
+      inStream.close();
+      outStream.close();
+    } catch (IOException e) {
+      LOGGER.log(Level.WARNING, "Error downloading attachment: " 
+          + attachment.getTitle().getPlainText(), e);
+    } catch (ServiceException e) {
+      LOGGER.log(Level.WARNING, "Error downloading attachment: " 
+          + attachment.getTitle().getPlainText(), e);
     }
-    in.close();
-    out.close();
-    */
   }
 }

@@ -22,15 +22,15 @@ import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.sites.AnnouncementEntry;
 import com.google.gdata.data.sites.AnnouncementsPageEntry;
 import com.google.gdata.data.sites.AttachmentEntry;
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.data.sites.CommentEntry;
 import com.google.gdata.data.sites.FileCabinetPageEntry;
 import com.google.gdata.data.sites.ListItemEntry;
 import com.google.gdata.data.sites.ListPageEntry;
+import com.google.gdata.data.sites.PageName;
 import com.google.gdata.data.sites.WebPageEntry;
-import com.google.sites.liberation.util.EntryStore;
 import com.google.sites.liberation.util.EntryUtils;
-import com.google.sites.liberation.util.InMemoryEntryStoreFactory;
 import com.google.sites.liberation.util.XmlElement;
 import com.google.sites.liberation.renderers.AncestorLinksRenderer;
 import com.google.sites.liberation.renderers.AnnouncementsRenderer;
@@ -101,19 +101,22 @@ public class PageExporterImplTest {
   public void testNormalExport() throws IOException {
     final BasePageEntry<?> grandparent = new WebPageEntry();
     grandparent.setId("grandparent");
+    grandparent.setTitle(new PlainTextConstruct("grandparent"));
+    grandparent.setPageName(new PageName("grandparent"));
     final BasePageEntry<?> parent = new WebPageEntry();
     parent.setId("parent");
     EntryUtils.setParentId(parent, grandparent.getId());
     final BasePageEntry<?> entry = new WebPageEntry();
     entry.setId("entry");
+    entry.setTitle(new PlainTextConstruct("entry"));
     EntryUtils.setParentId(entry, parent.getId());
     final BasePageEntry<?> subpage1 = new WebPageEntry();
-    entry.setId("subpage1");
-    entry.setTitle(new PlainTextConstruct("subpage1"));
+    subpage1.setId("subpage1");
+    subpage1.setTitle(new PlainTextConstruct("subpage1"));
     EntryUtils.setParentId(subpage1, entry.getId());
     final BasePageEntry<?> subpage2 = new WebPageEntry();
-    entry.setId("subpage2");
-    entry.setTitle(new PlainTextConstruct("subpage2"));
+    subpage2.setId("subpage2");
+    subpage2.setTitle(new PlainTextConstruct("subpage2"));
     EntryUtils.setParentId(subpage2, entry.getId());
     final AttachmentEntry attachment1 = new AttachmentEntry();
     attachment1.setId("attachment1");
@@ -148,7 +151,7 @@ public class PageExporterImplTest {
     final List<BasePageEntry<?>> subpages = Lists.newArrayList();
     subpages.add(subpage1);
     subpages.add(subpage2);
-    final List<AttachmentEntry> attachments = Lists.newArrayList();
+    final List<BaseContentEntry<?>> attachments = Lists.newArrayList();
     attachments.add(attachment2);
     attachments.add(attachment1);
     final List<CommentEntry> comments = Lists.newArrayList();
@@ -161,7 +164,7 @@ public class PageExporterImplTest {
         will(returnValue(new XmlElement("div")));
       oneOf (titleRenderer).renderTitle(entry); 
         will(returnValue(new XmlElement("div")));
-      oneOf (contentRenderer).renderContent(entry); 
+      oneOf (contentRenderer).renderContent(entry, false); 
         will(returnValue(new XmlElement("div")));
       oneOf (subpageLinksRenderer).renderSubpageLinks(with(equal(subpages))); 
         will(returnValue(new XmlElement("div")));
@@ -171,7 +174,7 @@ public class PageExporterImplTest {
         will(returnValue(new XmlElement("div")));
     }});
     
-    exporter.exportPage(entry, entryStore, out);
+    exporter.exportPage(entry, entryStore, out, false);
   }
 
   @Test
@@ -199,13 +202,13 @@ public class PageExporterImplTest {
     context.checking(new Expectations() {{
       oneOf (titleRenderer).renderTitle(entry); 
         will(returnValue(new XmlElement("div")));
-      oneOf (contentRenderer).renderContent(entry); 
+      oneOf (contentRenderer).renderContent(entry, true); 
         will(returnValue(new XmlElement("div")));
       oneOf (listRenderer).renderList(with(entry), with(equal(listItems))); 
         will(returnValue(new XmlElement("div")));
     }});
     
-    exporter.exportPage(entry, entryStore, out);
+    exporter.exportPage(entry, entryStore, out, true);
   }
   
   @Test
@@ -226,20 +229,20 @@ public class PageExporterImplTest {
     entryStore.addEntry(attachment1);
     entryStore.addEntry(attachment2);
     
-    final List<AttachmentEntry> attachments = Lists.newArrayList();
+    final List<BaseContentEntry<?>> attachments = Lists.newArrayList();
     attachments.add(attachment2);
     attachments.add(attachment1);
     
     context.checking(new Expectations() {{
       oneOf (titleRenderer).renderTitle(entry); 
         will(returnValue(new XmlElement("div")));
-      oneOf (contentRenderer).renderContent(entry); 
+      oneOf (contentRenderer).renderContent(entry, false); 
         will(returnValue(new XmlElement("div")));
       oneOf (fileCabinetRenderer).renderFileCabinet(with(equal(attachments))); 
         will(returnValue(new XmlElement("div")));
     }});
     
-    exporter.exportPage(entry, entryStore, out);
+    exporter.exportPage(entry, entryStore, out, false);
   }
   
   @Test
@@ -267,13 +270,13 @@ public class PageExporterImplTest {
     context.checking(new Expectations() {{
       oneOf (titleRenderer).renderTitle(entry); 
         will(returnValue(new XmlElement("div")));
-      oneOf (contentRenderer).renderContent(entry); 
+      oneOf (contentRenderer).renderContent(entry, true); 
         will(returnValue(new XmlElement("div")));
       oneOf (announcementsRenderer).renderAnnouncements(
           with(equal(announcements))); 
         will(returnValue(new XmlElement("div")));
     }});
     
-    exporter.exportPage(entry, entryStore, out);
+    exporter.exportPage(entry, entryStore, out, true);
   }
 }

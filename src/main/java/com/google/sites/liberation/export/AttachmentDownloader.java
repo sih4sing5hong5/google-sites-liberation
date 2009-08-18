@@ -16,14 +16,14 @@
 
 package com.google.sites.liberation.export;
 
+import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.data.sites.AttachmentEntry;
 import com.google.inject.ImplementedBy;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
- * Used to download an attachment to a given file.
+ * Downloads attachments to a file.
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
@@ -31,8 +31,8 @@ import java.io.IOException;
 interface AttachmentDownloader {
   
   /**
-   * Downloads the given attachment to the given file name.
+   * Downloads the given attachment to the given file name, using the given
+   * SitesService.
    */
-  void download(AttachmentEntry attachment, File file)
-      throws IOException;
+  void download(AttachmentEntry attachment, File file, SitesService sitesService);
 }

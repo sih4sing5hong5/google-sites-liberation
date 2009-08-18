@@ -16,11 +16,12 @@
 
 package com.google.sites.liberation.export;
 
-import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.gdata.client.sites.SitesService;
+import com.google.gdata.util.common.base.Nullable;
 import com.google.inject.ImplementedBy;
+import com.google.sites.liberation.util.ProgressListener;
 
 import java.io.File;
-import java.net.URL;
 
 /**
  * Used to export an entire Site to a given root folder.
@@ -28,12 +29,19 @@ import java.net.URL;
  * @author bsimon@google.com (Benjamin Simon)
  */
 @ImplementedBy(SiteExporterImpl.class)
-interface SiteExporter {
+public interface SiteExporter {
   
   /**
-   * Exports the site with the given entries and site URL to the given root 
-   * folder.
+   * Exports a Site.
+   * 
+   * @param host host serving the site
+   * @param domain the domain of the site, if not the default
+   * @param webspace the webspace (name) of the site
+   * @param exportRevisions whether or not to export page's revisions
+   * @param sitesService SitesService with which to access the site
+   * @param rootDirectory directory in which to export
    */
-  void exportSite(Iterable<BaseContentEntry<?>> entries, File folder,
-      URL siteUrl);
+  void exportSite(String host, @Nullable String domain, String webspace, 
+      boolean exportRevisions, SitesService sitesService, File rootDirectory, 
+      ProgressListener progressListener);
 }
