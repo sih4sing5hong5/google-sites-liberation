@@ -66,11 +66,12 @@ final class RevisionsImporterImpl implements RevisionsImporter {
       BasePageEntry<?> page = getPageEntry(new File(revisionsDirectory, 
           num + ".html"));
       if (page != null) {
-        page.setPageName(new PageName(directory.getName()));
+        //TODO(jlueck): Remove once watercress is in dogfood
+        page.setPageName(new PageName(directory.getName().toLowerCase()));
         if (!ancestors.isEmpty()) {
           EntryUtils.setParent(page, ancestors.get(ancestors.size() - 1));
         }
-        linkConverter.convertLinks(page, ancestors, siteUrl);
+        linkConverter.convertLinks(page, ancestors, siteUrl, true);
         if (revision == null) {
           revision = (BasePageEntry<?>) entryUploader
               .uploadEntry(page, ancestors, feedUrl, sitesService);

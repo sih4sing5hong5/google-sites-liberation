@@ -1,9 +1,11 @@
 package com.google.sites.liberation.parsers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.sites.liberation.util.EntryType.isPage;
 import static com.google.sites.liberation.parsers.ParserUtils.hasClass;
 
 import com.google.common.collect.Lists;
+import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.inject.Inject;
 
@@ -11,15 +13,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Implements PageParser to parse an html element for any contained entries.
@@ -52,18 +51,25 @@ final class PageParserImpl implements PageParser {
     Document document = null;
     try {
       document = documentProvider.getDocument(file);
-    } catch (ParserConfigurationException e) {
-      LOGGER.log(Level.WARNING, "Error parsing file: " + file);
-      return null;
-    } catch (SAXException e) {
-      LOGGER.log(Level.WARNING, "Error parsing file: " + file);
-      return null;
     } catch (IOException e) {
       LOGGER.log(Level.WARNING, "Error parsing file: " + file);
       return null;
     }
     List<BaseContentEntry<?>> entries = Lists.newLinkedList();
     parseElement(document.getDocumentElement(), entries);
+    for (BaseContentEntry<?> entry : entries) {
+      if (isPage(entry) && entry.getTitle() == null) {
+        NodeList nodeList = document.getElementsByTagName("title");
+        for (int i = 0; i < nodeList.getLength(); i++) {
+          Node node = nodeList.item(i);
+          if (node.getNodeType() == Node.ELEMENT_NODE) {
+            Element title = (Element) node;
+            entry.setTitle(new PlainTextConstruct(title.getTextContent()));
+            System.out.println(entry);
+          }
+        }
+      }
+    }
     return entries;
   }
   

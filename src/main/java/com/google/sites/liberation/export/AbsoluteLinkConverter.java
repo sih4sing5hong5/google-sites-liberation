@@ -33,5 +33,6 @@ public interface AbsoluteLinkConverter {
    * Converts all of the links starting with the given siteUrl to relative links 
    * in the given entry belonging to the given EntryStore.
    */
-  void convertLinks(BasePageEntry<?> entry, EntryStore entryStore, URL siteUrl);
+  void convertLinks(BasePageEntry<?> entry, EntryStore entryStore, URL siteUrl,
+      boolean isRevision);
 }

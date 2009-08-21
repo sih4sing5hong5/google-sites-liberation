@@ -40,6 +40,7 @@ public interface SiteExporter {
    * @param exportRevisions whether or not to export page's revisions
    * @param sitesService SitesService with which to access the site
    * @param rootDirectory directory in which to export
+   * @param progressListener ProgressListener to monitor progress on the export
    */
   void exportSite(String host, @Nullable String domain, String webspace, 
       boolean exportRevisions, SitesService sitesService, File rootDirectory, 

@@ -91,10 +91,7 @@ final class HistoryExporterImpl implements HistoryExporter {
   private int getMaxRevision(List<BaseContentEntry<?>> revisions) {
     int max = 0;
     for (BaseContentEntry<?> revision : revisions) {
-      int num = revision.getRevision().getValue();
-      if (num > max) {
-        max = num;
-      }
+      max = Math.max(max, revision.getRevision().getValue());
     }
     return max;
   }

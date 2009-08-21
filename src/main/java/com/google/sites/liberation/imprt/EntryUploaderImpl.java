@@ -104,12 +104,11 @@ final class EntryUploaderImpl implements EntryUploader {
       }
     }
     if (returnedEntry == null) {
-      returnedEntry = entryInserter.insertEntry(entry, feedUrl, sitesService);
+      return entryInserter.insertEntry(entry, feedUrl, sitesService);
     } else {
-      returnedEntry = entryUpdater.updateEntry(returnedEntry, entry, 
+      return entryUpdater.updateEntry(returnedEntry, entry, 
           sitesService);
     }
-    return returnedEntry;
   }
 
   /**

@@ -86,40 +86,42 @@ final class EntryParserImpl implements EntryParser {
         Element child = (Element) node;
         if (!hasClass(child, "hentry") && !child.getTagName().equals("q")
             && !child.getTagName().equals("blockquote")) {
-          boolean parserDeeper = true;
+          boolean parseDeeper = true;
           if (hasClass(child, "entry-title")) {
             entry.setTitle(titleParser.parseTitle(child));
-            parserDeeper = false;
+            parseDeeper = false;
           } 
           if (hasClass(child, "entry-content")) {
             entry.setContent(contentParser.parseContent(child));
-            parserDeeper = false;
+            parseDeeper = false;
           } 
           if (hasClass(child, "updated")) {
             entry.setUpdated(updatedParser.parseUpdated(child));
-            parserDeeper = false;
+            parseDeeper = false;
           } 
           if (hasClass(child, "vcard")) {
             entry.getAuthors().add(authorParser.parseAuthor(child));
-            parserDeeper = false;
+            parseDeeper = false;
           } 
           if (hasClass(child, "entry-summary")) {
             entry.setSummary(summaryParser.parseSummary(child));
-            parserDeeper = false;
+            parseDeeper = false;
           } 
           if (hasClass(child, "gs:data")) {
             if (getType(entry) == LIST_PAGE) {
               ((ListPageEntry) entry).setData(dataParser.parseData(child));
             }
-            parserDeeper = false;
+            parseDeeper = false;
           } 
           if (hasClass(child, "gs:field")) {
             if (getType(entry) == LIST_ITEM) {
               ((ListItemEntry) entry).addField(fieldParser.parseField(child));
             }
-            parserDeeper = false;
+            parseDeeper = false;
           }
-          parseElement(child, entry);
+          if (parseDeeper) {
+            parseElement(child, entry);
+          }
         }
       }
     }

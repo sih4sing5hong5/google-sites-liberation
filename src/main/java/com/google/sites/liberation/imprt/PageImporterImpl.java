@@ -88,9 +88,10 @@ final class PageImporterImpl implements PageImporter {
       LOGGER.log(Level.WARNING, "No valid page entry!");
       return null;
     }
+    
     //TODO(jlueck): Remove the toLowerCase() call once Watercress release is in dogfood.
     page.setPageName(new PageName(directory.getName().toLowerCase()));
-    linkConverter.convertLinks(page, ancestors, siteUrl);
+    linkConverter.convertLinks(page, ancestors, siteUrl, false);
     if (!ancestors.isEmpty()) {
       EntryUtils.setParent(page, ancestors.get(ancestors.size() - 1));
     }
@@ -106,18 +107,23 @@ final class PageImporterImpl implements PageImporter {
       returnedEntry = (BasePageEntry<?>) entryUpdater.updateEntry(
           returnedEntry, page, sitesService);
     }
+    
     List<BasePageEntry<?>> newAncestors = Lists.newLinkedList(ancestors);
     newAncestors.add(returnedEntry);
     for (BaseContentEntry<?> child : getNonPageEntries(entries)) {
       if (getType(child) == ATTACHMENT) {
-        String src = ((OutOfLineContent) child.getContent()).getUri();
-        File attachmentFile = new File(directory.getParentFile(), src);
-        MediaSource mediaSource = new MediaFileSource(attachmentFile, 
-            "application/octet-stream");
-        child.setContent((Content) null);
-        child.setMediaSource(mediaSource);          
+        if (child.getContent() != null) {
+          String src = ((OutOfLineContent) child.getContent()).getUri();
+          File attachmentFile = new File(directory, src);
+          MediaSource mediaSource = new MediaFileSource(attachmentFile, 
+              "application/octet-stream");
+          child.setContent((Content) null);
+          child.setMediaSource(mediaSource);
+        } else {
+          System.out.println(child.getTitle().getPlainText());
+        }
       }
-      EntryUtils.setParent(child, page);
+      EntryUtils.setParent(child, returnedEntry);
       entryUploader.uploadEntry(child, newAncestors, feedUrl, sitesService);
     }
     return returnedEntry;

@@ -8,13 +8,11 @@ import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.util.common.base.Nullable;
 import com.google.inject.Inject;
 import com.google.sites.liberation.util.ProgressListener;
+import com.google.sites.liberation.util.UrlUtils;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Implements {@link SiteImporter} to import an entire site.
@@ -23,9 +21,6 @@ import java.util.logging.Logger;
  */
 final class SiteImporterImpl implements SiteImporter {
 
-  private static final Logger LOGGER = Logger.getLogger(
-      SiteImporterImpl.class.getCanonicalName());
-  
   private final PageImporter pageImporter;
   
   /**
@@ -40,20 +35,9 @@ final class SiteImporterImpl implements SiteImporter {
   public void importSite(String host, @Nullable String domain, String webspace, 
       boolean importRevisions, SitesService sitesService, File rootDirectory, 
       ProgressListener progressListener) {
-    URL feedUrl;
-    URL siteUrl;
-    try {
-      if (domain == null) {
-        feedUrl = new URL("http://" + host + "/feeds/content/site/" + webspace);
-        siteUrl = new URL("http://" + host + "/site/" + webspace);
-      } else {
-        feedUrl = new URL("http://" + host + "/feeds/content/" + domain + "/" + webspace);
-        siteUrl = new URL("http://" + host + "/a/" + domain + "/" + webspace);
-      }
-    } catch (MalformedURLException e) {
-      LOGGER.log(Level.WARNING, "Invalid host, domain, or webspace!");
-      throw new RuntimeException(e);
-    }
+    URL feedUrl = UrlUtils.getFeedUrl(host, domain, webspace);
+    URL siteUrl = UrlUtils.getSiteUrl(host, domain, webspace);
+    
     progressListener.setStatus("Scanning directory.");
     int numPages = getNumPages(rootDirectory);
     List<BasePageEntry<?>> ancestors = Lists.newLinkedList();
@@ -64,6 +48,7 @@ final class SiteImporterImpl implements SiteImporter {
             sitesService, progressListener, numPages);
       }
     }
+    progressListener.setProgress(1.0);
     progressListener.setStatus("Import complete.");
   }
   
@@ -76,13 +61,15 @@ final class SiteImporterImpl implements SiteImporter {
       BasePageEntry<?> page = pageImporter.importPage(pageDirectory, 
           importRevisions, ancestors, feedUrl, siteUrl, sitesService);
       progressListener.setProgress(progressListener.getProgress() + 1.0/numPages);
-      List<BasePageEntry<?>> newAncestors = Lists.newLinkedList(ancestors);
-      newAncestors.add(page);
-      for (File subDirectory : pageDirectory.listFiles()) {
-        if (subDirectory.isDirectory() 
-            && !subDirectory.getName().startsWith("_")) {
-          importPage(subDirectory, importRevisions, newAncestors, feedUrl, 
-              siteUrl, sitesService, progressListener, numPages);
+      if (page != null) {
+        List<BasePageEntry<?>> newAncestors = Lists.newLinkedList(ancestors);
+        newAncestors.add(page);
+        for (File subDirectory : pageDirectory.listFiles()) {
+          if (subDirectory.isDirectory() 
+              && !subDirectory.getName().startsWith("_")) {
+            importPage(subDirectory, importRevisions, newAncestors, feedUrl, 
+                siteUrl, sitesService, progressListener, numPages);
+          }
         }
       }
     }

@@ -25,6 +25,6 @@ public class SiteImporterModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    
+    //Currently nothing to configure.
   }
 }

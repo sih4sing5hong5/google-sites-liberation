@@ -18,14 +18,20 @@ package com.google.sites.liberation.export;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.sites.liberation.util.EntryType.getType;
+import static com.google.sites.liberation.util.EntryType.LIST_PAGE;
 
+import com.google.common.collect.Lists;
 import com.google.gdata.data.sites.BasePageEntry;
+import com.google.gdata.data.sites.ListItemEntry;
+import com.google.gdata.data.sites.ListPageEntry;
 import com.google.inject.Inject;
+import com.google.sites.liberation.renderers.ListRenderer;
 import com.google.sites.liberation.renderers.RevisionRenderer;
 import com.google.sites.liberation.renderers.TitleRenderer;
 import com.google.sites.liberation.util.XmlElement;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Exports a single revision of a page.
@@ -34,12 +40,15 @@ import java.io.IOException;
  */
 final class RevisionExporterImpl implements RevisionExporter {
   
+  private ListRenderer listRenderer;
   private RevisionRenderer revisionRenderer;
   private TitleRenderer titleRenderer;
   
   @Inject
-  RevisionExporterImpl(RevisionRenderer revisionRenderer,
+  RevisionExporterImpl(ListRenderer listRenderer,
+      RevisionRenderer revisionRenderer,
       TitleRenderer titleRenderer) {
+    this.listRenderer = checkNotNull(listRenderer);
     this.revisionRenderer = checkNotNull(revisionRenderer);
     this.titleRenderer = checkNotNull(titleRenderer);
   }
@@ -59,6 +68,11 @@ final class RevisionExporterImpl implements RevisionExporter {
     mainDiv.setAttribute("id", revision.getId());
     mainDiv.addElement(titleRenderer.renderTitle(revision));
     mainDiv.addElement(revisionRenderer.renderRevision(revision));
+    if (getType(revision) == LIST_PAGE) {
+      List<ListItemEntry> items = Lists.newArrayList();
+      mainDiv.addElement(listRenderer.renderList((ListPageEntry) revision, 
+          items));
+    }
     html.addElement(body.addElement(mainDiv));
     html.appendTo(out);
   }

@@ -16,10 +16,15 @@
 
 package com.google.sites.liberation.parsers;
 
+import com.google.inject.Inject;
+
 import org.w3c.dom.Document;
+import org.w3c.tidy.Tidy;
 import org.xml.sax.SAXException;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -33,10 +38,34 @@ import javax.xml.parsers.ParserConfigurationException;
  */
 final class DocumentProviderImpl implements DocumentProvider {
 
+  private DocumentBuilder docBuilder;
+  
+  @Inject
+  DocumentProviderImpl() {
+    try {
+      docBuilder = DocumentBuilderFactory.newInstance()
+          .newDocumentBuilder();
+    } catch (ParserConfigurationException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  
   @Override
-  public Document getDocument(File file) throws ParserConfigurationException, SAXException, IOException {
-    DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance()
-        .newDocumentBuilder();
-    return docBuilder.parse(file);
+  public Document getDocument(File file) throws IOException {
+    try {
+      return docBuilder.parse(file);
+    } catch (SAXException e) {
+      return useJTidy(file);
+    }
+  }
+  
+  private Document useJTidy(File file) throws IOException {
+    File xmlFile = new File(file.getParentFile(), "index.xml");
+    Tidy tidy = new Tidy();
+    tidy.setXHTML(true);
+    tidy.parse(new FileInputStream(file), new FileOutputStream(xmlFile));
+    Document document = getDocument(xmlFile);
+    xmlFile.deleteOnExit();
+    return document;
   }
 }

@@ -30,7 +30,13 @@ import java.io.IOException;
 interface PageExporter {
 
   /** 
-   * Exports the given page from the given EntryStore to the given Appendable.
+   * Exports the given page.
+   * 
+   * @param entry the entry for the page being exported
+   * @param entryStore the EntryStore containing this entry and its related entries
+   * @param out Appendable to export to
+   * @param revisionsExported whether or not revisions were exported 
+   *        (i.e. whether or not to link to a the version history file) 
    */
   void exportPage(BasePageEntry<?> entry, EntryStore entryStore, Appendable out,
       boolean revisionsExported) throws IOException;

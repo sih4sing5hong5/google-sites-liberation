@@ -34,9 +34,9 @@ final class RelativeLinkConverterImpl implements RelativeLinkConverter {
 
   @Override
   public void convertLinks(BasePageEntry<?> entry, List<BasePageEntry<?>> ancestors, 
-      URL siteUrl) {
-    convertLinks(entry, ancestors, siteUrl, "href=\"", "\"");
-    convertLinks(entry, ancestors, siteUrl, "href='", "'");
+      URL siteUrl, boolean isRevision) {
+    convertLinks(entry, ancestors, siteUrl, isRevision, "href=\"", "\"");
+    convertLinks(entry, ancestors, siteUrl, isRevision, "href='", "'");
   }
   
   /**
@@ -44,8 +44,8 @@ final class RelativeLinkConverterImpl implements RelativeLinkConverter {
    * link is defined by the given prefix and suffix. 
    */
   private void convertLinks(BasePageEntry<?> entry, 
-      List<BasePageEntry<?>> ancestors, URL siteUrl, String prefix, 
-      String suffix) {
+      List<BasePageEntry<?>> ancestors, URL siteUrl, boolean isRevision,
+      String prefix, String suffix) {
     String content = EntryUtils.getXhtmlContent(entry);
     String url = siteUrl.toExternalForm();
     int index = content.indexOf(prefix + "../");
@@ -57,6 +57,9 @@ final class RelativeLinkConverterImpl implements RelativeLinkConverter {
       }
       String link = content.substring(startIndex, endIndex);
       if (link.startsWith("../")) {
+        if (isRevision) {
+          link = link.substring(3);
+        }
         int ancestorIndex = ancestors.size();
         while (link.startsWith("../") && ancestorIndex >= 0) {
           link = link.substring(3);

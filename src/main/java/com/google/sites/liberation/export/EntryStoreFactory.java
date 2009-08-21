@@ -26,5 +26,5 @@ public interface EntryStoreFactory {
   /**
    * Returns a new EntryStore.
    */
-  EntryStore getEntryStore();
+  EntryStore newEntryStore();
 }

@@ -19,5 +19,5 @@ public interface RelativeLinkConverter {
    * ancestors, to absolute links starting with the given siteUrl. 
    */
   void convertLinks(BasePageEntry<?> entry, List<BasePageEntry<?>> ancestors, 
-      URL siteUrl);
+      URL siteUrl, boolean isRevision);
 }

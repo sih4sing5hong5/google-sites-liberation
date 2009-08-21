@@ -93,7 +93,7 @@ public class PageExporterImplTest {
         subpageLinksRenderer,
         titleRenderer);
     out = new StringBuilder();
-    entryStore = new InMemoryEntryStoreFactory().getEntryStore();
+    entryStore = new InMemoryEntryStoreFactory().newEntryStore();
   }
   
   @SuppressWarnings("unchecked")

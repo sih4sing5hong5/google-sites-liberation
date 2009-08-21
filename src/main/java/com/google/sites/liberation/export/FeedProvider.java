@@ -35,5 +35,6 @@ public interface FeedProvider {
    * Returns an Iterable of the entries at the given feed URL, using the given
    * SitesService.
    */
-  Iterable<BaseContentEntry<?>> getEntries(URL feedUrl, SitesService sitesService);
+  Iterable<BaseContentEntry<?>> getEntries(URL feedUrl, 
+      SitesService sitesService);
 }

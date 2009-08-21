@@ -45,10 +45,11 @@ final class ContentRendererImpl implements ContentRenderer {
       historyLink.setAttribute("href", "history.html");
       info.addElement(historyLink).addText(")");
     } else {
-      info.addText(" (Version " + RendererUtils.getRevisionElement(entry) + ")");
+      info.addText(" (Version ")
+          .addElement(RendererUtils.getRevisionElement(entry)).addText(")");
     }
     div.addElement(info);
-    div.addElement(new XmlElement("br"));
+    div.addElement(new XmlElement("br")).addElement(new XmlElement("br"));
     return div;
   }
 }

@@ -43,20 +43,20 @@ public class AuthorParserImplTest extends AbstractParserImplTest {
   
   @Test
   public void testFn() {
-    html = "<span class=\"vcard\">" +
+    html = "<span class=\"author\"><span class=\"vcard\">" +
     		        "<a class=\"fn\" href=\"mailto:" + 
     		        email + "\">" + name + "</a>" +
-    		      "</span>";
+    		      "</span></span>";
     element = getElement(html);
     author = parser.parseAuthor(element);
     assertEquals(name, author.getName());
     assertEquals(email, author.getEmail());
     
-    html = "<span class=\"vcard\">" +
+    html = "<span class=\"author\"><span class=\"vcard\">" +
                     "<div>" +
                       "<h1 class=\"fn\">" + name + "</h1>" +
                     "</div>" +
-                  "</span>";
+                  "</span></span>";
     element = getElement(html);
     author = parser.parseAuthor(element);
     assertEquals(name, author.getName());
@@ -65,19 +65,17 @@ public class AuthorParserImplTest extends AbstractParserImplTest {
   
   @Test
   public void testN() {
-    html = "<span class=\"vcard\">" +
+    html = "<span class=\"author\"><span class=\"vcard\">" +
                     "<h3 class=\"n\">" + name + "</h3>" +
-                  "</span>";
+                  "</span></span>";
     element = getElement(html);
     author = parser.parseAuthor(element);
     assertEquals(name, author.getName());
     assertNull(author.getEmail());
     
-    html = "<div class=\"vcard\">" +
-             "<span class=\"vcard\">" + 
+    html = "<span class=\"author\"><div class=\"vcard\">" +
                "<span class=\"n\">" + name + "</span>" +
-             "</span>" +
-           "</div>";
+           "</div></span>";
     element = getElement(html);
     author = parser.parseAuthor(element);
     assertEquals(name, author.getName());
@@ -86,19 +84,19 @@ public class AuthorParserImplTest extends AbstractParserImplTest {
   
   @Test
   public void testEmail() {
-    html = "<span class=\"vcard\">" +
+    html = "<span class=\"author\"><span class=\"vcard\">" +
              "<span class=\"email\">" + email + "</span>" +
-           "</span>";
+           "</span></span>";
     element = getElement(html);
     author = parser.parseAuthor(element);
     assertNull(author.getName());
     assertEquals(email, author.getEmail());
     
-    html = "<span class=\"vcard\">" +
+    html = "<span class=\"author\"><span class=\"vcard\">" +
              "<span class=\"email\">" + 
                "<a href=\"mailto:me\">" + email + "</a>" +
              "</span>" +
-           "</span>";
+           "</span></span>";
     element = getElement(html);
     author = parser.parseAuthor(element);
     assertNull(author.getName());
@@ -107,11 +105,11 @@ public class AuthorParserImplTest extends AbstractParserImplTest {
   
   @Test
   public void testNAndEmail() {
-    html = "<addr class=\"vcard\">" +
+    html = "<span class=\"author\"><addr class=\"vcard\">" +
              "Name and email:" +
              "<span class=\"email\">" + email + "</span>, " +
              "<h3 class=\"n\">" + name + "</h3>" + 
-           "</addr>";
+           "</addr></span>";
     element = getElement(html);
     author = parser.parseAuthor(element);
     assertEquals(name, author.getName());

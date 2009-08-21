@@ -40,6 +40,7 @@ public interface SiteImporter {
    * @param importRevisions whether or not to import revisions
    * @param sitesService SitesService with which to access the site
    * @param rootDirectory directory in which to export
+   * @param progressListener ProgressListener to monitor import progress
    */
   public void importSite(String host, @Nullable String domain, String webspace, 
       boolean importRevisions, SitesService sitesService, File rootDirectory, 

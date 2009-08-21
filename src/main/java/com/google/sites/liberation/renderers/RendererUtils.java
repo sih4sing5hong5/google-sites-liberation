@@ -61,20 +61,22 @@ final class RendererUtils {
   static XmlElement getAuthorElement(BaseContentEntry<?> entry) {
     checkNotNull(entry);
     XmlElement element = new XmlElement("span");
-    element.setAttribute("class", "vcard");
+    element.setAttribute("class", "author");
+    XmlElement vcard = new XmlElement("span");
+    vcard.setAttribute("class", "vcard");
     Person author = entry.getAuthors().get(0);
     String name = author.getName();
     String email = author.getEmail();
     if (name == null) {
       XmlElement link = getHyperLink("mailto:" + email, email);
       link.setAttribute("class", "email");
-      element.addElement(link);
+      vcard.addElement(link);
     } else {
       XmlElement link = getHyperLink("mailto:" + email, name);
       link.setAttribute("class", "fn");
-      element.addElement(link);
+      vcard.addElement(link);
     }
-    return element;
+    return element.addElement(vcard);
   }
   
   /**

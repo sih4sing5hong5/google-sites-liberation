@@ -26,6 +26,20 @@
 	  </archive>
 	</configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <archive>
+	    <manifest>
+	      <addClasspath>true</addClasspath>
+	      <mainClass>com.google.sites.liberation.util.GuiMain</mainClass>
+	    </manifest>
+	  </archive>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <dependencies>
@@ -113,6 +127,12 @@
         <groupId>javax.mail</groupId>
         <artifactId>mail</artifactId>
         <version>1.4.2</version>
+    </dependency>
+    <dependency>
+    	<groupId>jtidy</groupId>
+    	<artifactId>jtidy</artifactId>
+    	<version>r820</version>
+    	<optional>false</optional>
     </dependency>
   </dependencies>
 </project>

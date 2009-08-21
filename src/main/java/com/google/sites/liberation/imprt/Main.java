@@ -77,6 +77,9 @@ public class Main {
       if (password == null) {
         throw new CmdLineException("Password not specified!");
       }
+      if (!username.contains("@") && domain != null) {
+        username += '@' + domain;
+      }
       SitesService sitesService = new SitesService("google-sites-liberation");
       sitesService.setUserCredentials(username, password);
       siteImporter.importSite(host, domain, webspace, importRevisions, 

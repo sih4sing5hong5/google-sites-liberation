@@ -21,6 +21,7 @@ import com.google.gdata.data.sites.BasePageEntry;
 import com.google.inject.ImplementedBy;
 
 import java.io.File;
+import java.net.URL;
 
 /**
  * Exports the history and all of the revisions of a page. 
@@ -34,6 +35,6 @@ public interface RevisionsExporter {
    * Exports the revisions and history of the given page, in the given 
    * directory, using the given SitesService.
    */
-  void exportRevisions(BasePageEntry<?> page, File directory, 
-      SitesService sitesService);
+  void exportRevisions(BasePageEntry<?> page, EntryStore entryStore,
+      File directory, SitesService sitesService, URL siteUrl);
 }

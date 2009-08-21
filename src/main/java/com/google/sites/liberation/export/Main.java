@@ -73,6 +73,9 @@ public class Main {
       }
       SitesService sitesService = new SitesService("google-sites-liberation");
       if (username != null && password != null) {
+        if (!username.contains("@") && domain != null) {
+          username += '@' + domain;
+        }
         sitesService.setUserCredentials(username, password);
       }
       siteExporter.exportSite(host, domain, webspace, exportRevisions,

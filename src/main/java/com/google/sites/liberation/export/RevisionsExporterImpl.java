@@ -17,6 +17,7 @@
 package com.google.sites.liberation.export;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.sites.liberation.util.EntryType.isPage;
 
 import com.google.common.collect.Lists;
 import com.google.gdata.client.sites.SitesService;
@@ -43,16 +44,19 @@ final class RevisionsExporterImpl implements RevisionsExporter {
   private static Logger LOGGER = Logger.getLogger(
       RevisionsExporterImpl.class.getCanonicalName());
   
+  private final AbsoluteLinkConverter linkConverter;
   private final AppendableFactory appendableFactory;
   private final FeedProvider feedProvider;
   private final HistoryExporter historyExporter;
   private final RevisionExporter revisionExporter;
   
   @Inject
-  RevisionsExporterImpl(AppendableFactory appendableFactory,
+  RevisionsExporterImpl(AbsoluteLinkConverter linkConverter,
+      AppendableFactory appendableFactory,
       FeedProvider feedProvider,
       HistoryExporter historyExporter,
       RevisionExporter revisionExporter) {
+    this.linkConverter = checkNotNull(linkConverter);
     this.appendableFactory = checkNotNull(appendableFactory);
     this.feedProvider = checkNotNull(feedProvider);
     this.historyExporter = checkNotNull(historyExporter);
@@ -60,8 +64,8 @@ final class RevisionsExporterImpl implements RevisionsExporter {
   }
   
   @Override
-  public void exportRevisions(BasePageEntry<?> page, File directory, 
-      SitesService sitesService) {
+  public void exportRevisions(BasePageEntry<?> page, EntryStore entryStore, 
+      File directory, SitesService sitesService, URL siteUrl) {
     checkNotNull(page, "page");
     checkNotNull(directory, "directory");
     checkNotNull(sitesService, "sitesService");
@@ -77,11 +81,16 @@ final class RevisionsExporterImpl implements RevisionsExporter {
     List<BaseContentEntry<?>> revisions = Lists.newLinkedList();
     for (BaseContentEntry<?> entry : 
         feedProvider.getEntries(feedUrl, sitesService)) {
+      entry.setId(page.getId());
       revisions.add(entry);
     }
     for (BaseContentEntry<?> revision : revisions) {
       if (revision.getRevision().getValue() != page.getRevision().getValue()) {
-        exportRevision(revision, revisionsDirectory);
+        if (isPage(revision)) {
+          linkConverter.convertLinks((BasePageEntry<?>) revision, entryStore, 
+              siteUrl, true);
+          exportRevision((BasePageEntry<?>) revision, revisionsDirectory);
+        }
       }
     }    
     File file = new File(directory, "history.html");
@@ -102,14 +111,14 @@ final class RevisionsExporterImpl implements RevisionsExporter {
     }
   }
   
-  private void exportRevision(BaseContentEntry<?> revision, 
+  private void exportRevision(BasePageEntry<?> revision, 
       File revisionsDirectory) {
     int number = revision.getRevision().getValue();
     File file = new File(revisionsDirectory, number + ".html");
     Appendable out = null;
     try {
       out = appendableFactory.getAppendable(file);
-      revisionExporter.exportRevision((BasePageEntry<?>) revision, out);
+      revisionExporter.exportRevision(revision, out);
     } catch(IOException e) {
       LOGGER.log(Level.WARNING, "Failed writing to file: " + file, e);
     } finally {

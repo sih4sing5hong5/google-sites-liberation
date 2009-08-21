@@ -165,7 +165,7 @@ public class GuiMain {
     progressBar = new JProgressBar();
     progressBar.setMinimum(0);
     progressBar.setMaximum(100);
-    progressBar.setPreferredSize(new Dimension(250, 25));
+    progressBar.setPreferredSize(new Dimension(500, 25));
     JPanel progressPanel = new JPanel();
     progressPanel.add(progressBar);
     progressPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
@@ -177,7 +177,7 @@ public class GuiMain {
     scrollPane.setBorder(new EmptyBorder(10, 10, 10, 10));
     mainPanel.add(scrollPane, BorderLayout.CENTER);
     doneButton = new JButton("Done");
-    doneButton.setPreferredSize(new Dimension(245, 25));
+    doneButton.setPreferredSize(new Dimension(495, 25));
     doneButton.setEnabled(false);
     doneButton.addActionListener(new ActionListener() {
       @Override

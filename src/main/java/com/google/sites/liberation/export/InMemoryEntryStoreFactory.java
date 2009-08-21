@@ -26,7 +26,7 @@ final class InMemoryEntryStoreFactory implements EntryStoreFactory {
   /**
    * Returns a new InMemoryEntryStore.
    */
-  public EntryStore getEntryStore() {
+  public EntryStore newEntryStore() {
     return new InMemoryEntryStore();
   }
 }

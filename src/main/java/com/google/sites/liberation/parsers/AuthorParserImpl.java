@@ -49,6 +49,21 @@ final class AuthorParserImpl implements AuthorParser {
       Node node = nodeList.item(i);
       if (node.getNodeType() == Node.ELEMENT_NODE) {
         Element child = (Element) node;
+        if (hasClass(child, "vcard")) {
+          parseHCard(child, author);
+        } else {
+          parseElement(child, author);
+        }
+      }
+    }
+  }
+  
+  private void parseHCard(Element element, Person author) {
+    NodeList nodeList = element.getChildNodes();
+    for (int i = 0; i < nodeList.getLength(); i++) {
+      Node node = nodeList.item(i);
+      if (node.getNodeType() == Node.ELEMENT_NODE) {
+        Element child = (Element) node;
         if (hasClass(child, "fn")) {
           author.setName(child.getTextContent());
           String href = child.getAttribute("href");
@@ -60,7 +75,7 @@ final class AuthorParserImpl implements AuthorParser {
         } else if (hasClass(child, "email")) {
           author.setEmail(child.getTextContent());
         } else {
-          parseElement(child, author);
+          parseHCard(child, author);
         }
       }
     }

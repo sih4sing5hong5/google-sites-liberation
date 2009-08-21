@@ -30,11 +30,11 @@ import com.google.gdata.data.sites.BasePageEntry;
 import com.google.gdata.util.common.base.Nullable;
 import com.google.inject.Inject;
 import com.google.sites.liberation.util.ProgressListener;
+import com.google.sites.liberation.util.UrlUtils;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
 import java.util.logging.Level;
@@ -90,49 +90,46 @@ final class SiteExporterImpl implements SiteExporter {
     checkNotNull(progressListener, "progressListener");
     Set<BasePageEntry<?>> pages = Sets.newHashSet();
     Set<AttachmentEntry> attachments = Sets.newHashSet();
-    EntryStore entryStore = entryStoreFactory.getEntryStore();
+    EntryStore entryStore = entryStoreFactory.newEntryStore();
+    URL feedUrl = UrlUtils.getFeedUrl(host, domain, webspace);
+    URL siteUrl = UrlUtils.getSiteUrl(host, domain, webspace);
+    
     progressListener.setStatus("Retrieving site data (this may take a few minutes).");
-    URL feedUrl;
-    URL siteUrl;
-    try {
-      if (domain == null) {
-        feedUrl = new URL("http://" + host + "/feeds/content/site/" + webspace);
-        siteUrl = new URL("http://" + host + "/site/" + webspace);
-      } else {
-        feedUrl = new URL("http://" + host + "/feeds/content/" + domain + "/" 
-            + webspace);
-        siteUrl = new URL("http://" + host + "/a/" + domain + "/" + webspace);
-      }
-    } catch (MalformedURLException e) {
-      LOGGER.log(Level.WARNING, "Invalid host, domain, or webspace!");
-      throw new RuntimeException(e);
-    }
     Iterable<BaseContentEntry<?>> entries = 
         feedProvider.getEntries(feedUrl, sitesService);
+    int num = 1;
     for (BaseContentEntry<?> entry : entries) {
       if (entry != null) {
+        if (num % 20 == 0) {
+          progressListener.setStatus("Retrieved " + num + " entries.");
+        }
         entryStore.addEntry(entry);
         if (isPage(entry)) {
           pages.add((BasePageEntry<?>) entry);
         } else if (getType(entry) == ATTACHMENT) {
           attachments.add((AttachmentEntry) entry);
         }
+        num++;
+      } else {
+        LOGGER.log(Level.WARNING, "Error parsing entries!");
       }
     }
+    
     int totalEntries = pages.size() + attachments.size();
     if (totalEntries > 0) {  
       int currentEntries = 0;
       for (BasePageEntry<?> page : pages) {
         progressListener.setStatus("Exporting page: " 
             + page.getTitle().getPlainText() + '.');
-        linkConverter.convertLinks(page, entryStore, siteUrl);
+        linkConverter.convertLinks(page, entryStore, siteUrl, false);
         File relativePath = getPath(page, entryStore);
         if (relativePath != null) {
           File directory = new File(rootDirectory, relativePath.getPath());
           directory.mkdirs();
           exportPage(page, directory, entryStore, exportRevisions);
           if (exportRevisions) {
-            revisionsExporter.exportRevisions(page, directory, sitesService);
+            revisionsExporter.exportRevisions(page, entryStore, directory, 
+                sitesService, siteUrl);
           }
         }
         progressListener.setProgress(((double) ++currentEntries) / totalEntries);
@@ -145,8 +142,8 @@ final class SiteExporterImpl implements SiteExporter {
       }
       progressListener.setStatus("Export complete.");
     } else {
-      progressListener.setStatus("No data returned. You may need to provide " +
-          "user credentials.");
+      progressListener.setStatus("No data returned. You may have provided "
+          + "invalid Site information or credentials.");
     }
   }
   

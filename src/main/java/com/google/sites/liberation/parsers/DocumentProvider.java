@@ -20,12 +20,9 @@ package com.google.sites.liberation.parsers;
 import com.google.inject.ImplementedBy;
 
 import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Parses a file into an org.w3c.Document.
@@ -38,6 +35,5 @@ public interface DocumentProvider {
   /**
    * Returns a Document from the given File.
    */
-  Document getDocument(File file) throws ParserConfigurationException, 
-      SAXException, IOException;
+  Document getDocument(File file) throws IOException;
 }
