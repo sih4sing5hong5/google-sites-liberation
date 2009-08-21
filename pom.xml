@@ -13,6 +13,7 @@
   <name>Google Sites Liberation</name>
   <version>1.0</version>
   <build>
+    <defaultGoal>assembly:assembly</defaultGoal>
     <plugins>
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>

@@ -30,6 +30,7 @@ import javax.swing.text.JTextComponent;
 public class GuiProgressListener implements ProgressListener {
 
   private double progress;
+  private String status;
   private JProgressBar progressBar;
   private JTextComponent textComponent;
   
@@ -55,7 +56,7 @@ public class GuiProgressListener implements ProgressListener {
 
   @Override
   public void setStatus(String status) {
-    checkNotNull(status);
+    this.status = checkNotNull(status);
     textComponent.setText(textComponent.getText() + status + "\n");
   }
 
@@ -66,6 +67,6 @@ public class GuiProgressListener implements ProgressListener {
 
   @Override
   public String getStatus() {
-    return textComponent.getText();
+    return status;
   }
 }
