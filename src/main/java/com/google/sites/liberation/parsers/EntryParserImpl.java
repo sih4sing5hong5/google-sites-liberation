@@ -109,13 +109,17 @@ final class EntryParserImpl implements EntryParser {
           } 
           if (hasClass(child, "gs:data")) {
             if (getType(entry) == LIST_PAGE) {
-              ((ListPageEntry) entry).setData(dataParser.parseData(child));
+              // TODO(gk5885): remove extra cast for
+              // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
+              ((ListPageEntry) (BaseContentEntry) entry).setData(dataParser.parseData(child));
             }
             parseDeeper = false;
           } 
           if (hasClass(child, "gs:field")) {
             if (getType(entry) == LIST_ITEM) {
-              ((ListItemEntry) entry).addField(fieldParser.parseField(child));
+              // TODO(gk5885): remove extra cast for
+              // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
+              ((ListItemEntry) (BaseContentEntry) entry).addField(fieldParser.parseField(child));
             }
             parseDeeper = false;
           }
