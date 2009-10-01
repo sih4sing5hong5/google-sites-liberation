@@ -1,6 +1,10 @@
 README
 
-Note:  This project is built using Maven (http://maven.apache.org/).
+INTRODUCTION
+  Note:  This project is built using Maven (http://maven.apache.org/).
+
+  The latest, most stable version of the code will always be located in the 'default' branch.  See
+  the revision history for informaiton about the code in any other branch.
 
 REQUIREMENTS
   This project is built using Java 1.5 or later.  All other dependencies are managed by Maven.
