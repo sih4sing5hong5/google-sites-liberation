@@ -66,33 +66,36 @@ public enum EntryType {
   /**
    * Returns the {@code EntryType} for the given entry.
    */
-  public static EntryType getType(BaseContentEntry<?> entry) {
-    checkNotNull(entry);
-    if (entry instanceof AnnouncementEntry) {
+  public static final EntryType getType(BaseContentEntry<?> entry) {
+    // TODO(gk5885): use the parameterized entry when we stop running into
+    // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
+    @SuppressWarnings("unchecked")
+    BaseContentEntry rawEntry = checkNotNull(entry);
+    if (rawEntry instanceof AnnouncementEntry) {
       return EntryType.ANNOUNCEMENT;
     }
-    if (entry instanceof AnnouncementsPageEntry) {
+    if (rawEntry instanceof AnnouncementsPageEntry) {
       return EntryType.ANNOUNCEMENTS_PAGE;
     }
-    if (entry instanceof AttachmentEntry) {
+    if (rawEntry instanceof AttachmentEntry) {
       return EntryType.ATTACHMENT;
     }
-    if (entry instanceof CommentEntry) {
+    if (rawEntry instanceof CommentEntry) {
       return EntryType.COMMENT;
     }
-    if (entry instanceof FileCabinetPageEntry) {
+    if (rawEntry instanceof FileCabinetPageEntry) {
       return EntryType.FILE_CABINET_PAGE;
     }
-    if (entry instanceof ListItemEntry) {
+    if (rawEntry instanceof ListItemEntry) {
       return EntryType.LIST_ITEM;
     }
-    if (entry instanceof ListPageEntry) {
+    if (rawEntry instanceof ListPageEntry) {
       return EntryType.LIST_PAGE;
     }
-    if (entry instanceof WebAttachmentEntry) {
+    if (rawEntry instanceof WebAttachmentEntry) {
       return EntryType.WEB_ATTACHMENT;
     }
-    if (entry instanceof WebPageEntry) {
+    if (rawEntry instanceof WebPageEntry) {
       return EntryType.WEB_PAGE;
     }
     return EntryType.OTHER;
@@ -101,7 +104,7 @@ public enum EntryType {
   /**
    * Returns whether or not this entry represents a page in a site.
    */
-  public static boolean isPage(BaseContentEntry<?> entry) {
+  public static final boolean isPage(BaseContentEntry<?> entry) {
     checkNotNull(entry);
     return (entry instanceof BasePageEntry);
   }

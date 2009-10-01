@@ -129,16 +129,27 @@ final class PageExporterImpl implements PageExporter {
     for (BaseContentEntry<?> child : entryStore.getChildren(entry.getId())) {
       switch(getType(child)) {
         case ANNOUNCEMENT:
-          announcements.add((AnnouncementEntry) child); break;
+          // TODO(gk5885): remove extra cast for
+          // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
+          announcements.add((AnnouncementEntry) (BaseContentEntry) child);
+          break;
         case ATTACHMENT:
         case WEB_ATTACHMENT:
-          attachments.add(child); break;
+          attachments.add(child);
+          break;
         case COMMENT:
-          comments.add((CommentEntry) child); break;
+          // TODO(gk5885): remove extra cast for
+          // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
+          comments.add((CommentEntry) (BaseContentEntry) child);
+          break;
         case LIST_ITEM:
-          listItems.add((ListItemEntry) child); break;
+          // TODO(gk5885): remove extra cast for
+          // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
+          listItems.add((ListItemEntry) (BaseContentEntry) child);
+          break;
         default:
-          subpages.add((BasePageEntry<?>) child); break;
+          subpages.add((BasePageEntry<?>) child);
+          break;
       }
     }
     Collections.sort(announcements, updatedComparator);
@@ -152,8 +163,10 @@ final class PageExporterImpl implements PageExporter {
     } else if (getType(entry) == FILE_CABINET_PAGE) {
       mainDiv.addElement(fileCabinetRenderer.renderFileCabinet(attachments));
     } else if (getType(entry) == LIST_PAGE) {
+      // TODO(gk5885): remove extra cast for
+      // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
       mainDiv.addElement(listRenderer.renderList(
-          (ListPageEntry) entry, listItems));
+          (ListPageEntry) (BaseContentEntry) entry, listItems));
     }
     if (!subpages.isEmpty()) {
       mainDiv.addElement(new XmlElement("hr"));

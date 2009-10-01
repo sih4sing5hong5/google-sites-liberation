@@ -146,7 +146,9 @@ public class EntryParserImplTest extends AbstractParserImplTest {
     
     BaseContentEntry<?> entry = entryParser.parseEntry(entryElement);
     assertTrue(EntryType.getType(entry) == EntryType.LIST_PAGE);
-    assertEquals(data, ((ListPageEntry) entry).getData());
+    // TODO(gk5885): remove extra cast for
+    // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
+    assertEquals(data, ((ListPageEntry) (BaseContentEntry) entry).getData());
   }
   
   @Test
@@ -178,9 +180,11 @@ public class EntryParserImplTest extends AbstractParserImplTest {
     
     BaseContentEntry<?> entry = entryParser.parseEntry(entryElement);
     assertTrue(EntryType.getType(entry) == EntryType.LIST_ITEM);
-    assertTrue(((ListItemEntry) entry).getFields().contains(field1));
-    assertTrue(((ListItemEntry) entry).getFields().contains(field2));
-    assertTrue(((ListItemEntry) entry).getFields().contains(field3));
+    // TODO(gk5885): remove extra casts for
+    // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
+    assertTrue(((ListItemEntry) (BaseContentEntry) entry).getFields().contains(field1));
+    assertTrue(((ListItemEntry) (BaseContentEntry) entry).getFields().contains(field2));
+    assertTrue(((ListItemEntry) (BaseContentEntry) entry).getFields().contains(field3));
   }
   
   @Test
