@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><metadata>
+  <groupId>com.google.gdata</groupId>
+  <artifactId>gdata-spreadsheet</artifactId>
+  <version>3.0</version>
+  <versioning>
+    <versions>
+      <version>3.0</version>
+    </versions>
+    <lastUpdated>20090925205504</lastUpdated>
+  </versioning>
+</metadata>
