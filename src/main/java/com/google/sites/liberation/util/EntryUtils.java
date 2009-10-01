@@ -83,14 +83,18 @@ public class EntryUtils {
       inReplyTo.setHref(
           parent.getLink(ILink.Rel.ALTERNATE, "text").getHref()); 
       inReplyTo.setRef(parent.getId());
-      ((CommentEntry) entry).setInReplyTo(inReplyTo);
+      // TODO(gk5885): remove extra cast for
+      // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
+      ((CommentEntry) (BaseContentEntry) entry).setInReplyTo(inReplyTo);
     } else if (getType(entry) == LIST_ITEM) {
       if (getType(parent) != LIST_PAGE) {
         throw new IllegalStateException("List items can only be descendents of " 
             + "list pages!");
       }
-      ListItemEntry listItem = (ListItemEntry) entry;
-      ListPageEntry listPage = (ListPageEntry) parent;
+      // TODO(gk5885): remove extra casts for
+      // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
+      ListItemEntry listItem = (ListItemEntry) (BaseContentEntry) entry;
+      ListPageEntry listPage = (ListPageEntry) (BasePageEntry) parent;
       Data data = listPage.getData();
       Map<String, String> names = Maps.newHashMap();
       for (Column column : data.getColumns()) {
