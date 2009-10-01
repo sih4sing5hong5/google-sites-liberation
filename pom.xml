@@ -11,6 +11,12 @@
   <artifactId>google-sites-liberation</artifactId>
   <name>Google Sites Liberation</name>
   <version>1.0</version>
+  <repositories>
+    <repository>
+      <id>local</id>
+      <url>file://repository</url>
+    </repository>
+  </repositories>
   <build>
     <defaultGoal>assembly:assembly</defaultGoal>
     <plugins>
