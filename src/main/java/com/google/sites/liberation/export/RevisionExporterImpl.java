@@ -70,7 +70,9 @@ final class RevisionExporterImpl implements RevisionExporter {
     mainDiv.addElement(revisionRenderer.renderRevision(revision));
     if (getType(revision) == LIST_PAGE) {
       List<ListItemEntry> items = Lists.newArrayList();
-      mainDiv.addElement(listRenderer.renderList((ListPageEntry) revision, 
+      // TODO(gk5885): remove extra cast for
+      // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
+      mainDiv.addElement(listRenderer.renderList((ListPageEntry) (BasePageEntry) revision,
           items));
     }
     html.addElement(body.addElement(mainDiv));

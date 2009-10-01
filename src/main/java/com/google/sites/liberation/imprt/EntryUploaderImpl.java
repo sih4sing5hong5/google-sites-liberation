@@ -94,11 +94,15 @@ final class EntryUploaderImpl implements EntryUploader {
           getType(entry) == WEB_ATTACHMENT) {
         returnedEntry = getEntryByPath(entry, ancestors, feedUrl, sitesService);
       } else if (getType(entry) == COMMENT) {
-        if (commentExists((CommentEntry) entry, feedUrl, sitesService)) {
+        // TODO(gk5885): remove extra cast for
+        // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
+        if (commentExists((CommentEntry) (BaseContentEntry) entry, feedUrl, sitesService)) {
           return entry;
         }
       } else if (getType(entry) == LIST_ITEM) {
-        if (listItemExists((ListItemEntry) entry, feedUrl, sitesService)) {
+        // TODO(gk5885): remove extra cast for
+        // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
+        if (listItemExists((ListItemEntry) (BaseContentEntry) entry, feedUrl, sitesService)) {
           return entry;
         }
       }
@@ -162,7 +166,9 @@ final class EntryUploaderImpl implements EntryUploader {
       List<BaseContentEntry<?>> entries = entryProvider
           .getEntries(query, sitesService);
       for (BaseContentEntry<?> entry : entries) {
-        ListItemEntry item = (ListItemEntry) entry;
+        // TODO(gk5885): remove extra cast for
+        // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
+        ListItemEntry item = (ListItemEntry) (BaseContentEntry) entry;
         if (item.getFields().size() == listItem.getFields().size()) {
           boolean equal = true;
           for (Field field : item.getFields()) {

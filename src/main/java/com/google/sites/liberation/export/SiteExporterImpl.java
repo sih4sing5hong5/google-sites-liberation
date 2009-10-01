@@ -107,7 +107,9 @@ final class SiteExporterImpl implements SiteExporter {
         if (isPage(entry)) {
           pages.add((BasePageEntry<?>) entry);
         } else if (getType(entry) == ATTACHMENT) {
-          attachments.add((AttachmentEntry) entry);
+          // TODO(gk5885): remove extra cast for
+          // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
+          attachments.add((AttachmentEntry) (BaseContentEntry) entry);
         }
         num++;
       } else {
