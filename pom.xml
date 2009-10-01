@@ -10,7 +10,7 @@
   <groupId>com.google.gdata</groupId>
   <artifactId>google-sites-liberation</artifactId>
   <name>Google Sites Liberation</name>
-  <version>1.0.1</version>
+  <version>1.0.2-SNAPSHOT</version>
   <repositories>
     <repository>
       <id>local</id>
