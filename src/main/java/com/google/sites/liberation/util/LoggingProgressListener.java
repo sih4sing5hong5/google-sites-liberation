@@ -35,18 +35,6 @@ public class LoggingProgressListener implements ProgressListener {
   private double progress;
   private String status;
 
-  /*
-  public LoggingProgressListener(String logfile) throws IOException {
-    FileHandler handler = new FileHandler(logfile);
-    handler.setFormatter(new Formatter() {
-        public String format(LogRecord record) {
-          return record.getMessage() + "\n";
-        }
-      });
-    LOG.addHandler(handler);
-  }
-  */
-
   @Override
   public void setProgress(double progress) {
     this.progress = progress;
