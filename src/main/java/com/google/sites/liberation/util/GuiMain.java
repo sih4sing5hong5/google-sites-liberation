@@ -31,8 +31,12 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -73,6 +77,7 @@ public class GuiMain {
   private JTextArea textArea;
   private JProgressBar progressBar;
   private JButton doneButton;
+  private ProgressListener progressListener;
   
   private GuiMain() {
     try {
@@ -88,8 +93,9 @@ public class GuiMain {
     }
     initOptionsFrame();
     initProgressFrame();
+    initProgressListener();
   }
-  
+
   private void initOptionsFrame() {
     optionsFrame = new JFrame("Sites Import/Export");
     JPanel mainPanel = new JPanel();
@@ -196,6 +202,22 @@ public class GuiMain {
     progressFrame.pack();
     progressFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   }
+
+  private void initProgressListener() {
+    try {
+      LogManager.getLogManager().reset();
+      FileHandler handler = new FileHandler("GuiMain-log.txt");
+      handler.setFormatter(new SimpleFormatter());
+      Logger logger = Logger.getLogger("com.google.sites.liberation");
+      logger.addHandler(handler);
+    } catch (IOException e) {
+      LOGGER.log(Level.WARNING, "Could not create log file.", e);
+    }
+
+    progressListener = new TeeProgressListener(
+        new GuiProgressListener(progressBar, textArea),
+        new LoggingProgressListener());
+  }
   
   private void startAction(boolean export) {
     optionsFrame.setVisible(false);
@@ -277,14 +299,14 @@ public class GuiMain {
         Injector injector = Guice.createInjector(new SiteExporterModule());
         SiteExporter siteExporter = injector.getInstance(SiteExporter.class);
         siteExporter.exportSite(host, domain, webspace, revisions,
-            sitesService, directory, new GuiProgressListener(progressBar, textArea));
+                                sitesService, directory, progressListener);
       } else {
         Injector injector = Guice.createInjector(new SiteImporterModule());
         SiteImporter siteImporter = injector.getInstance(SiteImporter.class);
         siteImporter.importSite(host, domain, webspace, revisions,
-            sitesService, directory, new GuiProgressListener(progressBar, textArea));
+                                sitesService, directory, progressListener);
       }
-      
+
       doneButton.setEnabled(true);
     }
   }
