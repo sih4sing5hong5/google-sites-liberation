@@ -18,7 +18,6 @@ package com.google.sites.liberation.imprt;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.gdata.client.Service;
 import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.util.ServiceException;
