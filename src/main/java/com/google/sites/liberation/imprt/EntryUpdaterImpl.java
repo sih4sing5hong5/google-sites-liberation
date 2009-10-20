@@ -18,6 +18,7 @@ package com.google.sites.liberation.imprt;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.gdata.client.Service;
 import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.util.ServiceException;
@@ -44,7 +45,7 @@ final class EntryUpdaterImpl implements EntryUpdater {
       checkNotNull(oldEntry, "oldEntry");
       checkNotNull(newEntry, "newEntry");
       checkNotNull(sitesService, "sitesService");
-      return sitesService.update(new URL(oldEntry.getId()), newEntry);
+      return sitesService.update(new URL(oldEntry.getId()), newEntry, "*");
     } catch (IOException e) {
       LOGGER.log(Level.WARNING, "Unable to update entry:" + oldEntry, e);
       return null;
