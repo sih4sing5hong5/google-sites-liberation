@@ -55,7 +55,6 @@ final class DocumentProviderImpl implements DocumentProvider {
     try {
       return docBuilder.parse(file);
     } catch (SAXException e) {
-      e.printStackTrace();
       return useJTidy(file);
     }
   }
