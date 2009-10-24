@@ -39,7 +39,7 @@ public class GuiProgressListener implements ProgressListener {
    * and text component.
    */
   GuiProgressListener(JProgressBar progressBar, 
-      JTextComponent textComponent) {
+                      JTextComponent textComponent) {
     this.progressBar = checkNotNull(progressBar);
     this.textComponent = checkNotNull(textComponent);
   }

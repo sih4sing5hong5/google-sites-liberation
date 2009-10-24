@@ -21,9 +21,8 @@ import com.google.gdata.util.AuthenticationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.sites.liberation.export.SiteExporter;
-import com.google.sites.liberation.export.SiteExporterModule;
 import com.google.sites.liberation.imprt.SiteImporter;
-import com.google.sites.liberation.imprt.SiteImporterModule;
+import com.google.sites.liberation.util.LoggingUtil;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -77,8 +76,7 @@ public class GuiMain {
   private JTextArea textArea;
   private JProgressBar progressBar;
   private JButton doneButton;
-  private ProgressListener progressListener;
-  
+
   private GuiMain() {
     try {
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -91,9 +89,16 @@ public class GuiMain {
     } catch (UnsupportedLookAndFeelException e) {
       LOGGER.log(Level.WARNING, "Unable to set look and feel.", e);
     }
+
+    try {
+      File logfile = new File("log.txt");
+      LoggingUtil.initializeFileLogger(logfile);
+    } catch (IOException ioe) {
+      LOGGER.log(Level.WARNING, "Unable to initialize log file.", ioe);
+    }
+
     initOptionsFrame();
     initProgressFrame();
-    initProgressListener();
   }
 
   private void initOptionsFrame() {
@@ -203,22 +208,6 @@ public class GuiMain {
     progressFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   }
 
-  private void initProgressListener() {
-    try {
-      LogManager.getLogManager().reset();
-      FileHandler handler = new FileHandler("GuiMain-log.txt");
-      handler.setFormatter(new SimpleFormatter());
-      Logger logger = Logger.getLogger("com.google.sites.liberation");
-      logger.addHandler(handler);
-    } catch (IOException e) {
-      LOGGER.log(Level.WARNING, "Could not create log file.", e);
-    }
-
-    progressListener = new TeeProgressListener(
-        new GuiProgressListener(progressBar, textArea),
-        new LoggingProgressListener());
-  }
-  
   private void startAction(boolean export) {
     optionsFrame.setVisible(false);
     progressBar.setValue(0);
@@ -295,16 +284,13 @@ public class GuiMain {
         optionsFrame.setVisible(true);
         return;
       }
+      Injector injector = Guice.createInjector(new GuiModule(progressBar, textArea));
       if (export) {
-        Injector injector = Guice.createInjector(new SiteExporterModule());
         SiteExporter siteExporter = injector.getInstance(SiteExporter.class);
-        siteExporter.exportSite(host, domain, webspace, revisions,
-                                sitesService, directory, progressListener);
+        siteExporter.exportSite(host, domain, webspace, revisions, sitesService, directory);
       } else {
-        Injector injector = Guice.createInjector(new SiteImporterModule());
         SiteImporter siteImporter = injector.getInstance(SiteImporter.class);
-        siteImporter.importSite(host, domain, webspace, revisions,
-                                sitesService, directory, progressListener);
+        siteImporter.importSite(host, domain, webspace, revisions, sitesService, directory);
       }
 
       doneButton.setEnabled(true);

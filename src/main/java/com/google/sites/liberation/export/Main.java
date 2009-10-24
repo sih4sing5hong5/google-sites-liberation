@@ -20,10 +20,7 @@ import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.sites.liberation.util.LoggingProgressListener;
-import com.google.sites.liberation.util.ProgressListener;
-import com.google.sites.liberation.util.StdOutProgressListener;
-import com.google.sites.liberation.util.TeeProgressListener;
+import com.google.sites.liberation.util.LoggingUtil;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -31,11 +28,8 @@ import org.kohsuke.args4j.Option;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.FileHandler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 /**
  * Processes command line arguments for exporting a site and then
@@ -79,7 +73,6 @@ public class Main {
         throw new CmdLineException("Webspace of site not specified!");
       }
 
-      ProgressListener progress = setupProgressListener();
       SitesService sitesService = new SitesService("google-sites-liberation");
       if (username != null && password != null) {
         if (!username.contains("@") && domain != null) {
@@ -88,9 +81,12 @@ public class Main {
         sitesService.setUserCredentials(username, password);
       }
 
+      directory.mkdirs();
+      File logfile = new File(directory, "log.txt");
+      LoggingUtil.initializeFileLogger(logfile);
+
       siteExporter.exportSite(
-          host, domain, webspace, exportRevisions, sitesService, directory,
-          progress);
+          host, domain, webspace, exportRevisions, sitesService, directory);
     } catch (CmdLineException e) {
       LOGGER.log(Level.SEVERE, e.getMessage());
       parser.printUsage(System.err);
@@ -106,20 +102,7 @@ public class Main {
       throw new RuntimeException(t);
     }
   }
-
-  private ProgressListener setupProgressListener() throws IOException {
-    LogManager.getLogManager().reset();
-    directory.mkdirs();
-    String logfileName = new File(directory, "export_log.txt").toString();
-    FileHandler handler = new FileHandler(logfileName);
-    handler.setFormatter(new SimpleFormatter());
-    Logger logger = Logger.getLogger("com.google.sites.liberation");
-    logger.addHandler(handler);
-
-    return new TeeProgressListener(
-        new StdOutProgressListener(), new LoggingProgressListener());
-  }
-
+  
   /**
    * Exports a Site.
    */

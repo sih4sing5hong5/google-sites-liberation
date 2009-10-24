@@ -30,7 +30,7 @@ import java.io.OutputStreamWriter;
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-final class BufferedWriterFactory implements AppendableFactory {
+public final class BufferedWriterFactory implements AppendableFactory {
   
   @Override
   public Appendable getAppendable(File file) throws IOException {

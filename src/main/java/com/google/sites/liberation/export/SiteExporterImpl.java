@@ -58,7 +58,8 @@ final class SiteExporterImpl implements SiteExporter {
   private final FeedProvider feedProvider;
   private final PageExporter pageExporter;
   private final RevisionsExporter revisionsExporter;
-  
+  private final ProgressListener progressListener;
+
   /**
    * Creates a new SiteExporter with the given dependencies.
    */
@@ -69,20 +70,21 @@ final class SiteExporterImpl implements SiteExporter {
       EntryStoreFactory entryStoreFactory,
       FeedProvider feedProvider,
       PageExporter pageExporter,
-      RevisionsExporter revisionsExporter) {
+      RevisionsExporter revisionsExporter,
+      ProgressListener progressListener) {
     this.linkConverter = checkNotNull(linkConverter);
     this.appendableFactory = checkNotNull(appendableFactory);
     this.attachmentDownloader = checkNotNull(attachmentDownloader);
     this.entryStoreFactory = checkNotNull(entryStoreFactory);
     this.feedProvider = checkNotNull(feedProvider);
     this.pageExporter = checkNotNull(pageExporter);
-    this.revisionsExporter = checkNotNull(revisionsExporter);   
+    this.revisionsExporter = checkNotNull(revisionsExporter);
+    this.progressListener = checkNotNull(progressListener);
   }
-  
+
   @Override
   public void exportSite(String host, @Nullable String domain, String webspace, 
-      boolean exportRevisions, SitesService sitesService, File rootDirectory, 
-      ProgressListener progressListener) {
+      boolean exportRevisions, SitesService sitesService, File rootDirectory) {
     checkNotNull(host, "host");
     checkNotNull(webspace, "webspace");
     checkNotNull(sitesService, "sitesService");
