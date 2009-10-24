@@ -66,8 +66,7 @@ final class RevisionsImporterImpl implements RevisionsImporter {
       BasePageEntry<?> page = getPageEntry(new File(revisionsDirectory, 
           num + ".html"));
       if (page != null) {
-        //TODO(jlueck): Remove once watercress is in dogfood
-        page.setPageName(new PageName(directory.getName().toLowerCase()));
+        page.setPageName(new PageName(directory.getName().replace(' ', '-')));
         if (!ancestors.isEmpty()) {
           EntryUtils.setParent(page, ancestors.get(ancestors.size() - 1));
         }

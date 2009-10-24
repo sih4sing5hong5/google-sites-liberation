@@ -65,7 +65,6 @@ final class PageParserImpl implements PageParser {
           if (node.getNodeType() == Node.ELEMENT_NODE) {
             Element title = (Element) node;
             entry.setTitle(new PlainTextConstruct(title.getTextContent()));
-            System.out.println(entry);
           }
         }
       }

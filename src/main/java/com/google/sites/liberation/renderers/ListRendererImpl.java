@@ -23,6 +23,8 @@ import com.google.gdata.data.spreadsheet.Field;
 import com.google.gdata.util.common.base.Nullable;
 import com.google.sites.liberation.util.XmlElement;
 
+import org.apache.commons.lang.StringEscapeUtils;
+
 import java.util.List;
 
 /**
@@ -68,7 +70,7 @@ final class ListRendererImpl implements ListRenderer {
       } else if (field.getValue().equals("on")) {
         val = "\u2713"; //Checkmark
       } else {
-        val = field.getValue();
+        val = StringEscapeUtils.escapeXml(field.getValue());
       }
       XmlElement cell = new XmlElement("td");
       cell.setAttribute("class", "gs:field");

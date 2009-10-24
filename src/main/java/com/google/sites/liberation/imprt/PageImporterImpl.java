@@ -89,8 +89,7 @@ final class PageImporterImpl implements PageImporter {
       return null;
     }
     
-    //TODO(jlueck): Remove the toLowerCase() call once Watercress release is in dogfood.
-    page.setPageName(new PageName(directory.getName().toLowerCase()));
+    page.setPageName(new PageName(directory.getName().replace(' ', '-')));
     linkConverter.convertLinks(page, ancestors, siteUrl, false);
     if (!ancestors.isEmpty()) {
       EntryUtils.setParent(page, ancestors.get(ancestors.size() - 1));
@@ -119,8 +118,6 @@ final class PageImporterImpl implements PageImporter {
               "application/octet-stream");
           child.setContent((Content) null);
           child.setMediaSource(mediaSource);
-        } else {
-          System.out.println(child.getTitle().getPlainText());
         }
       }
       EntryUtils.setParent(child, returnedEntry);
