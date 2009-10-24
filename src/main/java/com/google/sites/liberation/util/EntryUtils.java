@@ -22,6 +22,8 @@ import static com.google.sites.liberation.util.EntryType.LIST_PAGE;
 import static com.google.sites.liberation.util.EntryType.getType;
 
 import com.google.common.collect.Maps;
+import com.google.gdata.data.BaseEntry;
+import com.google.gdata.data.ExtensionProfile;
 import com.google.gdata.data.ILink;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.TextConstruct;
@@ -37,7 +39,10 @@ import com.google.gdata.data.spreadsheet.Data;
 import com.google.gdata.data.spreadsheet.Field;
 import com.google.gdata.data.threading.InReplyTo;
 import com.google.gdata.util.XmlBlob;
+import com.google.gdata.util.common.xml.XmlWriter;
 
+import java.io.CharArrayWriter;
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.logging.Level;
@@ -80,8 +85,7 @@ public class EntryUtils {
     entry.addLink(SitesLink.Rel.PARENT, ILink.Type.ATOM, parent.getId());
     if (getType(entry) == COMMENT) {
       InReplyTo inReplyTo = new InReplyTo();
-      inReplyTo.setHref(
-          parent.getLink(ILink.Rel.ALTERNATE, "text").getHref()); 
+      inReplyTo.setHref(parent.getLink(ILink.Rel.ALTERNATE, null).getHref()); 
       inReplyTo.setRef(parent.getId());
       // TODO(gk5885): remove extra cast for
       // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
@@ -149,6 +153,19 @@ public class EntryUtils {
     blob.setBlob(content);
     TextConstruct textConstruct = new XhtmlTextConstruct(blob);
     entry.setContent(textConstruct);
+  }
+
+  public static String toString(BaseEntry<?> atomEntry) {
+    if (atomEntry == null) { return "null"; }
+    try {
+      CharArrayWriter stringWriter = new CharArrayWriter();
+      XmlWriter writer = new XmlWriter(stringWriter);
+      atomEntry.generate(writer, new ExtensionProfile());
+      return stringWriter.toString();
+    } catch (IOException ioe) {
+      // Should never happen
+      throw new RuntimeException(ioe);
+    }
   }
   
   /**
