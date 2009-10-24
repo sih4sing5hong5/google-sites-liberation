@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-final class InMemoryEntryStore implements EntryStore {
+public final class InMemoryEntryStore implements EntryStore {
 
   private static final Logger LOGGER = Logger.getLogger(
       InMemoryEntryStore.class.getCanonicalName());

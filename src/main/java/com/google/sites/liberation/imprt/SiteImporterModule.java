@@ -17,7 +17,12 @@
 package com.google.sites.liberation.imprt;
 
 import com.google.inject.AbstractModule;
+import com.google.sites.liberation.util.CompositeProgressListener;
+import com.google.sites.liberation.util.LoggingProgressListener;
+import com.google.sites.liberation.util.ProgressListener;
+import com.google.sites.liberation.util.StdOutProgressListener;
 
+import java.io.IOException; 
 /**
  * GUICE module defining default bindings.
  */
@@ -25,6 +30,8 @@ public class SiteImporterModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    //Currently nothing to configure.
+    bind(ProgressListener.class).toInstance(
+        new CompositeProgressListener(
+            new StdOutProgressListener(), new LoggingProgressListener()));
   }
 }

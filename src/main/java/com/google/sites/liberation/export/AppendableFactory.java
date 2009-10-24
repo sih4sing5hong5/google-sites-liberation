@@ -24,7 +24,7 @@ import java.io.IOException;
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-interface AppendableFactory {
+public interface AppendableFactory {
   
   /**
    * Returns an Appendable corresponding to the given file.

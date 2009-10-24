@@ -23,13 +23,13 @@ import java.util.List;
  *
  * @author jlueck@google.com (JJ Lueck)
  */
-public class TeeProgressListener implements ProgressListener {
+public class CompositeProgressListener implements ProgressListener {
 
   private final ProgressListener[] listeners;
   private double progress;
   private String status;
 
-  public TeeProgressListener(ProgressListener... listeners) {
+  public CompositeProgressListener(ProgressListener... listeners) {
     this.listeners = listeners;
   }
 

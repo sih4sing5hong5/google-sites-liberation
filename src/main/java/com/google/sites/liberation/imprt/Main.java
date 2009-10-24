@@ -20,10 +20,7 @@ import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.util.ServiceException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.sites.liberation.util.LoggingProgressListener;
-import com.google.sites.liberation.util.ProgressListener;
-import com.google.sites.liberation.util.StdOutProgressListener;
-import com.google.sites.liberation.util.TeeProgressListener;
+import com.google.sites.liberation.util.LoggingUtil;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -31,11 +28,8 @@ import org.kohsuke.args4j.Option;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.FileHandler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 /**
  * Processes command line arguments for importing a site and then
@@ -87,11 +81,14 @@ public class Main {
       if (!username.contains("@") && domain != null) {
         username += '@' + domain;
       }
-      ProgressListener progress = setupProgressListener();
+
+      File logfile = new File(directory, "log.txt");
+      LoggingUtil.initializeFileLogger(logfile);
+
       SitesService sitesService = new SitesService("google-sites-liberation");
       sitesService.setUserCredentials(username, password);
       siteImporter.importSite(host, domain, webspace, importRevisions, 
-          sitesService, directory, progress);
+          sitesService, directory);
     } catch (CmdLineException e) {
       LOGGER.log(Level.SEVERE, e.getMessage());
       parser.printUsage(System.err);
@@ -103,19 +100,6 @@ public class Main {
       LOGGER.log(Level.SEVERE, "Invalid User Credentials!");
       throw new RuntimeException(e);
     }
-  }
-
-  private ProgressListener setupProgressListener() throws IOException {
-    LogManager.getLogManager().reset();
-    directory.mkdirs();
-    String logfileName = new File(directory, "import_log.txt").toString();
-    FileHandler handler = new FileHandler(logfileName);
-    handler.setFormatter(new SimpleFormatter());
-    Logger logger = Logger.getLogger("com.google.sites.liberation");
-    logger.addHandler(handler);
-
-    return new TeeProgressListener(
-        new StdOutProgressListener(), new LoggingProgressListener());
   }
 
   /**

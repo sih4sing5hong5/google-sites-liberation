@@ -21,7 +21,7 @@ package com.google.sites.liberation.export;
  * 
  * @author bsimon@google.com (Benjamin Simon)
  */
-final class InMemoryEntryStoreFactory implements EntryStoreFactory {
+public final class InMemoryEntryStoreFactory implements EntryStoreFactory {
 
   /**
    * Returns a new InMemoryEntryStore.

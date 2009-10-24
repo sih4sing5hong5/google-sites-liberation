@@ -22,22 +22,23 @@ import java.util.List;
 final class SiteImporterImpl implements SiteImporter {
 
   private final PageImporter pageImporter;
+  private final ProgressListener progressListener;
   
   /**
    * Creates a new SiteImporterImpl with the given dependencies.
    */
   @Inject
-  SiteImporterImpl(PageImporter pageImporter) {
+  SiteImporterImpl(PageImporter pageImporter, ProgressListener progressListener) {
     this.pageImporter = checkNotNull(pageImporter);
+    this.progressListener = checkNotNull(progressListener);
   }
   
   @Override
   public void importSite(String host, @Nullable String domain, String webspace, 
-      boolean importRevisions, SitesService sitesService, File rootDirectory, 
-      ProgressListener progressListener) {
+      boolean importRevisions, SitesService sitesService, File rootDirectory) {
     URL feedUrl = UrlUtils.getFeedUrl(host, domain, webspace);
     URL siteUrl = UrlUtils.getSiteUrl(host, domain, webspace);
-    
+ 
     progressListener.setStatus("Scanning directory.");
     int numPages = getNumPages(rootDirectory);
     List<BasePageEntry<?>> ancestors = Lists.newLinkedList();

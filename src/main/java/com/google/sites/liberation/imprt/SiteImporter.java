@@ -19,7 +19,6 @@ package com.google.sites.liberation.imprt;
 import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.util.common.base.Nullable;
 import com.google.inject.ImplementedBy;
-import com.google.sites.liberation.util.ProgressListener;
 
 import java.io.File;
 
@@ -43,6 +42,5 @@ public interface SiteImporter {
    * @param progressListener ProgressListener to monitor import progress
    */
   public void importSite(String host, @Nullable String domain, String webspace, 
-      boolean importRevisions, SitesService sitesService, File rootDirectory, 
-      ProgressListener progressListener);
+      boolean importRevisions, SitesService sitesService, File rootDirectory);
 }
