@@ -155,6 +155,9 @@ public class EntryUtils {
     entry.setContent(textConstruct);
   }
 
+  /**
+   * Returns the Atom XML representation of an entry.  Useful for debugging.
+   */
   public static String toString(BaseEntry<?> atomEntry) {
     if (atomEntry == null) { return "null"; }
     try {
