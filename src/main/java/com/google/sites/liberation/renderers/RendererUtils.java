@@ -31,6 +31,7 @@ import com.google.sites.liberation.util.EntryUtils;
 import com.google.sites.liberation.util.XmlElement;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 
@@ -199,7 +200,8 @@ final class RendererUtils {
     XmlElement element = new XmlElement("abbr");
     element.setAttribute("class", "updated");
     element.setAttribute("title", entry.getUpdated().toString());
-    DateTime jodaTime = new DateTime(entry.getUpdated().getValue());
+    DateTime jodaTime = new DateTime(entry.getUpdated().getValue(),
+        DateTimeZone.UTC);
     element.addText(jodaTime.toString(formatter));
     return element;
   }
