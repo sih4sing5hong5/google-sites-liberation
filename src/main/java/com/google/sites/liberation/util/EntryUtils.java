@@ -81,7 +81,7 @@ public class EntryUtils {
     if (getType(entry) == COMMENT) {
       InReplyTo inReplyTo = new InReplyTo();
       inReplyTo.setHref(
-          parent.getLink(ILink.Rel.ALTERNATE, "text").getHref()); 
+          parent.getLink(ILink.Rel.ALTERNATE, "text/html").getHref()); 
       inReplyTo.setRef(parent.getId());
       // TODO(gk5885): remove extra cast for
       // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214

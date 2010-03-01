@@ -44,7 +44,8 @@ final class EntryUpdaterImpl implements EntryUpdater {
       checkNotNull(oldEntry, "oldEntry");
       checkNotNull(newEntry, "newEntry");
       checkNotNull(sitesService, "sitesService");
-      return sitesService.update(new URL(oldEntry.getId()), newEntry);
+      return sitesService.update(new URL(oldEntry.getId()), newEntry,
+          oldEntry.getEtag());
     } catch (IOException e) {
       LOGGER.log(Level.WARNING, "Unable to update entry:" + oldEntry, e);
       return null;
