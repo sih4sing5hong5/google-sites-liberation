@@ -89,8 +89,7 @@ final class PageImporterImpl implements PageImporter {
       return null;
     }
     
-    //TODO(jlueck): Remove the toLowerCase() call once Watercress release is in dogfood.
-    page.setPageName(new PageName(directory.getName().toLowerCase()));
+    page.setPageName(new PageName(directory.getName()));
     linkConverter.convertLinks(page, ancestors, siteUrl, false);
     if (!ancestors.isEmpty()) {
       EntryUtils.setParent(page, ancestors.get(ancestors.size() - 1));
