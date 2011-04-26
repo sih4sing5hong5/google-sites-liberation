@@ -89,7 +89,7 @@ public class SiteExporterImplTest {
         revisionsExporter);
     sitesService = new SitesService("");
     entries = Sets.newHashSet();
-    feedUrl = new URL("http://host/feeds/content/domain/webspace");
+    feedUrl = new URL("https://host/feeds/content/domain/webspace");
   }
   
   @Test
@@ -131,11 +131,11 @@ public class SiteExporterImplTest {
           new File("path/Page-1/index.html"));
           will(returnValue(out));
       oneOf (linkConverter).convertLinks(page, entryStore, 
-          new URL("http://host/a/domain/webspace"), false);
+          new URL("https://host/a/domain/webspace"), false);
       oneOf (pageExporter).exportPage(page, entryStore, out, true);
       oneOf (revisionsExporter).exportRevisions(page, entryStore, 
           new File("path/Page-1"), sitesService, 
-          new URL("http://host/a/domain/webspace"));
+          new URL("https://host/a/domain/webspace"));
     }});
     
     export(true);
@@ -175,7 +175,7 @@ public class SiteExporterImplTest {
           new File("path/Page-1/index.html"));
           will(returnValue(out));
       oneOf (linkConverter).convertLinks(page, entryStore, 
-          new URL("http://host/a/domain/webspace"), false);
+          new URL("https://host/a/domain/webspace"), false);
       oneOf (pageExporter).exportPage(page, entryStore, out, false);
     }});
     
@@ -250,17 +250,17 @@ public class SiteExporterImplTest {
           new File("path/Page-1/Page-2/index.html"));
           will(returnValue(out2));
       oneOf (linkConverter).convertLinks(page1, entryStore, 
-          new URL("http://host/a/domain/webspace"), false);
+          new URL("https://host/a/domain/webspace"), false);
       oneOf (linkConverter).convertLinks(page2, entryStore, 
-          new URL("http://host/a/domain/webspace"), false);
+          new URL("https://host/a/domain/webspace"), false);
       oneOf (pageExporter).exportPage(page1, entryStore, out1, true);
       oneOf (pageExporter).exportPage(page2, entryStore, out2, true);
       oneOf (revisionsExporter).exportRevisions(page1, entryStore,
           new File("path/Page-1"), sitesService, 
-          new URL("http://host/a/domain/webspace"));
+          new URL("https://host/a/domain/webspace"));
       oneOf (revisionsExporter).exportRevisions(page2, entryStore,
           new File("path/Page-1/Page-2"), sitesService,
-          new URL("http://host/a/domain/webspace"));
+          new URL("https://host/a/domain/webspace"));
     }});
     
     export(true);
