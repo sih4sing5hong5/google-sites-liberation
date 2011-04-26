@@ -131,7 +131,7 @@ public class GuiMain {
     mainPanel.add(fileField);
     mainPanel.add(new JPanel());
     mainPanel.add(new JPanel());
-    JButton importButton = new JButton("Import");
+    JButton importButton = new JButton("Import to Sites");
     importButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
@@ -141,7 +141,7 @@ public class GuiMain {
       }
     });
     mainPanel.add(importButton);
-    JButton exportButton = new JButton("Export");
+    JButton exportButton = new JButton("Export from Sites");
     exportButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {

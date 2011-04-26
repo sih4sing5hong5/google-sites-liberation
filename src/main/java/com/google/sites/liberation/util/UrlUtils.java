@@ -40,9 +40,9 @@ public class UrlUtils {
       String webspace) {
     try {
       if (domain == null) {
-        return new URL("http://" + host + "/site/" + webspace);
+        return new URL("https://" + host + "/site/" + webspace);
       } else {
-        return new URL("http://" + host + "/a/" + domain + "/" + webspace);
+        return new URL("https://" + host + "/a/" + domain + "/" + webspace);
       }
     } catch (MalformedURLException e) {
       LOGGER.log(Level.WARNING, "Invalid host, domain, or webspace!");
@@ -57,9 +57,9 @@ public class UrlUtils {
       String webspace) {
     try {
       if (domain == null) {
-        return new URL("http://" + host + "/feeds/content/site/" + webspace);
+        return new URL("https://" + host + "/feeds/content/site/" + webspace);
       } else {
-        return new URL("http://" + host + "/feeds/content/" + domain + "/" 
+        return new URL("https://" + host + "/feeds/content/" + domain + "/" 
             + webspace);
       }
     } catch (MalformedURLException e) {
