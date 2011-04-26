@@ -33,11 +33,11 @@ public class UrlUtilsTest {
     String host = "sites.google.com";
     String domain = "google.com";
     String webspace = "dataliberation";
-    assertEquals(new URL("http://sites.google.com/feeds/content/google.com" +
+    assertEquals(new URL("https://sites.google.com/feeds/content/google.com" +
     		"/dataliberation"), UrlUtils.getFeedUrl(host, domain, webspace));
     
     domain = null;
-    assertEquals(new URL("http://sites.google.com/feeds/content/site" +
+    assertEquals(new URL("https://sites.google.com/feeds/content/site" +
     		"/dataliberation"), UrlUtils.getFeedUrl(host, domain, webspace));
   }
   
@@ -46,11 +46,11 @@ public class UrlUtilsTest {
     String host = "sites.google.com";
     String domain = "google.com";
     String webspace = "dataliberation";
-    assertEquals(new URL("http://sites.google.com/a/google.com/dataliberation"),
+    assertEquals(new URL("https://sites.google.com/a/google.com/dataliberation"),
         UrlUtils.getSiteUrl(host, domain, webspace));
     
     domain = null;
-    assertEquals(new URL("http://sites.google.com/site/dataliberation"),
+    assertEquals(new URL("https://sites.google.com/site/dataliberation"),
         UrlUtils.getSiteUrl(host, domain, webspace));
   }
 }

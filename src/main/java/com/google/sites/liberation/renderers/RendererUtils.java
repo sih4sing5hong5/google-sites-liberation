@@ -69,6 +69,12 @@ final class RendererUtils {
     String name = author.getName();
     String email = author.getEmail();
     if (name == null) {
+      name = "[no name found]";
+    }
+    if (email == null) {
+      email = "[no email found]";
+    }
+    if (name == null) {
       XmlElement link = getHyperLink("mailto:" + email, email);
       link.setAttribute("class", "email");
       vcard.addElement(link);
