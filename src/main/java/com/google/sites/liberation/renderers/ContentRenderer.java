@@ -16,6 +16,7 @@
 
 package com.google.sites.liberation.renderers;
 
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
 import com.google.inject.ImplementedBy;
 import com.google.sites.liberation.util.XmlElement;
@@ -31,5 +32,5 @@ public interface ContentRenderer {
   /**
    * Returns an XmlElement containing the given entry's xhtml content.
    */
-  XmlElement renderContent(BasePageEntry<?> entry, boolean revisionsExported);
+  XmlElement renderContent(BaseContentEntry<?> entry, boolean revisionsExported);
 }

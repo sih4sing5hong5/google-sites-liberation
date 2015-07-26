@@ -95,7 +95,7 @@ final class PageExporterImpl implements PageExporter {
   }
   
   @Override
-  public void exportPage(BasePageEntry<?> entry, EntryStore entryStore,
+  public void exportPage(BaseContentEntry<?> entry, EntryStore entryStore,
       Appendable out, boolean revisionsExported) throws IOException {
     checkNotNull(entry, "entry");
     checkNotNull(entryStore, "entryStore");
@@ -125,13 +125,13 @@ final class PageExporterImpl implements PageExporter {
     List<BaseContentEntry<?>> attachments = Lists.newArrayList();
     List<CommentEntry> comments = Lists.newArrayList();
     List<ListItemEntry> listItems = Lists.newArrayList();
-    List<BasePageEntry<?>> subpages = Lists.newArrayList();
+    List<BaseContentEntry<?>> subpages = Lists.newArrayList();
     for (BaseContentEntry<?> child : entryStore.getChildren(entry.getId())) {
       switch(getType(child)) {
         case ANNOUNCEMENT:
           // TODO(gk5885): remove extra cast for
           // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
-          announcements.add((AnnouncementEntry) (BaseContentEntry) child);
+          announcements.add((AnnouncementEntry) child);
           break;
         case ATTACHMENT:
         case WEB_ATTACHMENT:
@@ -140,15 +140,15 @@ final class PageExporterImpl implements PageExporter {
         case COMMENT:
           // TODO(gk5885): remove extra cast for
           // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
-          comments.add((CommentEntry) (BaseContentEntry) child);
+          comments.add((CommentEntry) child);
           break;
         case LIST_ITEM:
           // TODO(gk5885): remove extra cast for
           // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
-          listItems.add((ListItemEntry) (BaseContentEntry) child);
+          listItems.add((ListItemEntry) child);
           break;
         default:
-          subpages.add((BasePageEntry<?>) child);
+          subpages.add(child);
           break;
       }
     }
@@ -166,7 +166,7 @@ final class PageExporterImpl implements PageExporter {
       // TODO(gk5885): remove extra cast for
       // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
       mainDiv.addElement(listRenderer.renderList(
-          (ListPageEntry) (BaseContentEntry) entry, listItems));
+          (ListPageEntry) entry, listItems));
     }
     if (!subpages.isEmpty()) {
       mainDiv.addElement(new XmlElement("hr"));
@@ -185,7 +185,7 @@ final class PageExporterImpl implements PageExporter {
     html.appendTo(out);
   }
   
-  private XmlElement getSideBar(BasePageEntry<?> entry, EntryStore entryStore) {
+  private XmlElement getSideBar(BaseContentEntry<?> entry, EntryStore entryStore) {
     XmlElement table = new XmlElement("table");
     table.addElement(new XmlElement("tr").addElement(new XmlElement("th")
         .addText("Navigation").setAttribute("align", "left")));
@@ -208,7 +208,7 @@ final class PageExporterImpl implements PageExporter {
     return table;
   }
   
-  private String getPathToRoot(BasePageEntry<?> entry, EntryStore entryStore) {
+  private String getPathToRoot(BaseContentEntry<?> entry, EntryStore entryStore) {
     BasePageEntry<?> parent = entryStore.getParent(entry.getId());
     if (parent == null) {
       return "../";
@@ -216,7 +216,7 @@ final class PageExporterImpl implements PageExporter {
     return getPathToRoot(parent, entryStore) + "../";
   }
   
-  private List<BasePageEntry<?>> getAncestors(BasePageEntry<?> entry,
+  private List<BasePageEntry<?>> getAncestors(BaseContentEntry<?> entry,
       EntryStore entryStore) {
     BasePageEntry<?> parent = entryStore.getParent(entry.getId());
     if (parent == null) {

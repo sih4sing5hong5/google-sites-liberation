@@ -16,6 +16,7 @@
 
 package com.google.sites.liberation.renderers;
 
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
 import com.google.sites.liberation.util.XmlElement;
 
@@ -27,7 +28,7 @@ import com.google.sites.liberation.util.XmlElement;
 final class ContentRendererImpl implements ContentRenderer {
 
   @Override
-  public XmlElement renderContent(BasePageEntry<?> entry, 
+  public XmlElement renderContent(BaseContentEntry<?> entry, 
       boolean revisionsExported) {
     XmlElement div = new XmlElement("div");
     div.addElement(RendererUtils.getXhtmlContentElement(entry));

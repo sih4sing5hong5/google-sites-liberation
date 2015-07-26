@@ -16,6 +16,7 @@
 
 package com.google.sites.liberation.renderers;
 
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
 import com.google.inject.ImplementedBy;
 import com.google.sites.liberation.util.XmlElement;
@@ -34,5 +35,5 @@ public interface SubpageLinksRenderer {
    * Returns an XmlElement containing links to the given subpages, appearing
    * in the order in which they appear in the list.
    */
-  XmlElement renderSubpageLinks(List<BasePageEntry<?>> subpages);
+  XmlElement renderSubpageLinks(List<BaseContentEntry<?>> subpages);
 }

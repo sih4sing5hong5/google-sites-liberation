@@ -72,7 +72,7 @@ final class RevisionExporterImpl implements RevisionExporter {
       List<ListItemEntry> items = Lists.newArrayList();
       // TODO(gk5885): remove extra cast for
       // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
-      mainDiv.addElement(listRenderer.renderList((ListPageEntry) (BasePageEntry) revision,
+      mainDiv.addElement(listRenderer.renderList((ListPageEntry) revision,
           items));
     }
     html.addElement(body.addElement(mainDiv));

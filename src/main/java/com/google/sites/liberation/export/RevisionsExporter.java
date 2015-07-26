@@ -16,12 +16,12 @@
 
 package com.google.sites.liberation.export;
 
-import com.google.gdata.client.sites.SitesService;
-import com.google.gdata.data.sites.BasePageEntry;
-import com.google.inject.ImplementedBy;
-
 import java.io.File;
 import java.net.URL;
+
+import com.google.gdata.client.sites.SitesService;
+import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.inject.ImplementedBy;
 
 /**
  * Exports the history and all of the revisions of a page. 
@@ -35,6 +35,6 @@ public interface RevisionsExporter {
    * Exports the revisions and history of the given page, in the given 
    * directory, using the given SitesService.
    */
-  void exportRevisions(BasePageEntry<?> page, EntryStore entryStore,
+  void exportRevisions(BaseContentEntry<?> page, EntryStore entryStore,
       File directory, SitesService sitesService, URL siteUrl);
 }

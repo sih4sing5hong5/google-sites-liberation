@@ -16,10 +16,10 @@
 
 package com.google.sites.liberation.export;
 
-import com.google.gdata.data.sites.BasePageEntry;
-import com.google.inject.ImplementedBy;
-
 import java.net.URL;
+
+import com.google.gdata.data.sites.BaseContentEntry;
+import com.google.inject.ImplementedBy;
 
 /**
  * Converts the absolute links in a page's content to relative links.
@@ -33,6 +33,6 @@ public interface AbsoluteLinkConverter {
    * Converts all of the links starting with the given siteUrl to relative links 
    * in the given entry belonging to the given EntryStore.
    */
-  void convertLinks(BasePageEntry<?> entry, EntryStore entryStore, URL siteUrl,
+  void convertLinks(BaseContentEntry<?> entry, EntryStore entryStore, URL siteUrl,
       boolean isRevision);
 }

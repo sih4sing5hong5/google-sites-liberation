@@ -16,6 +16,7 @@
 
 package com.google.sites.liberation.renderers;
 
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
 import com.google.sites.liberation.util.XmlElement;
 
@@ -29,11 +30,11 @@ import java.util.List;
 final class SubpageLinksRendererImpl implements SubpageLinksRenderer {
 
   @Override
-  public XmlElement renderSubpageLinks(List<BasePageEntry<?>> subpages) {
+  public XmlElement renderSubpageLinks(List<BaseContentEntry<?>> subpages) {
     XmlElement div = new XmlElement("div");
     div.addText("Subpages (" + subpages.size() + "):");
-    for (BasePageEntry<?> subpage : subpages) {
-      String href = subpage.getPageName().getValue() + "/index.html";
+    for (BaseContentEntry<?> subpage : subpages) {
+      String href = ((BasePageEntry<?>) subpage).getPageName().getValue() + "/index.html";
       div.addText(" ");
       div.addElement(RendererUtils.getHyperLink(href, 
           subpage.getTitle().getPlainText()));
