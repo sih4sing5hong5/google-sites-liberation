@@ -1,8 +1,16 @@
-## README
+# INTRODUCTION
 
 [![Build Status](https://travis-ci.org/sih4sing5hong5/google-sites-liberation.svg?branch=master)](https://travis-ci.org/sih4sing5hong5/google-sites-liberation)
 
-### INTRODUCTION
+## Usage
+Just download version 1.0.5 [jar file](https://sih4sing5hong5.github.io/google-sites-liberation/jar/google-sites-liberation-1.0.5-jar-with-dependencies.jar).
+
+And run in command line:
+```bash
+java -jar google-sites-liberation-1.0.5-jar-with-dependencies.jar
+```
+
+## Development
   Note:  This project is built using Maven (http://maven.apache.org/).
 
   The latest, most stable version of the code will always be located in the `master` branch.  See
