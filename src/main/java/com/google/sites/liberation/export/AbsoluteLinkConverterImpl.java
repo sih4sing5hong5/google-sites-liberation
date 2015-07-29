@@ -19,6 +19,7 @@ package com.google.sites.liberation.export;
 import static com.google.sites.liberation.util.EntryUtils.getXhtmlContent;
 import static com.google.sites.liberation.util.EntryUtils.setContent;
 
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.gdata.data.sites.BasePageEntry;
 
 import java.net.URL;
@@ -31,13 +32,13 @@ import java.net.URL;
 final class AbsoluteLinkConverterImpl implements AbsoluteLinkConverter {
 
   @Override
-  public void convertLinks(BasePageEntry<?> entry, EntryStore entryStore,
+  public void convertLinks(BaseContentEntry<?> entry, EntryStore entryStore,
       URL siteUrl, boolean isRevision) {
     convertLinks(entry, entryStore, siteUrl, isRevision, "href=\"", "\"");
     convertLinks(entry, entryStore, siteUrl, isRevision, "href='", "'");
   }
   
-  private void convertLinks(BasePageEntry<?> entry, EntryStore entryStore, 
+  private void convertLinks(BaseContentEntry<?> entry, EntryStore entryStore, 
       URL siteUrl, boolean isRevision, String prefix, String suffix) {
     String content = getXhtmlContent(entry);
     String url = siteUrl.toExternalForm();
@@ -58,7 +59,7 @@ final class AbsoluteLinkConverterImpl implements AbsoluteLinkConverter {
     setContent(entry, content);
   }
   
-  private String getSiteRoot(BasePageEntry<?> entry, EntryStore entryStore) {
+  private String getSiteRoot(BaseContentEntry<?> entry, EntryStore entryStore) {
     BasePageEntry<?> parent = entryStore.getParent(entry.getId());
     if (parent == null) {
       return "../";

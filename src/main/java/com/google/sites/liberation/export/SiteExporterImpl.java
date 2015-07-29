@@ -22,6 +22,14 @@ import static com.google.sites.liberation.util.EntryType.getType;
 import static com.google.sites.liberation.util.EntryType.isPage;
 import static com.google.sites.liberation.util.EntryUtils.getParentId;
 
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.google.common.collect.Sets;
 import com.google.gdata.client.sites.SitesService;
 import com.google.gdata.data.sites.AttachmentEntry;
@@ -31,14 +39,6 @@ import com.google.gdata.util.common.base.Nullable;
 import com.google.inject.Inject;
 import com.google.sites.liberation.util.ProgressListener;
 import com.google.sites.liberation.util.UrlUtils;
-
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Implements {@link SiteExporter} to export an entire Site 
@@ -88,7 +88,7 @@ final class SiteExporterImpl implements SiteExporter {
     checkNotNull(sitesService, "sitesService");
     checkNotNull(rootDirectory, "rootDirectory");
     checkNotNull(progressListener, "progressListener");
-    Set<BasePageEntry<?>> pages = Sets.newHashSet();
+    Set<BaseContentEntry<?>> pages = Sets.newHashSet();
     Set<AttachmentEntry> attachments = Sets.newHashSet();
     EntryStore entryStore = entryStoreFactory.newEntryStore();
     URL feedUrl = UrlUtils.getFeedUrl(host, domain, webspace);
@@ -109,7 +109,11 @@ final class SiteExporterImpl implements SiteExporter {
         } else if (getType(entry) == ATTACHMENT) {
           // TODO(gk5885): remove extra cast for
           // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302214
-          attachments.add((AttachmentEntry) (BaseContentEntry) entry);
+          attachments.add((AttachmentEntry) entry);
+        }
+        else
+        {
+            System.out.println("There is a page that doesn't save. Class:"+entry.getClass());
         }
         num++;
       } else {
@@ -120,11 +124,12 @@ final class SiteExporterImpl implements SiteExporter {
     int totalEntries = pages.size() + attachments.size();
     if (totalEntries > 0) {  
       int currentEntries = 0;
-      for (BasePageEntry<?> page : pages) {
+      for (BaseContentEntry<?> page : pages) {
         progressListener.setStatus("Exporting page: " 
             + page.getTitle().getPlainText() + '.');
         linkConverter.convertLinks(page, entryStore, siteUrl, false);
         File relativePath = getPath(page, entryStore);
+//        File relativePath = new File("/home/tshau/aa/hi.txt");
         if (relativePath != null) {
           File directory = new File(rootDirectory, relativePath.getPath());
           directory.mkdirs();
@@ -149,7 +154,7 @@ final class SiteExporterImpl implements SiteExporter {
     }
   }
   
-  private void exportPage(BasePageEntry<?> page, File directory, 
+  private void exportPage(BaseContentEntry<?> page, File directory, 
       EntryStore entryStore, boolean revisionsExported) {
     File file = new File(directory, "index.html");
     Appendable out = null;
@@ -187,15 +192,15 @@ final class SiteExporterImpl implements SiteExporter {
    * Returns the site-relative folder path corresponding to the given page, or 
    * {@code null} if any of the page's ancestors are missing.
    */
-  private File getPath(BasePageEntry<?> entry, EntryStore entryStore) {
+  private File getPath(BaseContentEntry<?> entry, EntryStore entryStore) {
     String parentId = getParentId(entry);
     if (parentId == null) {
-      return new File(entry.getPageName().getValue());
+      return new File(((BasePageEntry<?>) entry).getPageName().getValue());
     }
     BasePageEntry<?> parent = (BasePageEntry<?>) entryStore.getEntry(parentId);
     if (parent == null) {
       return null;
     }
-    return new File(getPath(parent, entryStore), entry.getPageName().getValue());
+    return new File(getPath(parent, entryStore), ((BasePageEntry<?>) entry).getPageName().getValue());
   }
 }

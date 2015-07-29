@@ -16,7 +16,7 @@
 
 package com.google.sites.liberation.renderers;
 
-import com.google.gdata.data.sites.BasePageEntry;
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.inject.ImplementedBy;
 import com.google.sites.liberation.util.XmlElement;
 
@@ -28,5 +28,5 @@ import com.google.sites.liberation.util.XmlElement;
 @ImplementedBy(TitleRendererImpl.class)
 public interface TitleRenderer {
 
-  XmlElement renderTitle(BasePageEntry<?> entry);
+  XmlElement renderTitle(BaseContentEntry<?> entry);
 }

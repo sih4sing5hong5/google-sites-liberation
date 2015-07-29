@@ -16,7 +16,7 @@
 
 package com.google.sites.liberation.renderers;
 
-import com.google.gdata.data.sites.BasePageEntry;
+import com.google.gdata.data.sites.BaseContentEntry;
 import com.google.sites.liberation.util.XmlElement;
 
 /**
@@ -27,7 +27,7 @@ import com.google.sites.liberation.util.XmlElement;
 final class TitleRendererImpl implements TitleRenderer {
   
   @Override
-  public XmlElement renderTitle(BasePageEntry<?> entry) {
+  public XmlElement renderTitle(BaseContentEntry<?> entry) {
     XmlElement title = new XmlElement("h3").addElement(
         RendererUtils.getTitleElement(entry));
     return title;

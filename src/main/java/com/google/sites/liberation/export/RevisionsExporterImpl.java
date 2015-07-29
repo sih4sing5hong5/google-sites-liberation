@@ -64,7 +64,7 @@ final class RevisionsExporterImpl implements RevisionsExporter {
   }
   
   @Override
-  public void exportRevisions(BasePageEntry<?> page, EntryStore entryStore, 
+  public void exportRevisions(BaseContentEntry<?> page, EntryStore entryStore, 
       File directory, SitesService sitesService, URL siteUrl) {
     checkNotNull(page, "page");
     checkNotNull(directory, "directory");
