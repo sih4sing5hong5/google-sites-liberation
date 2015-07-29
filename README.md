@@ -1,5 +1,7 @@
 ## README
 
+[![Build Status](https://travis-ci.org/sih4sing5hong5/google-sites-liberation.svg?branch=master)](https://travis-ci.org/sih4sing5hong5/google-sites-liberation)
+
 ### INTRODUCTION
   Note:  This project is built using Maven (http://maven.apache.org/).
 
