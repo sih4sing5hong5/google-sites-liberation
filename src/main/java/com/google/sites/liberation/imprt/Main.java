@@ -90,6 +90,7 @@ public class Main {
       return;
     } catch (ServiceException e) {
       LOGGER.log(Level.SEVERE, "Invalid User Credentials!");
+      LOGGER.log(Level.SEVERE, "Try OAuth2 Credentials by the GUI Version!");
       throw new RuntimeException(e);
     }
   }
