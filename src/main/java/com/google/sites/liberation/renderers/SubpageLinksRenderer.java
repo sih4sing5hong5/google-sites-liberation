@@ -16,12 +16,11 @@
 
 package com.google.sites.liberation.renderers;
 
-import com.google.gdata.data.sites.BaseContentEntry;
+import java.util.List;
+
 import com.google.gdata.data.sites.BasePageEntry;
 import com.google.inject.ImplementedBy;
 import com.google.sites.liberation.util.XmlElement;
-
-import java.util.List;
 
 /**
  * Renders the links to a page's ancestors.
@@ -35,5 +34,5 @@ public interface SubpageLinksRenderer {
    * Returns an XmlElement containing links to the given subpages, appearing
    * in the order in which they appear in the list.
    */
-  XmlElement renderSubpageLinks(List<BaseContentEntry<?>> subpages);
+  XmlElement renderSubpageLinks(List<BasePageEntry<?>> subpages);
 }
