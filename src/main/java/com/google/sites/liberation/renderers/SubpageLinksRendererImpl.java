@@ -30,11 +30,11 @@ import java.util.List;
 final class SubpageLinksRendererImpl implements SubpageLinksRenderer {
 
   @Override
-  public XmlElement renderSubpageLinks(List<BaseContentEntry<?>> subpages) {
+  public XmlElement renderSubpageLinks(List<BasePageEntry<?>> subpages) {
     XmlElement div = new XmlElement("div");
     div.addText("Subpages (" + subpages.size() + "):");
-    for (BaseContentEntry<?> subpage : subpages) {
-      String href = ((BasePageEntry<?>) subpage).getPageName().getValue() + "/index.html";
+    for (BasePageEntry<?> subpage : subpages) {
+      String href = subpage.getPageName().getValue() + "/index.html";
       div.addText(" ");
       div.addElement(RendererUtils.getHyperLink(href, 
           subpage.getTitle().getPlainText()));

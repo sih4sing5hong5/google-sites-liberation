@@ -125,7 +125,7 @@ final class PageExporterImpl implements PageExporter {
     List<BaseContentEntry<?>> attachments = Lists.newArrayList();
     List<CommentEntry> comments = Lists.newArrayList();
     List<ListItemEntry> listItems = Lists.newArrayList();
-    List<BaseContentEntry<?>> subpages = Lists.newArrayList();
+    List<BasePageEntry<?>> subpages = Lists.newArrayList();
     for (BaseContentEntry<?> child : entryStore.getChildren(entry.getId())) {
       switch(getType(child)) {
         case ANNOUNCEMENT:
@@ -148,7 +148,7 @@ final class PageExporterImpl implements PageExporter {
           listItems.add((ListItemEntry) child);
           break;
         default:
-          subpages.add(child);
+          subpages.add((BasePageEntry<?>) child);
           break;
       }
     }
