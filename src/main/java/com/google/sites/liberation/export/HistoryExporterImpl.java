@@ -71,11 +71,16 @@ final class HistoryExporterImpl implements HistoryExporter {
       XmlElement updated = new XmlElement("td").addText(
           jodaTime.toString(formatter));
       row.addElement(updated);
-      XmlElement author = new XmlElement("a");
       String name = revision.getAuthors().get(0).getName();
       String email = revision.getAuthors().get(0).getEmail();
-      row.addElement(new XmlElement("td").addElement(author.addText(name)
+      if (name != null && email != null) {
+        XmlElement author = new XmlElement("a");
+        row.addElement(new XmlElement("td").addElement(author.addText(name)
           .setAttribute("href", "mailto:" + email)));
+      }
+      else {
+          row.addElement(new XmlElement("td"));
+      }
       history.addElement(row);
     }
     XmlElement html = new XmlElement("html");
