@@ -2,7 +2,7 @@
 
 This is an import/export tool for [Google Sites](http://sites.google.com/).  Using [HTML Microformats](http://microformats.org/) it generates an XHTML version of Sites content suitable for offline browsing and simple HTTP hosting, which is also able to be losslessly imported back into sites.
 
-Download the version [1.0.5](https://sih4sing5hong5.github.io/google-sites-liberation/jar/google-sites-liberation-1.0.5-jar-with-dependencies.jar) and execute it now!
+Download the version [1.0.6](https://sih4sing5hong5.github.io/google-sites-liberation/jar/google-sites-liberation-1.0.6-jar-with-dependencies.jar) and execute it now!
 
 ![http://google-sites-liberation.googlecode.com/files/gui.png](http://google-sites-liberation.googlecode.com/files/gui.png)
 
@@ -12,11 +12,11 @@ The Sites Liberation import/export tool uses the Sites GData API to allow users 
 
 ### Simple Execution
 
-Download the version [1.0.5](https://sih4sing5hong5.github.io/google-sites-liberation/jar/google-sites-liberation-1.0.5-jar-with-dependencies.jar) now! The tool has been packaged as an executable jar.  If [Java](http://java.sun.com/) is installed, just **double-click on it**.
+Download the version [1.0.6](https://sih4sing5hong5.github.io/google-sites-liberation/jar/google-sites-liberation-1.0.6-jar-with-dependencies.jar) now! The tool has been packaged as an executable jar.  If [Java](http://java.sun.com/) is installed, just **double-click on it**.
 
 You can run it in command line, too.
 ```bash
-java -jar google-sites-liberation-1.0.5-jar-with-dependencies.jar
+java -jar google-sites-liberation-1.0.6-jar-with-dependencies.jar
 ```
 
 ### Advanced Execution
