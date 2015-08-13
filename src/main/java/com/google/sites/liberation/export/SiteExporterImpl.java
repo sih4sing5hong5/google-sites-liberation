@@ -113,7 +113,8 @@ final class SiteExporterImpl implements SiteExporter {
         }
         else
         {
-            System.out.println("There is a page that doesn't save. Class:"+entry.getClass());
+            progressListener.setStatus("The class of page is not supported!"
+                  + "The class of page:" + entry.getClass());
         }
         num++;
       } else {
@@ -129,7 +130,6 @@ final class SiteExporterImpl implements SiteExporter {
             + page.getTitle().getPlainText() + '.');
         linkConverter.convertLinks(page, entryStore, siteUrl, false);
         File relativePath = getPath(page, entryStore);
-//        File relativePath = new File("/home/tshau/aa/hi.txt");
         if (relativePath != null) {
           File directory = new File(rootDirectory, relativePath.getPath());
           directory.mkdirs();
@@ -149,8 +149,8 @@ final class SiteExporterImpl implements SiteExporter {
       }
       progressListener.setStatus("Export complete.");
     } else {
-      progressListener.setStatus("No data returned. You may have provided "
-          + "invalid Site information or credentials.");
+      progressListener.setStatus("No data returned. "
+          + "Can you get anything from " + feedUrl.toString()+".");
     }
   }
   

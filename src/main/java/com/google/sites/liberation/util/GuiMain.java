@@ -61,7 +61,6 @@ import com.google.sites.liberation.export.SiteExporter;
 import com.google.sites.liberation.export.SiteExporterModule;
 import com.google.sites.liberation.imprt.SiteImporter;
 import com.google.sites.liberation.imprt.SiteImporterModule;
-import com.google.sites.liberation.service.LiberationService;
 
 /**
  * Provides a GUI for initiating a Sites import or export.
@@ -331,7 +330,7 @@ public class GuiMain {
       boolean revisions = revisionsCheckBox.isSelected();
       File directory = fileChooser.getSelectedFile();
       String applicationName = "sites-liberation-5";
-      SitesService sitesService = new LiberationService(applicationName);
+      SitesService sitesService = new SitesService(applicationName);
       sitesService.setOAuth2Credentials(credential);
       if (export) {
         Injector injector = Guice.createInjector(new SiteExporterModule());
