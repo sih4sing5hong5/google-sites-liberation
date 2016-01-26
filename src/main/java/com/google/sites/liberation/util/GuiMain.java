@@ -227,10 +227,11 @@ public class GuiMain {
     try {
       // Point or redirect your user to the authorizationUrl.
       java.awt.Desktop.getDesktop().browse(new URI(authorizationUrl));
-    } catch (URISyntaxException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
+      LOGGER.warning("Unable to open browser: " + e.toString());
+      LOGGER.info("Go to: " + authorizationUrl);
+      JOptionPane.showMessageDialog(optionsFrame, "Cannot open browser. Check the console for the necessary URL.",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
     }
     // End of Step 1 <--
   }
