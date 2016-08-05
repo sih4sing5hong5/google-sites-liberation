@@ -156,11 +156,11 @@ public class Main {
       parser.printUsage(System.err);
       return;
     } catch (GeneralSecurityException e) {
-    	LOGGER.log(Level.SEVERE, "Error while setting up the security");
+      LOGGER.log(Level.SEVERE, "Error while setting up the security");
 	} catch (IOException e) {
-		LOGGER.log(Level.SEVERE, "Error handling resources files");
+	  LOGGER.log(Level.SEVERE, "Error handling resources files");
 	} catch (Exception e) {
-		LOGGER.log(Level.SEVERE, "Error while getting the AccesToken");
+	  LOGGER.log(Level.SEVERE, "Error while getting the AccesToken");
 	}
   }
   

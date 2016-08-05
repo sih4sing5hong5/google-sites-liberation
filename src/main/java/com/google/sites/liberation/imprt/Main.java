@@ -152,15 +152,15 @@ public class Main {
       siteImporter.importSite(host, domain, webspace, importRevisions, 
           sitesService, directory, new StdOutProgressListener());
     } catch (CmdLineException e) {
-        LOGGER.log(Level.SEVERE, e.getMessage());
-        parser.printUsage(System.err);
-        return;
-      } catch (GeneralSecurityException e) {
-      	LOGGER.log(Level.SEVERE, "Error while setting up the security");
+      LOGGER.log(Level.SEVERE, e.getMessage());
+      parser.printUsage(System.err);
+      return;
+    } catch (GeneralSecurityException e) {
+      LOGGER.log(Level.SEVERE, "Error while setting up the security");
   	} catch (IOException e) {
-  		LOGGER.log(Level.SEVERE, "Error handling resources files");
+  	  LOGGER.log(Level.SEVERE, "Error handling resources files");
   	} catch (Exception e) {
-  		LOGGER.log(Level.SEVERE, "Error while getting the AccesToken");
+  	  LOGGER.log(Level.SEVERE, "Error while getting the AccesToken");
   	}
   }
   
