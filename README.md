@@ -28,8 +28,6 @@ The tool is written in Java and the source code is currently hosted at code.goog
 | Host | `-h` | If not sites.google.com, specifies the Site's host (optional).  Used for debugging. |
 | Domian | `-d` | If the site is a Google Apps site, specifies the domain, e.g. dataliberation.org (optional). |
 | Webspace | `-w` | Specifies the webspace of the Site, e.g. "dataliberation" for a site located at `http://sites.google.com/a/domain/dataliberation` |
-| Username | `-u` | Specifies the user name used to access the Site. |
-| Password | `-p` | Specifies the password used to access the Site. |
 | Directory | `-f` | Specifies the root directory to export to / import from. |
 | Revisions | `-r` | If this flag is included, then the revisions of all of the pages in the Site will be exported/imported as well as the current page (optional). |
 
