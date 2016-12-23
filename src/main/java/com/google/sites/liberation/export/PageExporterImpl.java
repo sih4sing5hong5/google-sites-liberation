@@ -54,6 +54,7 @@ import java.util.Set;
  * Site as to a given {@code Appendable}. 
  * 
  * @author bsimon@google.com (Benjamin Simon)
+ * @author rafael.camargo.sp@gmail.com (Rafael Camargo)
  */
 final class PageExporterImpl implements PageExporter {
   
@@ -103,8 +104,11 @@ final class PageExporterImpl implements PageExporter {
     XmlElement html = new XmlElement("html");
     XmlElement head = new XmlElement("head");
     XmlElement title = new XmlElement("title");
+    
+    XmlElement meta_charset = new XmlElement("meta").setAttribute("charset", "utf-8");
+    
     title.addText(entry.getTitle().getPlainText());
-    html.addElement(head.addElement(title));
+    html.addElement(head.addElement(title).addElement(meta_charset));
     XmlElement body = new XmlElement("body");
     XmlElement table = new XmlElement("table").setAttribute("width", "100%");
     XmlElement row = new XmlElement("tr").setAttribute("valign", "top");

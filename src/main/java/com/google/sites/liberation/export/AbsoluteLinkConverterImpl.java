@@ -28,6 +28,7 @@ import java.net.URL;
  * Converts the absolute links in a page's content to relative links.
  * 
  * @author bsimon@google.com (Benjamin Simon)
+ * @author rafael.camargo.sp@gmail.com (Rafael Camargo)
  */
 final class AbsoluteLinkConverterImpl implements AbsoluteLinkConverter {
 
@@ -51,7 +52,13 @@ final class AbsoluteLinkConverterImpl implements AbsoluteLinkConverter {
       int startIndex = index + prefix.length();
       int endIndex = content.indexOf(suffix, startIndex + 1);
       String beforeLink = content.substring(0, startIndex);
-      String link = content.substring(startIndex + url.length() + 1, endIndex);
+      
+      String link = "";
+	  int beginIndex = startIndex + url.length() + 1;
+	  if(beginIndex < endIndex){
+		  link = content.substring(beginIndex, endIndex);
+	  }
+	  
       String afterLink = content.substring(endIndex);
       content = beforeLink + siteRoot + link + "/index.html" + afterLink;
       index = content.indexOf(prefix + url);
